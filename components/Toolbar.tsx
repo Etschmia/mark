@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { FormatType } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon } from './icons/Icons';
 
 interface ToolbarProps {
   onFormat: (formatType: FormatType) => void;
@@ -9,19 +10,22 @@ interface ToolbarProps {
   onSave: () => void;
   fileName: string;
   onFileNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onUndo: () => void;
+  canUndo: boolean;
 }
 
-const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string }> = ({ onClick, children, title }) => (
+const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean }> = ({ onClick, children, title, disabled = false }) => (
   <button
     onClick={onClick}
     title={title}
-    className="p-2 rounded-md text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+    disabled={disabled}
+    className="p-2 rounded-md text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
   >
     {children}
   </button>
 );
 
-export const Toolbar: React.FC<ToolbarProps> = ({ onFormat, onNew, onOpen, onSave, fileName, onFileNameChange }) => {
+export const Toolbar: React.FC<ToolbarProps> = ({ onFormat, onNew, onOpen, onSave, fileName, onFileNameChange, onUndo, canUndo }) => {
   return (
     <div className="flex items-center justify-between p-2">
       <div className="flex items-center gap-1">
@@ -37,6 +41,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onFormat, onNew, onOpen, onSav
         <ToolButton onClick={() => onFormat('ul')} title="Ungeordnete Liste"><ListUlIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('ol')} title="Geordnete Liste"><ListOlIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('code')} title="Code"><CodeIcon /></ToolButton>
+        <div className="w-px h-6 bg-slate-600 mx-2"></div>
+        <ToolButton onClick={onUndo} title="Rückgängig" disabled={!canUndo}><UndoIcon /></ToolButton>
       </div>
       <div className="flex items-center gap-4">
         <input

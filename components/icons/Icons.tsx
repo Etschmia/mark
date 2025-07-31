@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 // Wrapper for path-based icons that are not changing
@@ -45,3 +46,4 @@ export const StrikethroughIcon: React.FC = () => <IconWrapper><path strokeLineca
 export const ListUlIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></IconWrapper>;
 export const ListOlIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16M2 6h.01M2 12h.01M2 18h.01" /></IconWrapper>;
 export const CodeIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l-4 4-4-4" /></IconWrapper>;
+export const UndoIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></IconWrapper>;

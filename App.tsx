@@ -6,16 +6,39 @@ import { Toolbar } from './components/Toolbar';
 import { FormatType } from './types';
 
 const App: React.FC = () => {
-  const [markdown, setMarkdown] = useState<string>('# Hello, Markdown!\n\nStart typing here...');
+  const initialContent = '# Hello, Markdown!\n\nStart typing here...';
+  const [markdown, setMarkdown] = useState<string>(initialContent);
   const [fileName, setFileName] = useState<string>('untitled.md');
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
   // State and refs for resizing functionality
   const [isResizing, setIsResizing] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
+  
+  // State for Undo/Redo
+  const [history, setHistory] = useState<string[]>([initialContent]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const debounceRef = useRef<number | null>(null);
+
+  const addHistoryEntry = useCallback((newMarkdown: string) => {
+    // When a new entry is added, clear any "future" history from previous undos
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(newMarkdown);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }, [history, historyIndex]);
 
   const handleMarkdownChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMarkdown(event.target.value);
+    const newMarkdown = event.target.value;
+    setMarkdown(newMarkdown);
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = window.setTimeout(() => {
+      addHistoryEntry(newMarkdown);
+    }, 500); // Debounce delay of 500ms
   };
 
   const handleFileNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,10 +46,12 @@ const App: React.FC = () => {
   };
 
   const handleNewFile = useCallback(() => {
-    setMarkdown('');
+    const newMarkdown = '';
+    setMarkdown(newMarkdown);
     setFileName('untitled.md');
+    addHistoryEntry(newMarkdown);
     editorRef.current?.focus();
-  }, []);
+  }, [addHistoryEntry]);
 
   const handleOpenFile = useCallback(() => {
     const input = document.createElement('input');
@@ -41,12 +66,13 @@ const App: React.FC = () => {
           const content = e.target?.result as string;
           setMarkdown(content);
           setFileName(file.name);
+          addHistoryEntry(content);
         };
         reader.readAsText(file);
       }
     };
     input.click();
-  }, []);
+  }, [addHistoryEntry]);
 
   const handleSaveFile = useCallback(() => {
     const downloadName = fileName.trim() || 'untitled.md';
@@ -60,7 +86,7 @@ const App: React.FC = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, [markdown, fileName]);
-
+  
   const applyFormatting = (prefix: string, suffix: string = prefix) => {
     const textarea = editorRef.current;
     if (!textarea) return;
@@ -71,6 +97,7 @@ const App: React.FC = () => {
     const newText = `${textarea.value.substring(0, start)}${prefix}${selectedText}${suffix}${textarea.value.substring(end)}`;
 
     setMarkdown(newText);
+    addHistoryEntry(newText);
 
     setTimeout(() => {
       textarea.focus();
@@ -94,54 +121,47 @@ const App: React.FC = () => {
     
     const selectedLinesText = fullText.substring(lineStartIndex, lineEndIndex);
     const lines = selectedLinesText.split('\n');
-    const formattedLines = lines.map(line => `${prefix}${line}`).join('\n');
+    const formattedLines = lines.map(line => {
+      // Toggle off if prefix already exists
+      if (line.startsWith(prefix)) {
+        return line.substring(prefix.length);
+      }
+      return `${prefix}${line}`
+    }).join('\n');
 
     const newText = `${fullText.substring(0, lineStartIndex)}${formattedLines}${fullText.substring(lineEndIndex)}`;
     
     setMarkdown(newText);
+    addHistoryEntry(newText);
     
     setTimeout(() => {
       textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, end + prefix.length * lines.length);
+      // Adjust selection logic after format
     }, 0);
   };
 
   const handleFormat = useCallback((formatType: FormatType) => {
     switch (formatType) {
-      case 'bold':
-        applyFormatting('**');
-        break;
-      case 'italic':
-        applyFormatting('*');
-        break;
-      case 'strikethrough':
-        applyFormatting('~~');
-        break;
-      case 'h1':
-        applyLineFormatting('# ');
-        break;
-      case 'h2':
-        applyLineFormatting('## ');
-        break;
-      case 'h3':
-        applyLineFormatting('### ');
-        break;
-      case 'quote':
-        applyLineFormatting('> ');
-        break;
-      case 'code':
-        applyFormatting('`');
-        break;
-      case 'ul':
-        applyLineFormatting('* ');
-        break;
-      case 'ol':
-        applyLineFormatting('1. ');
-        break;
-      default:
-        break;
+      case 'bold': applyFormatting('**'); break;
+      case 'italic': applyFormatting('*'); break;
+      case 'strikethrough': applyFormatting('~~'); break;
+      case 'h1': applyLineFormatting('# '); break;
+      case 'h2': applyLineFormatting('## '); break;
+      case 'h3': applyLineFormatting('### '); break;
+      case 'quote': applyLineFormatting('> '); break;
+      case 'code': applyFormatting('`'); break;
+      case 'ul': applyLineFormatting('* '); break;
+      case 'ol': applyLineFormatting('1. '); break;
     }
-  }, []);
+  }, [addHistoryEntry]); // Dependency needed as format actions now create history
+
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setMarkdown(history[newIndex]);
+    }
+  }, [history, historyIndex]);
 
   // --- Resizer Logic ---
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -158,7 +178,6 @@ const App: React.FC = () => {
       const rect = mainRef.current.getBoundingClientRect();
       const newWidth = e.clientX - rect.left;
       
-      // Constrain the width between 20% and 80%
       const minWidth = rect.width * 0.2;
       const maxWidth = rect.width * 0.8;
 
@@ -197,6 +216,8 @@ const App: React.FC = () => {
           onSave={handleSaveFile}
           fileName={fileName}
           onFileNameChange={handleFileNameChange}
+          onUndo={handleUndo}
+          canUndo={historyIndex > 0}
         />
       </header>
       <main
@@ -209,7 +230,6 @@ const App: React.FC = () => {
           ref={editorRef}
         />
         
-        {/* Resizer Handle */}
         <div
           onMouseDown={handleMouseDown}
           className="w-2 cursor-col-resize hidden md:flex items-center justify-center group"
