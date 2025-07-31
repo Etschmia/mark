@@ -4,12 +4,15 @@ import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
 import { Toolbar } from './components/Toolbar';
 import { FormatType } from './types';
+import { themes } from './components/preview-themes';
 
 const App: React.FC = () => {
   const initialContent = '# Hello, Markdown!\n\nStart typing here...';
   const [markdown, setMarkdown] = useState<string>(initialContent);
   const [fileName, setFileName] = useState<string>('untitled.md');
   const editorRef = useRef<HTMLTextAreaElement>(null);
+
+  const [previewTheme, setPreviewTheme] = useState<string>('Default');
 
   // State and refs for resizing functionality
   const [isResizing, setIsResizing] = useState(false);
@@ -218,6 +221,9 @@ const App: React.FC = () => {
           onFileNameChange={handleFileNameChange}
           onUndo={handleUndo}
           canUndo={historyIndex > 0}
+          themes={Object.keys(themes)}
+          selectedTheme={previewTheme}
+          onThemeChange={setPreviewTheme}
         />
       </header>
       <main
@@ -239,7 +245,7 @@ const App: React.FC = () => {
           <div className="w-1 h-12 bg-slate-700 rounded-full group-hover:bg-cyan-500 transition-colors duration-150" />
         </div>
 
-        <Preview markdown={markdown} />
+        <Preview markdown={markdown} theme={previewTheme} />
       </main>
     </div>
   );
