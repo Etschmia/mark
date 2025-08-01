@@ -9,7 +9,7 @@ const baseStyles = `
     .prose-styles li { margin-bottom: 0.5rem; }
     .prose-styles blockquote { border-left-width: 4px; padding-left: 1rem; margin: 1rem 0; font-style: italic; }
     .prose-styles code:not(pre > code) { padding: 0.2rem 0.4rem; font-size: 0.9em; border-radius: 0.25rem; }
-    .prose-styles pre { padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; }
+    .prose-styles pre { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; white-space: pre-wrap; overflow-wrap: break-word; }
     .prose-styles pre code { background-color: transparent; padding: 0; }
     .prose-styles table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
     .prose-styles th, .prose-styles td { border-width: 1px; padding: 0.5rem 1rem; }

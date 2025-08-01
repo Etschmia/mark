@@ -144,6 +144,23 @@ const App: React.FC = () => {
   };
 
   const handleFormat = useCallback((formatType: FormatType) => {
+    const textarea = editorRef.current;
+    if (!textarea) return;
+
+    if (formatType === 'code') {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
+        
+        // Use block for multiline, otherwise inline
+        if (selectedText.includes('\n')) {
+            applyFormatting('```\n', '\n```');
+        } else {
+            applyFormatting('`');
+        }
+        return;
+    }
+
     switch (formatType) {
       case 'bold': applyFormatting('**'); break;
       case 'italic': applyFormatting('*'); break;
@@ -152,11 +169,10 @@ const App: React.FC = () => {
       case 'h2': applyLineFormatting('## '); break;
       case 'h3': applyLineFormatting('### '); break;
       case 'quote': applyLineFormatting('> '); break;
-      case 'code': applyFormatting('`'); break;
       case 'ul': applyLineFormatting('* '); break;
       case 'ol': applyLineFormatting('1. '); break;
     }
-  }, [addHistoryEntry]); // Dependency needed as format actions now create history
+  }, [addHistoryEntry]);
 
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
