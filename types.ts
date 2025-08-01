@@ -7,6 +7,10 @@ export type FormatType =
   | 'h3'
   | 'ul'
   | 'ol'
+  | 'checklist'
   | 'quote'
   | 'code'
-  | 'strikethrough';
+  | 'strikethrough'
+  | 'table'
+  | 'image'
+  | 'link';

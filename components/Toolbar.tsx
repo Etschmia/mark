@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormatType } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon } from './icons/Icons';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
@@ -57,7 +57,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <ToolButton onClick={() => onFormat('quote')} title="Zitat"><QuoteIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('ul')} title="Ungeordnete Liste"><ListUlIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('ol')} title="Geordnete Liste"><ListOlIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('checklist')} title="Checkliste"><ChecklistIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('code')} title="Code"><CodeIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('table')} title="Tabelle einfügen"><TableIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('image')} title="Bild einfügen"><ImageIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('link')} title="Link einfügen"><LinkIcon /></ToolButton>
         <div className="w-px h-6 bg-slate-600 mx-2"></div>
         <ToolButton onClick={onUndo} title="Rückgängig" disabled={!canUndo}><UndoIcon /></ToolButton>
       </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
@@ -171,6 +170,88 @@ const App: React.FC = () => {
       case 'quote': applyLineFormatting('> '); break;
       case 'ul': applyLineFormatting('* '); break;
       case 'ol': applyLineFormatting('1. '); break;
+      case 'checklist': applyLineFormatting('- [ ] '); break;
+      case 'table': {
+        const tableTemplate = `| Header 1 | Header 2 |\n|:---------|:---------|\n| Cell 1   | Cell 2   |\n| Cell 3   | Cell 4   |`;
+        
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const precedingChar = textarea.value.substring(start - 1, start);
+        
+        // Add newlines for proper block-level separation
+        const prefix = (start === 0 || precedingChar === '\n') ? '' : '\n\n';
+        const suffix = '\n';
+        const textToInsert = prefix + tableTemplate + suffix;
+
+        const newText = `${textarea.value.substring(0, start)}${textToInsert}${textarea.value.substring(end)}`;
+
+        setMarkdown(newText);
+        addHistoryEntry(newText);
+
+        setTimeout(() => {
+          textarea.focus();
+          const selectionStart = start + prefix.length + tableTemplate.indexOf('Header 1');
+          const selectionEnd = selectionStart + 'Header 1'.length;
+          textarea.setSelectionRange(selectionStart, selectionEnd);
+        }, 0);
+        break;
+      }
+      case 'image': {
+        const url = window.prompt('Geben Sie die Bild-URL ein:', 'https://');
+        if (url && url !== 'https://') {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const altText = textarea.value.substring(start, end) || 'alt text';
+          const imageMarkdown = `![${altText}](${url})`;
+
+          const newText = `${textarea.value.substring(0, start)}${imageMarkdown}${textarea.value.substring(end)}`;
+          
+          setMarkdown(newText);
+          addHistoryEntry(newText);
+
+          setTimeout(() => {
+            textarea.focus();
+            const selectionStart = start + 2; // `![`
+            const selectionEnd = selectionStart + altText.length;
+            textarea.setSelectionRange(selectionStart, selectionEnd);
+          }, 0);
+        }
+        break;
+      }
+      case 'link': {
+        const url = window.prompt('Geben Sie die Ziel-URL ein:', 'https://');
+        if (url && url !== 'https://') {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            let selectedText = textarea.value.substring(start, end);
+            let isPlaceholder = false;
+            
+            if (!selectedText) {
+                selectedText = 'Link-Text';
+                isPlaceholder = true;
+            }
+            
+            const linkMarkdown = `[${selectedText}](${url})`;
+
+            const newText = `${textarea.value.substring(0, start)}${linkMarkdown}${textarea.value.substring(end)}`;
+            
+            setMarkdown(newText);
+            addHistoryEntry(newText);
+
+            setTimeout(() => {
+                textarea.focus();
+                if (isPlaceholder) {
+                    const selectionStart = start + 1; // `[`
+                    const selectionEnd = selectionStart + selectedText.length;
+                    textarea.setSelectionRange(selectionStart, selectionEnd);
+                } else {
+                    const newCursorPos = start + linkMarkdown.length;
+                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+                }
+            }, 0);
+        }
+        break;
+      }
     }
   }, [addHistoryEntry]);
 
