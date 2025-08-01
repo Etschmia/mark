@@ -1,5 +1,6 @@
 {
   "name": "Markdown Editor Pro",
   "description": "A sleek, real-time Markdown editor that runs entirely in your browser. Create, open, edit, and save Markdown files seamlessly without any registration or uploads.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "prompt": ""
 }
