@@ -58,7 +58,7 @@ export const themes: { [key: string]: string } = {
     .prose-styles blockquote { color: #666; border-color: #ccc; background-color: #f7f7f7; }
     .prose-styles code:not(pre > code) { background-color: #eee; color: #3a3a3a; font-family: 'Fira Code', monospace; border: 1px solid #ddd; }
     .prose-styles pre { background-color: #f3f3f3; border: 1px solid #ddd; }
-    .prose-styles pre code { background: transparent; font-family: 'Fira Code', monospace; color: #3a3a3a; }
+    .prose-styles pre code { background: transparent; font-family: 'Fira Code', monospace; }
     .prose-styles th { background-color: #efefef; }
   `
 };
