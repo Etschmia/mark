@@ -225,20 +225,25 @@ const App: React.FC = () => {
     }, 0);
   };
 
-  const handleFormat = useCallback((formatType: FormatType) => {
+  const handleFormat = useCallback((formatType: FormatType, options?: { language?: string }) => {
     const textarea = editorRef.current;
     if (!textarea) return;
 
     if (formatType === 'code') {
+        const lang = options?.language;
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
         const selectedText = textarea.value.substring(start, end);
         
-        // Use block for multiline, otherwise inline
-        if (selectedText.includes('\n')) {
-            applyFormatting('```\n', '\n```');
-        } else {
-            applyFormatting('`');
+        // If a language is specified, always create a fenced code block
+        if (lang) {
+            applyFormatting(`\`\`\`${lang}\n`, '\n```');
+        } else { // "Default Code": use logic for inline vs block
+            if (selectedText.includes('\n') || !selectedText) {
+                applyFormatting('```\n', '\n```');
+            } else {
+                applyFormatting('`');
+            }
         }
         return;
     }

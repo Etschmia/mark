@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FormatType } from '../types';
 import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon } from './icons/Icons';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
-  onFormat: (formatType: FormatType) => void;
+  onFormat: (formatType: FormatType, options?: { language?: string }) => void;
   onNew: () => void;
   onOpen: () => void;
   onSave: () => void;
@@ -28,6 +28,15 @@ const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; tit
   </button>
 );
 
+const codeLanguages = [
+  { name: 'Default Code', key: undefined },
+  { name: 'SQL', key: 'sql' },
+  { name: 'Python', key: 'python' },
+  { name: 'JavaScript', key: 'javascript' },
+  { name: 'PHP', key: 'php' },
+  { name: 'XML', key: 'xml' },
+];
+
 // Die Komponente akzeptiert jetzt die neuen Props für die Themes
 export const Toolbar: React.FC<ToolbarProps> = ({ 
   onFormat, 
@@ -42,6 +51,26 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   selectedTheme,
   onThemeChange
 }) => {
+  const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
+  const codeDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (codeDropdownRef.current && !codeDropdownRef.current.contains(event.target as Node)) {
+        setIsCodeDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
+  const handleCodeFormat = (lang?: string) => {
+    onFormat('code', lang ? { language: lang } : undefined);
+    setIsCodeDropdownOpen(false);
+  };
+
   return (
     // flex-wrap sorgt für besseres Verhalten auf kleinen Bildschirmen
     <div className="flex items-center justify-between p-2 flex-wrap gap-y-2">
@@ -58,7 +87,26 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <ToolButton onClick={() => onFormat('ul')} title="Ungeordnete Liste"><ListUlIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('ol')} title="Geordnete Liste"><ListOlIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('checklist')} title="Checkliste"><ChecklistIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('code')} title="Code"><CodeIcon /></ToolButton>
+        
+        <div className="relative" ref={codeDropdownRef}>
+          <ToolButton onClick={() => setIsCodeDropdownOpen(prev => !prev)} title="Code">
+            <CodeIcon />
+          </ToolButton>
+          {isCodeDropdownOpen && (
+            <div className="absolute left-0 z-20 mt-2 w-40 origin-top-left rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+              {codeLanguages.map(lang => (
+                <button
+                  key={lang.name}
+                  onClick={() => handleCodeFormat(lang.key)}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                >
+                  {lang.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        
         <ToolButton onClick={() => onFormat('table')} title="Tabelle einfügen"><TableIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('image')} title="Bild einfügen"><ImageIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('link')} title="Link einfügen"><LinkIcon /></ToolButton>

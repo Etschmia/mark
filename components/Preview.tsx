@@ -6,12 +6,16 @@ import { themes } from './preview-themes';
 declare global {
   interface Window {
     marked?: {
-      // parse ist asynchron und gibt ein Promise zurück
       parse(markdown: string): Promise<string>;
+      use(...args: any[]): void;
     };
     DOMPurify?: {
       sanitize(html: string): string;
     };
+    hljs?: {
+      getLanguage(lang: string): any;
+      highlight(code: string, options: { language: string; }): { value: string; };
+    }
   }
 }
 
@@ -23,11 +27,22 @@ interface PreviewProps {
 export const Preview: React.FC<PreviewProps> = ({ markdown, theme }) => {
   const [sanitizedHtml, setSanitizedHtml] = useState('');
 
+  // This effect runs once to configure marked with highlight.js
+  useEffect(() => {
+    if (window.marked && window.hljs) {
+      window.marked.use({
+        highlight: (code: string, lang: string) => {
+          const language = window.hljs!.getLanguage(lang) ? lang : 'plaintext';
+          return window.hljs!.highlight(code, { language }).value;
+        },
+        langPrefix: 'hljs language-',
+      });
+    }
+  }, []);
+
   // Dieser Effekt parst das Markdown, sobald es sich ändert.
   useEffect(() => {
     // Sicherheitsprüfung, ob die globalen Bibliotheken geladen wurden.
-    // Da die Skripte im <head> blockierend geladen werden, sollten sie beim Rendern
-    // dieser Komponente immer verfügbar sein.
     if (!window.marked?.parse || !window.DOMPurify?.sanitize) {
       // Fehler anzeigen, falls die Bibliotheken aus irgendeinem Grund fehlen.
       setSanitizedHtml('<p style="color: #f87171;">Vorschau-Bibliotheken konnten nicht geladen werden.</p>');
