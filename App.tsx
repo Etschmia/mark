@@ -93,16 +93,17 @@ const App: React.FC = () => {
         setMarkdown(content);
         setFileName(file.name);
         addHistoryEntry(content);
+        return; // Success: exit and don't fall through
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') {
           return; // User cancelled the picker, do nothing.
         }
-        console.error('Error opening file:', err);
+        console.warn('Modern file open failed, falling back to legacy open:', err);
+        // For other errors (like cross-origin), we fall through to the legacy method.
       }
-      return; // End execution if modern API was attempted
     }
 
-    // Legacy fallback "Open" for older browsers
+    // Legacy fallback "Open" for older browsers or when modern API fails
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.md,.txt,.markdown';
@@ -150,13 +151,14 @@ const App: React.FC = () => {
                 setFileName(handle.name);
                 await saveOperation(handle);
             }
+            return; // Success: exit and don't fall through
         } catch (err) {
             if (err instanceof DOMException && err.name === 'AbortError') {
                 return; // User cancelled, do nothing.
             }
-            console.error('Error saving file:', err);
+            console.warn('Modern file save failed, falling back to legacy download:', err);
+            // For other errors (like cross-origin), we fall through to the legacy method.
         }
-        return; // End execution
     }
 
     // Legacy fallback "Save" (always triggers a download)
