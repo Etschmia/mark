@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
@@ -30,6 +29,7 @@ const App: React.FC = () => {
   const [markdown, setMarkdown] = useState<string>(initialContent);
   const [fileName, setFileName] = useState<string>('untitled.md');
   const editorRef = useRef<HTMLTextAreaElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const fileHandleRef = useRef<FileSystemFileHandle | null>(null); // For File System Access API
 
   const [previewTheme, setPreviewTheme] = useState<string>('Default');
@@ -42,6 +42,9 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<string[]>([initialContent]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const debounceRef = useRef<number | null>(null);
+
+  // Ref to prevent scroll event loops
+  const isSyncingScroll = useRef(false);
 
   const addHistoryEntry = useCallback((newMarkdown: string) => {
     // When a new entry is added, clear any "future" history from previous undos
@@ -239,7 +242,7 @@ const App: React.FC = () => {
         
         // If a language is specified, always create a fenced code block
         if (lang) {
-            applyFormatting(`\`\`\`${lang}\n`, '\n```');
+            applyFormatting(`\`\`\`${lang}\n`, '\n\`\`\`');
         } else { // "Default Code": use logic for inline vs block
             if (selectedText.includes('\n') || !selectedText) {
                 applyFormatting('```\n', '\n```');
@@ -396,6 +399,33 @@ const App: React.FC = () => {
   }, [isResizing, handleMouseMove, handleMouseUp]);
   // --- End Resizer Logic ---
 
+  // --- Scroll Sync Logic ---
+  const handleScroll = (source: 'editor' | 'preview') => {
+    if (isSyncingScroll.current) return;
+
+    isSyncingScroll.current = true;
+
+    const editor = editorRef.current;
+    const preview = previewRef.current;
+
+    if (editor && preview) {
+      if (source === 'editor') {
+        const scrollPercent = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
+        preview.scrollTop = scrollPercent * (preview.scrollHeight - preview.clientHeight);
+      } else { // source === 'preview'
+        const scrollPercent = preview.scrollTop / (preview.scrollHeight - preview.clientHeight);
+        editor.scrollTop = scrollPercent * (editor.scrollHeight - editor.clientHeight);
+      }
+    }
+
+    // Use a timeout to reset the flag, allowing the other panel to "catch up"
+    // without re-triggering the sync.
+    setTimeout(() => {
+      isSyncingScroll.current = false;
+    }, 100); 
+  };
+  // --- End Scroll Sync Logic ---
+
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-white font-sans">
       <header className="flex-shrink-0 bg-slate-800 border-b border-slate-700 shadow-md z-10">
@@ -420,6 +450,7 @@ const App: React.FC = () => {
         <Editor 
           value={markdown} 
           onChange={handleMarkdownChange}
+          onScroll={() => handleScroll('editor')}
           ref={editorRef}
         />
         
@@ -432,7 +463,12 @@ const App: React.FC = () => {
           <div className="w-1 h-12 bg-slate-700 rounded-full group-hover:bg-cyan-500 transition-colors duration-150" />
         </div>
 
-        <Preview markdown={markdown} theme={previewTheme} />
+        <Preview 
+          markdown={markdown} 
+          theme={previewTheme} 
+          onScroll={() => handleScroll('preview')}
+          ref={previewRef}
+        />
       </main>
     </div>
   );

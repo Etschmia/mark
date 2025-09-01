@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef } from 'react';
 import { themes } from './preview-themes';
 
 // Deklarieren der globalen Variablen, die von den <script>-Tags bereitgestellt werden.
@@ -19,6 +19,7 @@ declare global {
 interface PreviewProps {
   markdown: string;
   theme: string;
+  onScroll: (event: React.UIEvent<HTMLDivElement>) => void;
 }
 
 // Configuration for DOMPurify to allow specific tags and attributes
@@ -34,7 +35,7 @@ const ALLOWED_ATTR = [
 ];
 
 
-export const Preview: React.FC<PreviewProps> = ({ markdown, theme }) => {
+export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, theme, onScroll }, ref) => {
   const [sanitizedHtml, setSanitizedHtml] = useState('');
 
   // This effect runs once to configure marked with a custom renderer for full control
@@ -95,10 +96,12 @@ export const Preview: React.FC<PreviewProps> = ({ markdown, theme }) => {
 
   return (
     <div
+      ref={ref}
+      onScroll={onScroll}
       className="rounded-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
     >
       <style>{currentThemeStyles}</style>
       <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
     </div>
   );
-};
+});
