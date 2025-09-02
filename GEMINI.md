@@ -4,17 +4,19 @@ This document provides a brief overview of the project structure, key components
 
 ## Project Description
 
-This is a web-based Markdown editor built with React and TypeScript, using Vite as the build tool. It features a real-time preview panel, a formatting toolbar, and file system integration for opening and saving markdown files.
+This is a web-based Markdown editor built with React and TypeScript, using Vite as the build tool. It features real-time syntax highlighting in the editor, a live preview panel, a formatting toolbar, and file system integration for opening and saving markdown files.
 
 ## Core Technologies
 
 - **Framework:** React
 - **Language:** TypeScript
 - **Build Tool:** Vite
+- **Editor:** CodeMirror 6 (advanced code editor with syntax highlighting)
 - **Styling:** Tailwind CSS (inferred from class names like `flex`, `h-screen`, `bg-slate-900`)
 - **Markdown Parsing:** `marked.js` (loaded via CDN in `index.html`)
 - **HTML Sanitization:** `DOMPurify` (loaded via CDN in `index.html`)
-- **Syntax Highlighting:** `highlight.js` (loaded via CDN in `index.html`)
+- **Syntax Highlighting:** `highlight.js` (loaded via CDN in `index.html`) for preview pane
+- **Language Support:** JavaScript, SQL, Python, PHP, XML for code blocks
 
 ## Key Files and Components
 
@@ -33,7 +35,11 @@ This is the main component that orchestrates the entire application. It holds th
 
 ### `components/`
 
-- **`Editor.tsx`**: A simple controlled `textarea` component that serves as the markdown input. It is forward-refed to allow the `App` component to directly access the `textarea` element for focusing and selection manipulation.
+- **`Editor.tsx`**: A CodeMirror 6-based editor component that provides real-time Markdown syntax highlighting and advanced text editing features.
+  - Uses CodeMirror 6 for enhanced editing experience with syntax highlighting.
+  - Supports language-specific highlighting for fenced code blocks (JavaScript, SQL, Python, PHP, XML).
+  - Provides a custom interface (`EditorRef`) for text manipulation, selection control, and focus management.
+  - Integrates with the dark theme and custom styling for consistent UI appearance.
 
 - **`Preview.tsx`**: This component is responsible for rendering the HTML preview of the markdown content.
   - It uses `marked.js` to parse the markdown into HTML.

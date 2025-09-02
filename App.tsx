@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Editor } from './components/Editor';
+import { Editor, EditorRef } from './components/Editor';
 import { Preview } from './components/Preview';
 import { Toolbar } from './components/Toolbar';
 import { FormatType } from './types';
@@ -28,7 +28,7 @@ const App: React.FC = () => {
   const initialContent = '# Hello, Markdown!\n\nStart typing here...';
   const [markdown, setMarkdown] = useState<string>(initialContent);
   const [fileName, setFileName] = useState<string>('untitled.md');
-  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<EditorRef>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const fileHandleRef = useRef<FileSystemFileHandle | null>(null); // For File System Access API
 
@@ -54,8 +54,7 @@ const App: React.FC = () => {
     setHistoryIndex(newHistory.length - 1);
   }, [history, historyIndex]);
 
-  const handleMarkdownChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newMarkdown = event.target.value;
+  const handleMarkdownChange = (newMarkdown: string) => {
     setMarkdown(newMarkdown);
 
     if (debounceRef.current) {
@@ -178,33 +177,32 @@ const App: React.FC = () => {
   }, [markdown, fileName]);
   
   const applyFormatting = (prefix: string, suffix: string = prefix) => {
-    const textarea = editorRef.current;
-    if (!textarea) return;
+    const editor = editorRef.current;
+    if (!editor) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-    const newText = `${textarea.value.substring(0, start)}${prefix}${selectedText}${suffix}${textarea.value.substring(end)}`;
-
-    setMarkdown(newText);
-    addHistoryEntry(newText);
-
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-    }, 0);
+    const selection = editor.getSelection();
+    const selectedText = editor.getValue().substring(selection.start, selection.end);
+    const formattedText = `${prefix}${selectedText}${suffix}`;
+    
+    editor.insertText(formattedText, selection.start, selection.end);
+    
+    // Set selection after formatting
+    const newStart = selection.start + prefix.length;
+    const newEnd = newStart + selectedText.length;
+    editor.setSelection(newStart, newEnd);
+    
+    addHistoryEntry(editor.getValue());
   };
   
   const applyLineFormatting = (prefix: string) => {
-    const textarea = editorRef.current;
-    if (!textarea) return;
+    const editor = editorRef.current;
+    if (!editor) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const fullText = textarea.value;
+    const selection = editor.getSelection();
+    const fullText = editor.getValue();
 
-    let lineStartIndex = fullText.lastIndexOf('\n', start - 1) + 1;
-    let lineEndIndex = fullText.indexOf('\n', end);
+    let lineStartIndex = fullText.lastIndexOf('\n', selection.start - 1) + 1;
+    let lineEndIndex = fullText.indexOf('\n', selection.end);
     if (lineEndIndex === -1) {
       lineEndIndex = fullText.length;
     }
@@ -219,26 +217,20 @@ const App: React.FC = () => {
       return `${prefix}${line}`
     }).join('\n');
 
-    const newText = `${fullText.substring(0, lineStartIndex)}${formattedLines}${fullText.substring(lineEndIndex)}`;
+    editor.insertText(formattedLines, lineStartIndex, lineEndIndex);
+    addHistoryEntry(editor.getValue());
     
-    setMarkdown(newText);
-    addHistoryEntry(newText);
-    
-    setTimeout(() => {
-      textarea.focus();
-      // Adjust selection logic after format
-    }, 0);
+    editor.focus();
   };
 
   const handleFormat = useCallback((formatType: FormatType, options?: { language?: string }) => {
-    const textarea = editorRef.current;
-    if (!textarea) return;
+    const editor = editorRef.current;
+    if (!editor) return;
 
     if (formatType === 'code') {
         const lang = options?.language;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const selectedText = textarea.value.substring(start, end);
+        const selection = editor.getSelection();
+        const selectedText = editor.getValue().substring(selection.start, selection.end);
         
         // If a language is specified, always create a fenced code block
         if (lang) {
@@ -267,56 +259,46 @@ const App: React.FC = () => {
       case 'table': {
         const tableTemplate = `| Header 1 | Header 2 |\n|:---------|:---------|\n| Cell 1   | Cell 2   |\n| Cell 3   | Cell 4   |`;
         
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const precedingChar = textarea.value.substring(start - 1, start);
+        const selection = editor.getSelection();
+        const fullText = editor.getValue();
+        const precedingChar = fullText.substring(selection.start - 1, selection.start);
         
         // Add newlines for proper block-level separation
-        const prefix = (start === 0 || precedingChar === '\n') ? '' : '\n\n';
+        const prefix = (selection.start === 0 || precedingChar === '\n') ? '' : '\n\n';
         const suffix = '\n';
         const textToInsert = prefix + tableTemplate + suffix;
 
-        const newText = `${textarea.value.substring(0, start)}${textToInsert}${textarea.value.substring(end)}`;
+        editor.insertText(textToInsert, selection.start, selection.end);
+        addHistoryEntry(editor.getValue());
 
-        setMarkdown(newText);
-        addHistoryEntry(newText);
-
-        setTimeout(() => {
-          textarea.focus();
-          const selectionStart = start + prefix.length + tableTemplate.indexOf('Header 1');
-          const selectionEnd = selectionStart + 'Header 1'.length;
-          textarea.setSelectionRange(selectionStart, selectionEnd);
-        }, 0);
+        // Select the first header cell
+        const headerStart = selection.start + prefix.length + tableTemplate.indexOf('Header 1');
+        const headerEnd = headerStart + 'Header 1'.length;
+        editor.setSelection(headerStart, headerEnd);
         break;
       }
       case 'image': {
         const url = window.prompt('Geben Sie die Bild-URL ein:', 'https://');
         if (url && url !== 'https://') {
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const altText = textarea.value.substring(start, end) || 'alt text';
+          const selection = editor.getSelection();
+          const altText = editor.getValue().substring(selection.start, selection.end) || 'alt text';
           const imageMarkdown = `![${altText}](${url})`;
 
-          const newText = `${textarea.value.substring(0, start)}${imageMarkdown}${textarea.value.substring(end)}`;
-          
-          setMarkdown(newText);
-          addHistoryEntry(newText);
+          editor.insertText(imageMarkdown, selection.start, selection.end);
+          addHistoryEntry(editor.getValue());
 
-          setTimeout(() => {
-            textarea.focus();
-            const selectionStart = start + 2; // `![`
-            const selectionEnd = selectionStart + altText.length;
-            textarea.setSelectionRange(selectionStart, selectionEnd);
-          }, 0);
+          // Select the alt text
+          const altStart = selection.start + 2; // `![`
+          const altEnd = altStart + altText.length;
+          editor.setSelection(altStart, altEnd);
         }
         break;
       }
       case 'link': {
         const url = window.prompt('Geben Sie die Ziel-URL ein:', 'https://');
         if (url && url !== 'https://') {
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            let selectedText = textarea.value.substring(start, end);
+            const selection = editor.getSelection();
+            let selectedText = editor.getValue().substring(selection.start, selection.end);
             let isPlaceholder = false;
             
             if (!selectedText) {
@@ -326,27 +308,22 @@ const App: React.FC = () => {
             
             const linkMarkdown = `[${selectedText}](${url})`;
 
-            const newText = `${textarea.value.substring(0, start)}${linkMarkdown}${textarea.value.substring(end)}`;
-            
-            setMarkdown(newText);
-            addHistoryEntry(newText);
+            editor.insertText(linkMarkdown, selection.start, selection.end);
+            addHistoryEntry(editor.getValue());
 
-            setTimeout(() => {
-                textarea.focus();
-                if (isPlaceholder) {
-                    const selectionStart = start + 1; // `[`
-                    const selectionEnd = selectionStart + selectedText.length;
-                    textarea.setSelectionRange(selectionStart, selectionEnd);
-                } else {
-                    const newCursorPos = start + linkMarkdown.length;
-                    textarea.setSelectionRange(newCursorPos, newCursorPos);
-                }
-            }, 0);
+            if (isPlaceholder) {
+                const linkStart = selection.start + 1; // `[`
+                const linkEnd = linkStart + selectedText.length;
+                editor.setSelection(linkStart, linkEnd);
+            } else {
+                const newCursorPos = selection.start + linkMarkdown.length;
+                editor.setSelection(newCursorPos, newCursorPos);
+            }
         }
         break;
       }
     }
-  }, [addHistoryEntry, markdown]);
+  }, [addHistoryEntry]);
 
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
@@ -405,21 +382,11 @@ const App: React.FC = () => {
 
     isSyncingScroll.current = true;
 
-    const editor = editorRef.current;
-    const preview = previewRef.current;
+    // Note: Scroll sync will need to be updated for CodeMirror
+    // For now, we disable it to prevent errors
+    // TODO: Implement proper scroll sync with CodeMirror API
 
-    if (editor && preview) {
-      if (source === 'editor') {
-        const scrollPercent = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
-        preview.scrollTop = scrollPercent * (preview.scrollHeight - preview.clientHeight);
-      } else { // source === 'preview'
-        const scrollPercent = preview.scrollTop / (preview.scrollHeight - preview.clientHeight);
-        editor.scrollTop = scrollPercent * (editor.scrollHeight - editor.clientHeight);
-      }
-    }
-
-    // Use a timeout to reset the flag, allowing the other panel to "catch up"
-    // without re-triggering the sync.
+    // Use a timeout to reset the flag
     setTimeout(() => {
       isSyncingScroll.current = false;
     }, 100); 
