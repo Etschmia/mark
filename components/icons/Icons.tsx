@@ -43,7 +43,7 @@ export const CodeIcon: React.FC = () => <TextIcon fontSize={18} fontFamily="'Fir
 
 
 // --- Path-based Icons ---
-export const StrikethroughIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M3 12h18M5 4.5S7 2 12 2s7 2.5 7 2.5M5 19.5S7 22 12 22s7-2.5 7-2.5" /></IconWrapper>;
+export const StrikethroughIcon: React.FC = () => <IconWrapper><g><path strokeLinecap="round" strokeLinejoin="round" d="M8 20L12 4l4 16M9.5 14h5" /><line x1="3" y1="12" x2="21" y2="12" strokeLinecap="round" strokeWidth="2" /></g></IconWrapper>;
 
 export const ListUlIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
