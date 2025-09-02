@@ -18,7 +18,9 @@ This contains everything you need to run your app locally.
 *   **Vite:** A build tool that aims to provide a faster and leaner development experience for modern web projects.
 *   **TypeScript:** A typed superset of JavaScript that compiles to plain JavaScript.
 *   **CodeMirror 6:** Advanced code editor with syntax highlighting for enhanced Markdown editing experience.
-*   **highlight.js:** Syntax highlighting for code blocks in the preview pane.
+*   **marked:** Fast markdown parser and compiler (NPM package).
+*   **DOMPurify:** XSS sanitizer for HTML (NPM package).
+*   **highlight.js:** Syntax highlighting for code blocks in the preview pane (NPM package).
 
 ## Project Structure
 
@@ -44,7 +46,7 @@ This project is a browser-based markdown editor with real-time syntax highlighti
 *   **Intuitive toolbar** with formatting buttons for common Markdown syntax
 *   **Split-view interface** with resizable panels
 *   **Modern dark theme** optimized for extended writing sessions
-*   **Privacy-focused** - all data stays on your device
+*   **Modern architecture** - all dependencies managed via NPM packages for better version control
 
 A version for testing is available here: https://mark-alpha-five.vercel.app/
 

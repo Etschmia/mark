@@ -13,9 +13,9 @@ This is a web-based Markdown editor built with React and TypeScript, using Vite 
 - **Build Tool:** Vite
 - **Editor:** CodeMirror 6 (advanced code editor with syntax highlighting)
 - **Styling:** Tailwind CSS (inferred from class names like `flex`, `h-screen`, `bg-slate-900`)
-- **Markdown Parsing:** `marked.js` (loaded via CDN in `index.html`)
-- **HTML Sanitization:** `DOMPurify` (loaded via CDN in `index.html`)
-- **Syntax Highlighting:** `highlight.js` (loaded via CDN in `index.html`) for preview pane
+- **Markdown Parsing:** `marked.js` (NPM package)
+- **HTML Sanitization:** `DOMPurify` (NPM package)
+- **Syntax Highlighting:** `highlight.js` (NPM package) for preview pane
 - **Language Support:** JavaScript, SQL, Python, PHP, XML for code blocks
 
 ## Key Files and Components
@@ -42,9 +42,9 @@ This is the main component that orchestrates the entire application. It holds th
   - Integrates with the dark theme and custom styling for consistent UI appearance.
 
 - **`Preview.tsx`**: This component is responsible for rendering the HTML preview of the markdown content.
-  - It uses `marked.js` to parse the markdown into HTML.
-  - It uses `DOMPurify` to sanitize the generated HTML, preventing XSS attacks.
-  - It integrates `highlight.js` for syntax highlighting within code blocks.
+  - It uses `marked.js` (NPM package) to parse the markdown into HTML.
+  - It uses `DOMPurify` (NPM package) to sanitize the generated HTML, preventing XSS attacks.
+  - It integrates `highlight.js` (NPM package) for syntax highlighting within code blocks.
   - It dynamically applies different CSS themes for the preview content.
 
 - **`Toolbar.tsx`**: The main toolbar providing UI buttons for all user actions.

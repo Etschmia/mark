@@ -1,20 +1,15 @@
 import React, { useState, useEffect, forwardRef } from 'react';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/atom-one-dark.css';
+// Import specific language modules
+import 'highlight.js/lib/languages/javascript';
+import 'highlight.js/lib/languages/sql';
+import 'highlight.js/lib/languages/python';
+import 'highlight.js/lib/languages/php';
+import 'highlight.js/lib/languages/xml';
 import { themes } from './preview-themes';
-
-// Deklarieren der globalen Variablen, die von den <script>-Tags bereitgestellt werden.
-// Dies informiert TypeScript darüber, dass diese existieren und welchen Typ sie haben.
-declare global {
-  interface Window {
-    marked?: any; // Using 'any' for simplicity with custom renderer
-    DOMPurify?: {
-      sanitize(html: string, config?: object): string;
-    };
-    hljs?: {
-      getLanguage(lang: string): any;
-      highlight(code: string, options: { language: string; }): { value: string; };
-    }
-  }
-}
 
 interface PreviewProps {
   markdown: string;
@@ -40,44 +35,32 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
 
   // This effect runs once to configure marked with a custom renderer for full control
   useEffect(() => {
-    if (window.marked && window.hljs) {
-      
-      const renderer = new window.marked.Renderer();
+    const renderer = new marked.Renderer();
 
-      // Override the 'code' function to manually control highlighting
-      renderer.code = (code: string, lang: string) => {
-        const language = window.hljs!.getLanguage(lang || '') ? lang || 'plaintext' : 'plaintext';
-        const highlightedCode = window.hljs!.highlight(code, { language }).value;
+    // Override the 'code' function to manually control highlighting
+    renderer.code = ({ text, lang }: { text: string; lang?: string }) => {
+      const language = hljs.getLanguage(lang || '') ? lang || 'plaintext' : 'plaintext';
+      const highlightedCode = hljs.highlight(text, { language }).value;
 
-        // Manually construct the final HTML with the correct classes needed by highlight.js themes.
-        // marked() will not double-wrap this in <pre> if the renderer returns it.
-        return `<pre><code class="hljs language-${language}">${highlightedCode}</code></pre>`;
-      };
-      
-      // Use the custom renderer
-      window.marked.use({ renderer, gfm: true, breaks: true });
-    }
+      // Manually construct the final HTML with the correct classes needed by highlight.js themes.
+      return `<pre><code class="hljs language-${language}">${highlightedCode}</code></pre>`;
+    };
+    
+    // Use the custom renderer
+    marked.use({ renderer, gfm: true, breaks: true });
   }, []);
 
   // This effect parses the markdown whenever it changes.
   useEffect(() => {
-    // Safety check to ensure the global libraries are loaded.
-    if (!window.marked?.parse || !window.DOMPurify?.sanitize) {
-      // Display an error if the libraries are missing for any reason.
-      setSanitizedHtml('<p style="color: #f87171;">Preview libraries could not be loaded.</p>');
-      console.error("marked.js or DOMPurify.js not found in the global scope.");
-      return;
-    }
-
     // An async function to handle parsing and sanitizing.
     const parseAndSanitize = async () => {
       try {
         // marked.parse is asynchronous and returns a Promise.
-        const rawHtml = await window.marked!.parse(markdown);
+        const rawHtml = await marked.parse(markdown);
         
         // DOMPurify sanitizes the HTML to prevent XSS vulnerabilities.
         // We configure it to allow the tags and attributes necessary for our markdown features.
-        const sanitized = window.DOMPurify!.sanitize(rawHtml, {
+        const sanitized = DOMPurify.sanitize(rawHtml, {
             ALLOWED_TAGS: ALLOWED_TAGS,
             ALLOWED_ATTR: ALLOWED_ATTR,
         });
