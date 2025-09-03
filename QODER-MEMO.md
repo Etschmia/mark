@@ -7,11 +7,12 @@
 **Completed Features from IDEEN.md:**
 - ✅ #1: CodeMirror 6 integration with syntax highlighting
 - ✅ #2: Complete keyboard shortcuts + help system
+- ✅ #3: Line numbers toggle in settings (fully implemented)
 - ✅ #6: Search and replace functionality
 - ✅ #8: Export functions (HTML, PDF)
 - ✅ #10: Editor themes (light/dark mode for entire UI)
 - ✅ #11: LocalStorage persistence
-- ✅ #13: Settings modal (font size, theme, debounce time)
+- ✅ #13: Settings modal (font size, theme, debounce time, line numbers, auto-save)
 - ✅ #14: Markdown cheat sheet in help dropdown
 - ✅ #16: NPM dependency management
 
@@ -37,12 +38,13 @@
 - **Always current** with features
 
 ### UI/UX Patterns
-- **Theme system** with light/dark mode for entire application
-- **Settings modal** with font size, debounce time, theme controls
+- **Complete theme system** with light/dark mode for entire application
+- **Comprehensive settings modal** with font size (10-24px), debounce time (100-2000ms), theme controls, line numbers toggle, auto-save preferences
+- **Persistent settings** via localStorage with automatic restoration
 - **Compact layout** with gap-2 spacing
 - **Resizable panels** for editor/preview
 - **Responsive design** for all screens
-- **Persistent settings** via localStorage
+- **Modal system** rendered at app level for proper z-index (z-[9999])
 
 ## 📁 Critical Files
 
@@ -117,7 +119,6 @@
 ## 📋 Remaining IDEEN.md Items
 
 **Not yet implemented:**
-- #3: Line numbers in editor (added to settings but needs full implementation)
 - #4: Auto-closing characters
 - #5: Word/character counter
 - #7: Synchronized scrolling (disabled for CodeMirror compatibility)
@@ -163,4 +164,4 @@ Based on pattern, user may want:
 - Mobile experience improvements
 
 ---
-*Updated: After implementing themes and settings modal system*
+*Updated: After implementing complete settings modal with theme system, line numbers, and persistent localStorage*
