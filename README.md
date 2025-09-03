@@ -10,11 +10,12 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 - **Split-View Interface** - Resizable panels for optimal workflow
 - **Dark Theme** - Eye-friendly design for extended writing sessions
 
-### ⌨️ **Productivity Features**
-- **Complete Keyboard Shortcuts** - Full shortcut support for all formatting options
-- **Search and Replace** - Powerful find/replace with regex support
-- **Undo/Redo System** - Comprehensive history management
-- **Auto-Save to LocalStorage** - Never lose your work
+### 🗏️ **Productivity Features**
+- **Complete Keyboard Shortcuts** - Full shortcut support for all formatting options (25+ shortcuts)
+- **Search and Replace** - Powerful find/replace with regex support and highlighting
+- **Undo/Redo System** - Comprehensive history management with configurable debounce time
+- **Auto-Save to LocalStorage** - Never lose your work with persistent content and settings
+- **Line Numbers** - Optional display with toggle in settings
 
 ### 📤 **Export Capabilities**
 - **Multiple Export Formats** - Save as Markdown, HTML, or PDF
@@ -22,16 +23,20 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 - **PDF Generation** - Professional PDF output with proper formatting
 
 ### 🛠️ **Advanced Tools**
-- **Comprehensive Help System** - Interactive help with keyboard shortcuts reference
-- **Markdown Cheat Sheet** - Quick syntax reference with copy-paste examples
-- **Code Syntax Highlighting** - Support for 12+ programming languages
+- **Complete Theme System** - Light/dark mode for entire interface with immediate switching
+- **Comprehensive Settings Modal** - Customize font size (10-24px), theme, debounce time (100-2000ms), line numbers, and auto-save
+- **Interactive Help System** - Keyboard shortcuts reference and Markdown cheat sheet in dropdown
+- **Code Syntax Highlighting** - Support for 12+ programming languages in preview
 - **File System Integration** - Modern File System Access API with legacy fallback
+- **Persistent Storage** - All settings, content, and filename automatically saved to localStorage
 
 ### 🎨 **User Experience**
+- **Complete Theme System** - Full light/dark mode for entire interface with persistent settings
+- **Comprehensive Settings Modal** - Font size, debounce time, line numbers, auto-save preferences
 - **No Registration Required** - Complete privacy, no cloud dependencies
 - **Responsive Design** - Works perfectly on desktop and mobile
 - **Intuitive Toolbar** - Visual buttons for all formatting options
-- **Multiple Preview Themes** - Customizable preview styling
+- **Multiple Preview Themes** - Customizable preview styling with persistent selection
 
 ## 🚀 Quick Start
 

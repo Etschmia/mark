@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
+import { SettingsModal, EditorSettings } from './SettingsModal';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
@@ -20,6 +21,16 @@ interface ToolbarProps {
   onThemeChange: (theme: string) => void;
   // Export props
   markdown: string;
+  // Settings props
+  settings: EditorSettings;
+  onSettingsChange: (settings: EditorSettings) => void;
+  // Modal control props
+  isHelpModalOpen: boolean;
+  setIsHelpModalOpen: (open: boolean) => void;
+  isCheatSheetModalOpen: boolean;
+  setIsCheatSheetModalOpen: (open: boolean) => void;
+  isSettingsModalOpen: boolean;
+  setIsSettingsModalOpen: (open: boolean) => void;
 }
 
 const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean }> = ({ onClick, children, title, disabled = false }) => (
@@ -55,13 +66,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   themes,
   selectedTheme,
   onThemeChange,
-  markdown
+  markdown,
+  settings,
+  onSettingsChange,
+  isHelpModalOpen,
+  setIsHelpModalOpen,
+  isCheatSheetModalOpen,
+  setIsCheatSheetModalOpen,
+  isSettingsModalOpen,
+  setIsSettingsModalOpen
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isHelpDropdownOpen, setIsHelpDropdownOpen] = useState(false);
-  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
-  const [isCheatSheetModalOpen, setIsCheatSheetModalOpen] = useState(false);
   const codeDropdownRef = useRef<HTMLDivElement>(null);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
   const helpDropdownRef = useRef<HTMLDivElement>(null);
@@ -199,6 +216,16 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               >
                 📝 Markdown-Spickzettel
               </button>
+              <div className="border-t border-slate-600 my-1"></div>
+              <button
+                onClick={() => {
+                  setIsSettingsModalOpen(true);
+                  setIsHelpDropdownOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+              >
+                ⚙️ Einstellungen
+              </button>
             </div>
           )}
         </div>
@@ -243,16 +270,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </button>
         </div>
       </div>
-      
-      <HelpModal 
-        isOpen={isHelpModalOpen} 
-        onClose={() => setIsHelpModalOpen(false)} 
-      />
-      
-      <CheatSheetModal 
-        isOpen={isCheatSheetModalOpen} 
-        onClose={() => setIsCheatSheetModalOpen(false)} 
-      />
     </div>
   );
 };

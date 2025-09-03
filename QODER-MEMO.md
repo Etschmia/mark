@@ -9,7 +9,9 @@
 - ✅ #2: Complete keyboard shortcuts + help system
 - ✅ #6: Search and replace functionality
 - ✅ #8: Export functions (HTML, PDF)
+- ✅ #10: Editor themes (light/dark mode for entire UI)
 - ✅ #11: LocalStorage persistence
+- ✅ #13: Settings modal (font size, theme, debounce time)
 - ✅ #14: Markdown cheat sheet in help dropdown
 - ✅ #16: NPM dependency management
 
@@ -35,19 +37,22 @@
 - **Always current** with features
 
 ### UI/UX Patterns
-- **Dark theme** throughout
+- **Theme system** with light/dark mode for entire application
+- **Settings modal** with font size, debounce time, theme controls
 - **Compact layout** with gap-2 spacing
 - **Resizable panels** for editor/preview
 - **Responsive design** for all screens
+- **Persistent settings** via localStorage
 
 ## 📁 Critical Files
 
 ### Core Components
-- `App.tsx` - Central state, file ops, format routing
-- `components/Editor.tsx` - CodeMirror integration + shortcuts
+- `App.tsx` - Central state, file ops, format routing, settings management
+- `components/Editor.tsx` - CodeMirror integration + shortcuts + theme support
 - `components/Toolbar.tsx` - All UI controls + dropdowns
 - `components/HelpModal.tsx` - Complete help system
 - `components/CheatSheetModal.tsx` - Quick reference
+- `components/SettingsModal.tsx` - Theme and preference controls
 
 ### Utilities
 - `utils/exportUtils.ts` - HTML/PDF export logic
@@ -112,14 +117,12 @@
 ## 📋 Remaining IDEEN.md Items
 
 **Not yet implemented:**
-- #3: Line numbers in editor
+- #3: Line numbers in editor (added to settings but needs full implementation)
 - #4: Auto-closing characters
 - #5: Word/character counter
 - #7: Synchronized scrolling (disabled for CodeMirror compatibility)
 - #9: Extended Markdown (Mermaid, KaTeX)
-- #10: Editor themes
 - #12: Tab management
-- #13: Settings modal
 - #15: Progressive Web App
 - #17: State management library
 - #18: Unit testing
@@ -160,4 +163,4 @@ Based on pattern, user may want:
 - Mobile experience improvements
 
 ---
-*Updated: After implementing cheat sheet dropdown system*
+*Updated: After implementing themes and settings modal system*

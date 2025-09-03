@@ -12,6 +12,8 @@ import { xml } from '@codemirror/lang-xml';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { indentWithTab } from '@codemirror/commands';
 import { searchKeymap, openSearchPanel } from '@codemirror/search';
+import { lineNumbers } from '@codemirror/view';
+import { EditorSettings } from './SettingsModal';
 
 // Custom keymap to add Ctrl+F / Cmd+F for search
 const customSearchKeymap = [
@@ -168,6 +170,7 @@ interface EditorProps {
   onChange: (value: string) => void;
   onScroll?: (event: Event) => void;
   onFormat?: (formatType: string, options?: any) => void;
+  settings: EditorSettings;
 }
 
 export interface EditorRef {
@@ -179,7 +182,7 @@ export interface EditorRef {
   openSearchPanel: () => void;
 }
 
-export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat }, ref) => {
+export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat, settings }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -226,88 +229,91 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   useEffect(() => {
     if (!editorRef.current) return;
 
+    const extensions = [
+      basicSetup,
+      markdown(),
+      javascript(),
+      sql(),
+      python(),
+      php(),
+      xml(),
+      ...(settings.theme === 'dark' ? [oneDark] : []),
+      ...(settings.showLineNumbers ? [lineNumbers()] : []),
+      keymap.of([indentWithTab, ...searchKeymap, ...customSearchKeymap, ...createFormattingKeymap(onFormat)]),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          onChange(update.state.doc.toString());
+        }
+      }),
+      EditorView.domEventHandlers({
+        scroll: (event) => {
+          if (onScroll) onScroll(event);
+        }
+      }),
+      EditorView.theme({
+        '&': {
+          height: '100%',
+          fontSize: `${settings.fontSize}px`
+        },
+        '.cm-editor': {
+          height: '100%'
+        },
+        '.cm-scroller': {
+          padding: '24px',
+          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+        },
+        '.cm-content': {
+          padding: '0',
+          minHeight: '100%'
+        },
+        '.cm-focused': {
+          outline: 'none'
+        },
+        // Theme-aware search panel styling
+        '.cm-panel': {
+          backgroundColor: settings.theme === 'dark' ? '#374151' : '#f3f4f6',
+          border: `1px solid ${settings.theme === 'dark' ? '#4b5563' : '#d1d5db'}`,
+          borderRadius: '0.375rem'
+        },
+        '.cm-panel input': {
+          backgroundColor: settings.theme === 'dark' ? '#1f2937' : '#ffffff',
+          border: `1px solid ${settings.theme === 'dark' ? '#4b5563' : '#d1d5db'}`,
+          borderRadius: '0.25rem',
+          color: settings.theme === 'dark' ? '#f9fafb' : '#111827',
+          padding: '0.25rem 0.5rem'
+        },
+        '.cm-panel input:focus': {
+          outline: 'none',
+          borderColor: settings.theme === 'dark' ? '#06b6d4' : '#3b82f6'
+        },
+        '.cm-panel button': {
+          backgroundColor: settings.theme === 'dark' ? '#4b5563' : '#e5e7eb',
+          border: `1px solid ${settings.theme === 'dark' ? '#6b7280' : '#d1d5db'}`,
+          borderRadius: '0.25rem',
+          color: settings.theme === 'dark' ? '#f9fafb' : '#374151',
+          padding: '0.25rem 0.5rem',
+          margin: '0 0.125rem'
+        },
+        '.cm-panel button:hover': {
+          backgroundColor: settings.theme === 'dark' ? '#6b7280' : '#d1d5db'
+        },
+        '.cm-panel label': {
+          color: settings.theme === 'dark' ? '#d1d5db' : '#6b7280'
+        },
+        '.cm-searchMatch': {
+          backgroundColor: '#fbbf24',
+          color: '#000000'
+        },
+        '.cm-searchMatch-selected': {
+          backgroundColor: '#f59e0b',
+          color: '#000000'
+        }
+      })
+    ];
+
     const startState = EditorState.create({
       doc: value,
-      extensions: [
-        basicSetup,
-        markdown(),
-        javascript(),
-        sql(),
-        python(),
-        php(),
-        xml(),
-        oneDark,
-        keymap.of([indentWithTab, ...searchKeymap, ...customSearchKeymap, ...createFormattingKeymap(onFormat)]),
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            onChange(update.state.doc.toString());
-          }
-        }),
-        EditorView.domEventHandlers({
-          scroll: (event) => {
-            if (onScroll) onScroll(event);
-          }
-        }),
-        EditorView.theme({
-          '&': {
-            height: '100%',
-            fontSize: '14px'
-          },
-          '.cm-editor': {
-            height: '100%'
-          },
-          '.cm-scroller': {
-            padding: '24px',
-            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
-          },
-          '.cm-content': {
-            padding: '0',
-            minHeight: '100%'
-          },
-          '.cm-focused': {
-            outline: 'none'
-          },
-          // Style the search panel to match the dark theme
-          '.cm-panel': {
-            backgroundColor: '#374151',
-            border: '1px solid #4b5563',
-            borderRadius: '0.375rem'
-          },
-          '.cm-panel input': {
-            backgroundColor: '#1f2937',
-            border: '1px solid #4b5563',
-            borderRadius: '0.25rem',
-            color: '#f9fafb',
-            padding: '0.25rem 0.5rem'
-          },
-          '.cm-panel input:focus': {
-            outline: 'none',
-            borderColor: '#06b6d4'
-          },
-          '.cm-panel button': {
-            backgroundColor: '#4b5563',
-            border: '1px solid #6b7280',
-            borderRadius: '0.25rem',
-            color: '#f9fafb',
-            padding: '0.25rem 0.5rem',
-            margin: '0 0.125rem'
-          },
-          '.cm-panel button:hover': {
-            backgroundColor: '#6b7280'
-          },
-          '.cm-panel label': {
-            color: '#d1d5db'
-          },
-          '.cm-searchMatch': {
-            backgroundColor: '#fbbf24',
-            color: '#000000'
-          },
-          '.cm-searchMatch-selected': {
-            backgroundColor: '#f59e0b',
-            color: '#000000'
-          }
-        })
-      ]
+      extensions
     });
 
     const view = new EditorView({
@@ -320,7 +326,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     return () => {
       view.destroy();
     };
-  }, []);
+  }, [settings]); // Re-render when settings change
 
   // Update editor content when value prop changes
   useEffect(() => {
@@ -340,7 +346,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   }, [value]);
 
   return (
-    <div className="bg-slate-800 rounded-lg h-full flex flex-col">
+    <div className={`rounded-lg h-full flex flex-col ${
+      settings.theme === 'dark' ? 'bg-slate-800' : 'bg-white border border-gray-200'
+    }`}>
       <div ref={editorRef} className="w-full h-full" />
     </div>
   );

@@ -82,10 +82,18 @@ This document provides comprehensive technical details about the project archite
 ```typescript
 const [markdown, setMarkdown] = useState<string>(persistedState.markdown);
 const [fileName, setFileName] = useState<string>(persistedState.fileName);
+const [settings, setSettings] = useState<EditorSettings>(persistedState.settings);
 const [history, setHistory] = useState<string[]>([persistedState.markdown]);
 const [historyIndex, setHistoryIndex] = useState(0);
 const [isResizing, setIsResizing] = useState(false);
 ```
+
+**Settings Management:**
+- Comprehensive settings state with theme system
+- LocalStorage persistence for all settings
+- Theme-aware UI rendering throughout app
+- Configurable debounce time for history
+- Auto-save toggle functionality
 
 **File System Integration:**
 - Modern File System Access API for supported browsers
@@ -98,7 +106,17 @@ const [isResizing, setIsResizing] = useState(false);
 - Real-time Markdown syntax highlighting
 - Comprehensive keyboard shortcuts (25+ shortcuts)
 - Search and replace functionality
+- **Theme-aware rendering** (light/dark mode)
+- **Configurable font size** from settings
+- **Optional line numbers** toggle
 - Custom theme integration
+
+**Theme System:**
+- Dynamic theme switching without restart
+- Light/dark mode for entire editor
+- Theme-aware search panel styling
+- Conditional extension loading (oneDark for dark mode)
+- Settings-driven configuration
 
 **Key Features:**
 ```typescript
@@ -142,13 +160,13 @@ interface EditorRef {
 - **Headers:** H1, H2, H3 with visual hierarchy
 - **Lists:** Unordered, Ordered, Checklists
 - **Structure:** Blockquotes, Tables, Links, Images
-- **Tools:** Search, Undo, Export, Help
+- **Tools:** Search, Undo, Export, Help, **Settings**
 - **File Operations:** New, Open, Save with modern/legacy support
 
 **Dropdown Systems:**
 - Code language selector
 - Export format options (HTML, PDF)
-- Help system (Full help, Cheat sheet)
+- Help system (Full help, Cheat sheet, **Settings**)
 - Theme selection
 
 ### `components/HelpModal.tsx` - Documentation System
@@ -164,23 +182,43 @@ interface EditorRef {
 - Dark theme integration
 - Comprehensive shortcut reference
 
+### `components/SettingsModal.tsx` - User Preferences
+**Implementation Details:**
+- Complete theme switching (light/dark mode)
+- Font size adjustment (10-24px)
+- Debounce time configuration (100-2000ms)
+- Auto-save toggle
+- Line numbers toggle
+- Preview theme selection
+
+**Features:**
+```typescript
+interface EditorSettings {
+  theme: 'light' | 'dark';
+  fontSize: number;
+  debounceTime: number;
+  previewTheme: string;
+  autoSave: boolean;
+  showLineNumbers: boolean;
+}
+```
+
+**Persistence:**
+- Settings stored in localStorage
+- Immediate application of changes
+- Default fallback values
+- Error handling for storage failures
+
 ### `components/CheatSheetModal.tsx` - Quick Reference
-**Content Structure:**
+**Content Organization:**
 - 8 organized categories of Markdown syntax
-- Visual examples with syntax and output
 - Copy-paste ready examples
-- Supported language reference
-- Quick tips and advanced techniques
+- Visual syntax demonstrations
+- Supported code languages grid
 
 **Categories:**
-1. Text Formatting
-2. Headers
-3. Lists
-4. Links & Images
-5. Code Blocks
-6. Quotes & Lines
-7. Tables
-8. Special Characters
+- Text Formatting, Headers, Lists, Links & Images
+- Code & Syntax, Tables, Quotes, Advanced Features
 
 ## 🔧 Technical Implementation Details
 

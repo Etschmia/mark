@@ -4,6 +4,10 @@ import { Preview } from './components/Preview';
 import { Toolbar } from './components/Toolbar';
 import { FormatType } from './types';
 import { themes } from './components/preview-themes';
+import { EditorSettings } from './components/SettingsModal';
+import { HelpModal } from './components/HelpModal';
+import { CheatSheetModal } from './components/CheatSheetModal';
+import { SettingsModal } from './components/SettingsModal';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -30,15 +34,35 @@ const App: React.FC = () => {
     try {
       const savedMarkdown = localStorage.getItem('markdown-editor-content');
       const savedFileName = localStorage.getItem('markdown-editor-filename');
+      const savedSettings = localStorage.getItem('markdown-editor-settings');
+      
+      const defaultSettings: EditorSettings = {
+        theme: 'dark',
+        fontSize: 14,
+        debounceTime: 500,
+        previewTheme: 'Default',
+        autoSave: true,
+        showLineNumbers: false
+      };
+      
       return {
         markdown: savedMarkdown || '# Hello, Markdown!\n\nStart typing here...',
-        fileName: savedFileName || 'untitled.md'
+        fileName: savedFileName || 'untitled.md',
+        settings: savedSettings ? { ...defaultSettings, ...JSON.parse(savedSettings) } : defaultSettings
       };
     } catch (error) {
       console.warn('Failed to load persisted state from localStorage:', error);
       return {
         markdown: '# Hello, Markdown!\n\nStart typing here...',
-        fileName: 'untitled.md'
+        fileName: 'untitled.md',
+        settings: {
+          theme: 'dark',
+          fontSize: 14,
+          debounceTime: 500,
+          previewTheme: 'Default',
+          autoSave: true,
+          showLineNumbers: false
+        }
       };
     }
   };
@@ -46,11 +70,25 @@ const App: React.FC = () => {
   const persistedState = getPersistedState();
   const [markdown, setMarkdown] = useState<string>(persistedState.markdown);
   const [fileName, setFileName] = useState<string>(persistedState.fileName);
+  const [settings, setSettings] = useState<EditorSettings>(persistedState.settings);
   const editorRef = useRef<EditorRef>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const fileHandleRef = useRef<FileSystemFileHandle | null>(null); // For File System Access API
 
-  const [previewTheme, setPreviewTheme] = useState<string>('Default');
+  const [previewTheme, setPreviewTheme] = useState<string>(persistedState.settings.previewTheme);
+
+  // Handle settings changes
+  const handleSettingsChange = useCallback((newSettings: EditorSettings) => {
+    setSettings(newSettings);
+    setPreviewTheme(newSettings.previewTheme);
+    
+    // Persist settings to localStorage
+    try {
+      localStorage.setItem('markdown-editor-settings', JSON.stringify(newSettings));
+    } catch (error) {
+      console.warn('Failed to persist settings to localStorage:', error);
+    }
+  }, []);
 
   // State and refs for resizing functionality
   const [isResizing, setIsResizing] = useState(false);
@@ -64,6 +102,11 @@ const App: React.FC = () => {
   // Ref to prevent scroll event loops
   const isSyncingScroll = useRef(false);
 
+  // Modal states
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isCheatSheetModalOpen, setIsCheatSheetModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
   const addHistoryEntry = useCallback((newMarkdown: string) => {
     // When a new entry is added, clear any "future" history from previous undos
     const newHistory = history.slice(0, historyIndex + 1);
@@ -75,11 +118,13 @@ const App: React.FC = () => {
   const handleMarkdownChange = (newMarkdown: string) => {
     setMarkdown(newMarkdown);
     
-    // Persist to localStorage immediately for content changes
-    try {
-      localStorage.setItem('markdown-editor-content', newMarkdown);
-    } catch (error) {
-      console.warn('Failed to persist markdown content to localStorage:', error);
+    // Persist to localStorage immediately for content changes (if auto-save enabled)
+    if (settings.autoSave) {
+      try {
+        localStorage.setItem('markdown-editor-content', newMarkdown);
+      } catch (error) {
+        console.warn('Failed to persist markdown content to localStorage:', error);
+      }
     }
 
     if (debounceRef.current) {
@@ -88,7 +133,7 @@ const App: React.FC = () => {
 
     debounceRef.current = window.setTimeout(() => {
       addHistoryEntry(newMarkdown);
-    }, 500); // Debounce delay of 500ms
+    }, settings.debounceTime); // Use settings debounce time
   };
 
   const handleFileNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -479,8 +524,16 @@ const App: React.FC = () => {
   // --- End Scroll Sync Logic ---
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900 text-white font-sans">
-      <header className="flex-shrink-0 bg-slate-800 border-b border-slate-700 shadow-md z-10">
+    <div className={`flex flex-col h-screen font-sans ${
+      settings.theme === 'dark' 
+        ? 'bg-slate-900 text-white' 
+        : 'bg-gray-50 text-gray-900'
+    }`}>
+      <header className={`flex-shrink-0 shadow-md z-10 ${
+        settings.theme === 'dark'
+          ? 'bg-slate-800 border-b border-slate-700'
+          : 'bg-white border-b border-gray-200'
+      }`}>
         <Toolbar 
           onFormat={handleFormat}
           onNew={handleNewFile}
@@ -494,6 +547,14 @@ const App: React.FC = () => {
           selectedTheme={previewTheme}
           onThemeChange={setPreviewTheme}
           markdown={markdown}
+          settings={settings}
+          onSettingsChange={handleSettingsChange}
+          isHelpModalOpen={isHelpModalOpen}
+          setIsHelpModalOpen={setIsHelpModalOpen}
+          isCheatSheetModalOpen={isCheatSheetModalOpen}
+          setIsCheatSheetModalOpen={setIsCheatSheetModalOpen}
+          isSettingsModalOpen={isSettingsModalOpen}
+          setIsSettingsModalOpen={setIsSettingsModalOpen}
         />
       </header>
       <main
@@ -505,6 +566,7 @@ const App: React.FC = () => {
           onChange={handleMarkdownChange}
           onScroll={() => handleScroll('editor')}
           onFormat={handleFormat}
+          settings={settings}
           ref={editorRef}
         />
         
@@ -524,6 +586,25 @@ const App: React.FC = () => {
           ref={previewRef}
         />
       </main>
+      
+      {/* Modals rendered at app level for proper z-index */}
+      <HelpModal 
+        isOpen={isHelpModalOpen} 
+        onClose={() => setIsHelpModalOpen(false)} 
+      />
+      
+      <CheatSheetModal 
+        isOpen={isCheatSheetModalOpen} 
+        onClose={() => setIsCheatSheetModalOpen(false)} 
+      />
+      
+      <SettingsModal 
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        settings={settings}
+        onSettingsChange={handleSettingsChange}
+        availablePreviewThemes={Object.keys(themes)}
+      />
     </div>
   );
 };
