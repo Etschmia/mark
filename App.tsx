@@ -25,9 +25,27 @@ declare global {
 }
 
 const App: React.FC = () => {
-  const initialContent = '# Hello, Markdown!\n\nStart typing here...';
-  const [markdown, setMarkdown] = useState<string>(initialContent);
-  const [fileName, setFileName] = useState<string>('untitled.md');
+  // Load persisted state from localStorage
+  const getPersistedState = () => {
+    try {
+      const savedMarkdown = localStorage.getItem('markdown-editor-content');
+      const savedFileName = localStorage.getItem('markdown-editor-filename');
+      return {
+        markdown: savedMarkdown || '# Hello, Markdown!\n\nStart typing here...',
+        fileName: savedFileName || 'untitled.md'
+      };
+    } catch (error) {
+      console.warn('Failed to load persisted state from localStorage:', error);
+      return {
+        markdown: '# Hello, Markdown!\n\nStart typing here...',
+        fileName: 'untitled.md'
+      };
+    }
+  };
+
+  const persistedState = getPersistedState();
+  const [markdown, setMarkdown] = useState<string>(persistedState.markdown);
+  const [fileName, setFileName] = useState<string>(persistedState.fileName);
   const editorRef = useRef<EditorRef>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const fileHandleRef = useRef<FileSystemFileHandle | null>(null); // For File System Access API
@@ -39,7 +57,7 @@ const App: React.FC = () => {
   const mainRef = useRef<HTMLElement>(null);
   
   // State for Undo/Redo
-  const [history, setHistory] = useState<string[]>([initialContent]);
+  const [history, setHistory] = useState<string[]>([persistedState.markdown]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const debounceRef = useRef<number | null>(null);
 
@@ -56,6 +74,13 @@ const App: React.FC = () => {
 
   const handleMarkdownChange = (newMarkdown: string) => {
     setMarkdown(newMarkdown);
+    
+    // Persist to localStorage immediately for content changes
+    try {
+      localStorage.setItem('markdown-editor-content', newMarkdown);
+    } catch (error) {
+      console.warn('Failed to persist markdown content to localStorage:', error);
+    }
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -67,15 +92,33 @@ const App: React.FC = () => {
   };
 
   const handleFileNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFileName(event.target.value);
+    const newFileName = event.target.value;
+    setFileName(newFileName);
+    
+    // Persist filename to localStorage
+    try {
+      localStorage.setItem('markdown-editor-filename', newFileName);
+    } catch (error) {
+      console.warn('Failed to persist filename to localStorage:', error);
+    }
   };
 
   const handleNewFile = useCallback(() => {
     const newMarkdown = '';
+    const newFileName = 'untitled.md';
     setMarkdown(newMarkdown);
-    setFileName('untitled.md');
+    setFileName(newFileName);
     addHistoryEntry(newMarkdown);
     fileHandleRef.current = null; // Reset the file handle for the new file
+    
+    // Persist new file state to localStorage
+    try {
+      localStorage.setItem('markdown-editor-content', newMarkdown);
+      localStorage.setItem('markdown-editor-filename', newFileName);
+    } catch (error) {
+      console.warn('Failed to persist new file state to localStorage:', error);
+    }
+    
     editorRef.current?.focus();
   }, [addHistoryEntry]);
 
@@ -95,6 +138,14 @@ const App: React.FC = () => {
         setMarkdown(content);
         setFileName(file.name);
         addHistoryEntry(content);
+        
+        // Persist opened file state to localStorage
+        try {
+          localStorage.setItem('markdown-editor-content', content);
+          localStorage.setItem('markdown-editor-filename', file.name);
+        } catch (error) {
+          console.warn('Failed to persist opened file state to localStorage:', error);
+        }
         return; // Success: exit and don't fall through
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') {
@@ -120,6 +171,14 @@ const App: React.FC = () => {
           setFileName(file.name);
           addHistoryEntry(content);
           fileHandleRef.current = null; // Ensure handle is cleared for legacy open
+          
+          // Persist opened file state to localStorage
+          try {
+            localStorage.setItem('markdown-editor-content', content);
+            localStorage.setItem('markdown-editor-filename', file.name);
+          } catch (error) {
+            console.warn('Failed to persist opened file state to localStorage:', error);
+          }
         };
         reader.readAsText(file);
       }
@@ -152,6 +211,13 @@ const App: React.FC = () => {
                 fileHandleRef.current = handle;
                 setFileName(handle.name);
                 await saveOperation(handle);
+                
+                // Persist saved filename to localStorage
+                try {
+                  localStorage.setItem('markdown-editor-filename', handle.name);
+                } catch (error) {
+                  console.warn('Failed to persist saved filename to localStorage:', error);
+                }
             }
             return; // Success: exit and don't fall through
         } catch (err) {
