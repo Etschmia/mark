@@ -498,7 +498,7 @@ const App: React.FC = () => {
       </header>
       <main
         ref={mainRef}
-        className="flex-grow grid grid-cols-1 md:grid-cols-[50%_auto_1fr] gap-4 p-4 overflow-hidden"
+        className="flex-grow grid grid-cols-1 md:grid-cols-[50%_auto_1fr] gap-2 p-4 overflow-hidden"
       >
         <Editor 
           value={markdown} 
@@ -510,11 +510,11 @@ const App: React.FC = () => {
         
         <div
           onMouseDown={handleMouseDown}
-          className="w-2 cursor-col-resize hidden md:flex items-center justify-center group"
+          className="w-1 cursor-col-resize hidden md:flex items-center justify-center group"
           aria-label="Resize panels"
           role="separator"
         >
-          <div className="w-1 h-12 bg-slate-700 rounded-full group-hover:bg-cyan-500 transition-colors duration-150" />
+          <div className="w-0.5 h-12 bg-slate-700 rounded-full group-hover:bg-cyan-500 transition-colors duration-150" />
         </div>
 
         <Preview 
