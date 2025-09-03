@@ -3,6 +3,7 @@ import { FormatType } from '../types';
 import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
+import { CheatSheetModal } from './CheatSheetModal';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
@@ -58,9 +59,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+  const [isHelpDropdownOpen, setIsHelpDropdownOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isCheatSheetModalOpen, setIsCheatSheetModalOpen] = useState(false);
   const codeDropdownRef = useRef<HTMLDivElement>(null);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
+  const helpDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,6 +73,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       }
       if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
         setIsExportDropdownOpen(false);
+      }
+      if (helpDropdownRef.current && !helpDropdownRef.current.contains(event.target as Node)) {
+        setIsHelpDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -168,9 +175,33 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </div>
       </div>
       <div className="flex items-center gap-4 flex-wrap">
-        <ToolButton onClick={() => setIsHelpModalOpen(true)} title="Hilfe und Tastaturkürzel">
-          <HelpIcon />
-        </ToolButton>
+        <div className="relative" ref={helpDropdownRef}>
+          <ToolButton onClick={() => setIsHelpDropdownOpen(prev => !prev)} title="Hilfe & Referenz">
+            <HelpIcon />
+          </ToolButton>
+          {isHelpDropdownOpen && (
+            <div className="absolute left-0 z-20 mt-2 w-48 origin-top-left rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+              <button
+                onClick={() => {
+                  setIsHelpModalOpen(true);
+                  setIsHelpDropdownOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+              >
+                📖 Hilfe & Tastaturkürzel
+              </button>
+              <button
+                onClick={() => {
+                  setIsCheatSheetModalOpen(true);
+                  setIsHelpDropdownOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+              >
+                📝 Markdown-Spickzettel
+              </button>
+            </div>
+          )}
+        </div>
         
         {/* HIER IST DAS NEUE THEME-DROPDOWN */}
         <div className="relative">
@@ -216,6 +247,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       <HelpModal 
         isOpen={isHelpModalOpen} 
         onClose={() => setIsHelpModalOpen(false)} 
+      />
+      
+      <CheatSheetModal 
+        isOpen={isCheatSheetModalOpen} 
+        onClose={() => setIsCheatSheetModalOpen(false)} 
       />
     </div>
   );

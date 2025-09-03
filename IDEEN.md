@@ -25,7 +25,7 @@ Hier ist eine Sammlung von Ideen zur weiteren Verbesserung des Projekts, kategor
 11. ~~**Persistenz des Zustands:** Den aktuellen Text und Dateinamen im `localStorage` des Browsers speichern. So geht die Arbeit nicht verloren, wenn der Benutzer die Seite versehentlich neu lädt.~~ ✅ **ERLEDIGT - localStorage-Integration für Text und Dateinamen implementiert**
 12. **Tab-Management:** Mehrere Dokumente gleichzeitig in Tabs öffnen und bearbeiten können.
 13. **Einstellungs-Modal:** Ein Einstellungsfenster, in dem der Benutzer Dinge wie die Schriftgröße des Editors, das Standard-Theme oder die Debounce-Zeit für die Undo-Funktion anpassen kann.
-14. **Markdown-Spickzettel (Cheat Sheet):** Ein kleines Hilfe-Fenster oder ein Tab, das eine schnelle Übersicht über die gängigsten Markdown-Befehle anzeigt.
+14. ~~**Markdown-Spickzettel (Cheat Sheet):** Ein kleines Hilfe-Fenster oder ein Tab, das eine schnelle Übersicht über die gängigsten Markdown-Befehle anzeigt.~~ ✅ **ERLEDIGT - Hilfe-Dropdown mit Spickzettel und Vollhilfe implementiert**
 15. **Progressive Web App (PWA):** Die Anwendung als PWA konfigurieren, damit sie "installiert" werden kann und offline funktioniert.
 
 ### Code-Qualität & Architektur
