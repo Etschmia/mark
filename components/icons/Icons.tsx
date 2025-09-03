@@ -87,3 +87,9 @@ export const LinkIcon: React.FC = () => (
 );
 
 export const UndoIcon: React.FC = () => <IconWrapper><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></IconWrapper>;
+
+export const ExportIcon: React.FC = () => (
+  <IconWrapper>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </IconWrapper>
+);

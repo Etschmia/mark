@@ -14,7 +14,7 @@ Hier ist eine Sammlung von Ideen zur weiteren Verbesserung des Projekts, kategor
 ### Vorschau & Export
 
 7.  ~~**Synchronisiertes Scrollen:** Wenn der Benutzer im Editor scrollt, scrollt die Vorschau automatisch zur entsprechenden Stelle mit und umgekehrt.~~ ✅ **ERLEDIGT - Grundlage implementiert (aktuell deaktiviert für CodeMirror-Kompatibilität)**
-8.  **Export-Funktionen:** Die Möglichkeit, das Dokument nicht nur als `.md`-Datei zu speichern, sondern auch als HTML oder sogar als PDF zu exportieren.
+8.  ~~**Export-Funktionen:** Die Möglichkeit, das Dokument nicht nur als `.md`-Datei zu speichern, sondern auch als HTML oder sogar als PDF zu exportieren.~~ ✅ **ERLEDIGT - HTML und PDF Export implementiert**
 9.  **Unterstützung für erweiterte Markdown-Syntax:**
     *   **Diagramme und Graphen:** Integration von [Mermaid.js](https://mermaid.js.org/), um Diagramme direkt aus dem Text zu rendern (`graph TD; A-->B;`).
     *   **Mathematische Formeln:** Integration von [KaTeX](https://katex.org/) zur Darstellung von LaTeX-Formeln.

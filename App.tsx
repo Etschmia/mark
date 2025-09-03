@@ -474,6 +474,7 @@ const App: React.FC = () => {
           themes={Object.keys(themes)}
           selectedTheme={previewTheme}
           onThemeChange={setPreviewTheme}
+          markdown={markdown}
         />
       </header>
       <main

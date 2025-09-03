@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon } from './icons/Icons';
+import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
@@ -15,6 +16,8 @@ interface ToolbarProps {
   themes: string[];
   selectedTheme: string;
   onThemeChange: (theme: string) => void;
+  // Export props
+  markdown: string;
 }
 
 const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean }> = ({ onClick, children, title, disabled = false }) => (
@@ -49,15 +52,21 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   canUndo,
   themes,
   selectedTheme,
-  onThemeChange
+  onThemeChange,
+  markdown
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const codeDropdownRef = useRef<HTMLDivElement>(null);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (codeDropdownRef.current && !codeDropdownRef.current.contains(event.target as Node)) {
         setIsCodeDropdownOpen(false);
+      }
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setIsExportDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -69,6 +78,26 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const handleCodeFormat = (lang?: string) => {
     onFormat('code', lang ? { language: lang } : undefined);
     setIsCodeDropdownOpen(false);
+  };
+
+  const handleExport = async (format: ExportFormat) => {
+    try {
+      const options = {
+        filename: fileName,
+        content: markdown,
+        theme: selectedTheme
+      };
+      
+      if (format === 'html') {
+        await exportAsHtml(options);
+      } else if (format === 'pdf') {
+        await exportAsPdf(options);
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+    setIsExportDropdownOpen(false);
   };
 
   return (
@@ -112,6 +141,28 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <ToolButton onClick={() => onFormat('link')} title="Link einfügen"><LinkIcon /></ToolButton>
         <div className="w-px h-6 bg-slate-600 mx-2"></div>
         <ToolButton onClick={onUndo} title="Rückgängig" disabled={!canUndo}><UndoIcon /></ToolButton>
+        
+        <div className="relative" ref={exportDropdownRef}>
+          <ToolButton onClick={() => setIsExportDropdownOpen(prev => !prev)} title="Export">
+            <ExportIcon />
+          </ToolButton>
+          {isExportDropdownOpen && (
+            <div className="absolute left-0 z-20 mt-2 w-32 origin-top-left rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+              <button
+                onClick={() => handleExport('html')}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+              >
+                Export HTML
+              </button>
+              <button
+                onClick={() => handleExport('pdf')}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+              >
+                Export PDF
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-4 flex-wrap">
         {/* HIER IST DAS NEUE THEME-DROPDOWN */}
