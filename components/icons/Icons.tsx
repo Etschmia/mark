@@ -99,3 +99,9 @@ export const SearchIcon: React.FC = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
   </IconWrapper>
 );
+
+export const HelpIcon: React.FC = () => (
+  <IconWrapper>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c0-1.037.852-1.879 1.903-1.879s1.903.842 1.903 1.879c0 .636-.293 1.206-.768 1.588l-.863.691c-.542.433-.85 1.092-.85 1.779v.638M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-2.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+  </IconWrapper>
+);

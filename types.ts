@@ -14,4 +14,8 @@ export type FormatType =
   | 'table'
   | 'image'
   | 'link'
-  | 'search';
+  | 'search'
+  | 'new'
+  | 'save'
+  | 'saveAs'
+  | 'open';

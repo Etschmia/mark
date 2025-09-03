@@ -5,7 +5,7 @@ Hier ist eine Sammlung von Ideen zur weiteren Verbesserung des Projekts, kategor
 ### Verbesserung des Editor-Erlebnisses (Quality of Life)
 
 1.  ~~**Syntax-Hervorhebung im Editor:** Anstatt nur einer einfachen `<textarea>` könnte ein fortschrittlicherer Editor wie [CodeMirror](https://codemirror.net/) oder [Monaco Editor](https://microsoft.github.io/monaco-editor/) integriert werden. Das würde Markdown-Syntax-Hervorhebung direkt beim Tippen ermöglichen, was die Lesbarkeit enorm verbessert.~~ ✅ **ERLEDIGT - CodeMirror 6 integriert**
-2.  **Tastaturkürzel:** Implementierung von Shortcuts für alle Formatierungsoptionen (z.B. `Cmd/Strg + B` für Fett, `Cmd/Strg + I` für Kursiv).
+2.  ~~**Tastaturkürzel:** Implementierung von Shortcuts für alle Formatierungsoptionen (z.B. `Cmd/Strg + B` für Fett, `Cmd/Strg + I` für Kursiv).~~ ✅ **ERLEDIGT - Vollständige Tastaturkürzel + Hilfe-Modal implementiert**
 3.  **Zeilennummern:** Eine Leiste mit Zeilennummern im Editor, was besonders bei längeren Dokumenten hilfreich ist.
 4.  **Automatisches Schließen von Zeichen:** Automatisches Einfügen von schließenden Klammern, Anführungszeichen oder Markdown-Zeichen (z.B. bei `**` wird das zweite `**` automatisch ergänzt).
 5.  **Wort- und Zeichenzähler:** Eine kleine Statusleiste am unteren Rand des Editors, die die Anzahl der Wörter und Zeichen anzeigt.

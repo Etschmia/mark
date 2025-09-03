@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
+import { HelpModal } from './HelpModal';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
@@ -57,6 +58,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const codeDropdownRef = useRef<HTMLDivElement>(null);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -166,6 +168,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </div>
       </div>
       <div className="flex items-center gap-4 flex-wrap">
+        <ToolButton onClick={() => setIsHelpModalOpen(true)} title="Hilfe und Tastaturkürzel">
+          <HelpIcon />
+        </ToolButton>
+        
         {/* HIER IST DAS NEUE THEME-DROPDOWN */}
         <div className="relative">
           <select
@@ -206,6 +212,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </button>
         </div>
       </div>
+      
+      <HelpModal 
+        isOpen={isHelpModalOpen} 
+        onClose={() => setIsHelpModalOpen(false)} 
+      />
     </div>
   );
 };

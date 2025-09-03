@@ -24,10 +24,150 @@ const customSearchKeymap = [
   }
 ];
 
+// Create formatting keymap
+const createFormattingKeymap = (onFormat?: (formatType: string, options?: any) => void) => {
+  if (!onFormat) return [];
+  
+  return [
+    // Text formatting
+    {
+      key: 'Mod-b',
+      run: () => {
+        onFormat('bold');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-i',
+      run: () => {
+        onFormat('italic');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-d',
+      run: () => {
+        onFormat('strikethrough');
+        return true;
+      }
+    },
+    // Headers
+    {
+      key: 'Mod-1',
+      run: () => {
+        onFormat('h1');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-2',
+      run: () => {
+        onFormat('h2');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-3',
+      run: () => {
+        onFormat('h3');
+        return true;
+      }
+    },
+    // Lists and structure
+    {
+      key: 'Mod-u',
+      run: () => {
+        onFormat('ul');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-o',
+      run: () => {
+        onFormat('ol');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-Shift-c',
+      run: () => {
+        onFormat('checklist');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-q',
+      run: () => {
+        onFormat('quote');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-t',
+      run: () => {
+        onFormat('table');
+        return true;
+      }
+    },
+    // Code and links
+    {
+      key: 'Mod-e',
+      run: () => {
+        onFormat('code');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-k',
+      run: () => {
+        onFormat('link');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-m',
+      run: () => {
+        onFormat('image');
+        return true;
+      }
+    },
+    // File operations (these will be handled by parent component)
+    {
+      key: 'Mod-n',
+      run: () => {
+        onFormat('new');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-s',
+      run: () => {
+        onFormat('save');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-Shift-s',
+      run: () => {
+        onFormat('saveAs');
+        return true;
+      }
+    },
+    {
+      key: 'Mod-Shift-o',
+      run: () => {
+        onFormat('open');
+        return true;
+      }
+    }
+  ];
+};
+
 interface EditorProps {
   value: string;
   onChange: (value: string) => void;
   onScroll?: (event: Event) => void;
+  onFormat?: (formatType: string, options?: any) => void;
 }
 
 export interface EditorRef {
@@ -39,7 +179,7 @@ export interface EditorRef {
   openSearchPanel: () => void;
 }
 
-export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll }, ref) => {
+export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -97,7 +237,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         php(),
         xml(),
         oneDark,
-        keymap.of([indentWithTab, ...searchKeymap, ...customSearchKeymap]),
+        keymap.of([indentWithTab, ...searchKeymap, ...customSearchKeymap, ...createFormattingKeymap(onFormat)]),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChange(update.state.doc.toString());

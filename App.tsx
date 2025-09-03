@@ -293,6 +293,20 @@ const App: React.FC = () => {
     const editor = editorRef.current;
     if (!editor) return;
 
+    // Handle file operations first
+    if (formatType === 'new') {
+      handleNewFile();
+      return;
+    }
+    if (formatType === 'save' || formatType === 'saveAs') {
+      handleSaveFile();
+      return;
+    }
+    if (formatType === 'open') {
+      handleOpenFile();
+      return;
+    }
+
     if (formatType === 'search') {
       editor.openSearchPanel();
       return;
@@ -490,6 +504,7 @@ const App: React.FC = () => {
           value={markdown} 
           onChange={handleMarkdownChange}
           onScroll={() => handleScroll('editor')}
+          onFormat={handleFormat}
           ref={editorRef}
         />
         
