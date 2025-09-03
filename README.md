@@ -1,53 +1,202 @@
-# Run and deploy markdown editor pro
+# Markdown Editor Pro
 
-This contains everything you need to run your app locally.
+A powerful, lightweight, browser-based Markdown editor designed for simplicity, privacy, and productivity. Features real-time syntax highlighting, live preview, comprehensive keyboard shortcuts, and advanced export capabilities.
 
-## Run Locally
+## ✨ Key Features
 
-**Prerequisites:** Node.js
+### 🎯 **Core Editing**
+- **CodeMirror 6 Integration** - Professional-grade editor with real-time Markdown syntax highlighting
+- **Live Preview** - Instant HTML rendering with synchronized scrolling
+- **Split-View Interface** - Resizable panels for optimal workflow
+- **Dark Theme** - Eye-friendly design for extended writing sessions
 
-1.  Install dependencies:
-    `npm install`
+### ⌨️ **Productivity Features**
+- **Complete Keyboard Shortcuts** - Full shortcut support for all formatting options
+- **Search and Replace** - Powerful find/replace with regex support
+- **Undo/Redo System** - Comprehensive history management
+- **Auto-Save to LocalStorage** - Never lose your work
 
-2.  Run the app:
-    `npm run dev`
+### 📤 **Export Capabilities**
+- **Multiple Export Formats** - Save as Markdown, HTML, or PDF
+- **Styled HTML Export** - Complete standalone HTML documents
+- **PDF Generation** - Professional PDF output with proper formatting
 
-## Technologies Used
+### 🛠️ **Advanced Tools**
+- **Comprehensive Help System** - Interactive help with keyboard shortcuts reference
+- **Markdown Cheat Sheet** - Quick syntax reference with copy-paste examples
+- **Code Syntax Highlighting** - Support for 12+ programming languages
+- **File System Integration** - Modern File System Access API with legacy fallback
 
-*   **React:** A JavaScript library for building user interfaces.
-*   **Vite:** A build tool that aims to provide a faster and leaner development experience for modern web projects.
-*   **TypeScript:** A typed superset of JavaScript that compiles to plain JavaScript.
-*   **CodeMirror 6:** Advanced code editor with syntax highlighting for enhanced Markdown editing experience.
-*   **marked:** Fast markdown parser and compiler (NPM package).
-*   **DOMPurify:** XSS sanitizer for HTML (NPM package).
-*   **highlight.js:** Syntax highlighting for code blocks in the preview pane (NPM package).
+### 🎨 **User Experience**
+- **No Registration Required** - Complete privacy, no cloud dependencies
+- **Responsive Design** - Works perfectly on desktop and mobile
+- **Intuitive Toolbar** - Visual buttons for all formatting options
+- **Multiple Preview Themes** - Customizable preview styling
 
-## Project Structure
+## 🚀 Quick Start
 
-*   `index.html`: The main HTML file.
-*   `components/`: Contains the React components.
-    *   `Editor.tsx`: The CodeMirror-based markdown editor component with syntax highlighting.
-    *   `Preview.tsx`: The preview component.
-    *   `Toolbar.tsx`: The toolbar with markdown formatting buttons.
-    *   `icons/Icons.tsx`: The icons for the toolbar.
-*   `App.tsx`: The main application component.
-*   `index.tsx`: The entry point of the application.
+**Prerequisites:** Node.js (v16 or higher)
 
-## About the Project
+```bash
+# Clone and install
+npm install
 
-This project is a browser-based markdown editor with real-time syntax highlighting, a live preview window, and icons for all common markdown formatting options. It was developed with the help of AIStudio.
+# Start development server
+npm run dev
 
-### Key Features
+# Build for production
+npm run build
+```
 
-*   **Real-time Markdown syntax highlighting** in the editor using CodeMirror 6
-*   **Live preview** with syntax highlighting for code blocks
-*   **No registration required** - uses local file system for saving and loading
-*   **Language support** for code blocks (JavaScript, SQL, Python, PHP, XML)
-*   **Intuitive toolbar** with formatting buttons for common Markdown syntax
-*   **Split-view interface** with resizable panels
-*   **Modern dark theme** optimized for extended writing sessions
-*   **Modern architecture** - all dependencies managed via NPM packages for better version control
+## 📋 Keyboard Shortcuts
 
-A version for testing is available here: https://mark-alpha-five.vercel.app/
+### Text Formatting
+- `Ctrl/Cmd + B` - **Bold**
+- `Ctrl/Cmd + I` - *Italic*
+- `Ctrl/Cmd + D` - ~~Strikethrough~~
+- `Ctrl/Cmd + E` - `Code`
 
-The project's homepage can be found here: https://github.com/Etschmia/mark
+### Headers
+- `Ctrl/Cmd + 1` - # Header 1
+- `Ctrl/Cmd + 2` - ## Header 2
+- `Ctrl/Cmd + 3` - ### Header 3
+
+### Lists & Structure
+- `Ctrl/Cmd + U` - Unordered list
+- `Ctrl/Cmd + O` - Ordered list
+- `Ctrl/Cmd + Shift + C` - Checklist
+- `Ctrl/Cmd + Q` - Blockquote
+- `Ctrl/Cmd + T` - Table
+
+### Editor Functions
+- `Ctrl/Cmd + F` - Search and replace
+- `Ctrl/Cmd + Z` - Undo
+- `Ctrl/Cmd + K` - Insert link
+- `Ctrl/Cmd + M` - Insert image
+
+### File Operations
+- `Ctrl/Cmd + N` - New document
+- `Ctrl/Cmd + S` - Save
+- `Ctrl/Cmd + Shift + S` - Save as
+- `Ctrl/Cmd + Shift + O` - Open file
+
+## 🏗️ Technology Stack
+
+### Core Technologies
+- **React 19.1.1** - Modern UI framework with latest features
+- **TypeScript 5.8.2** - Type-safe development
+- **Vite 7.0.6** - Lightning-fast build tool and dev server
+
+### Editor & Parsing
+- **CodeMirror 6** - Professional code editor with syntax highlighting
+- **@codemirror/search** - Advanced search and replace functionality
+- **marked 16.2.1** - Fast, standards-compliant Markdown parser
+- **DOMPurify 3.2.6** - XSS protection for HTML sanitization
+
+### Syntax Highlighting
+- **highlight.js 11.11.1** - Syntax highlighting for code blocks
+- **Languages supported**: JavaScript, Python, SQL, PHP, XML, HTML, CSS, JSON, YAML, TypeScript, Bash, Markdown
+
+### Export & Utilities
+- **jsPDF** - Client-side PDF generation
+- **html2canvas** - HTML to canvas rendering for PDF export
+- **File System Access API** - Modern file operations (with legacy fallback)
+
+## 📁 Project Structure
+
+```
+markdown-editor-pro/
+├── components/
+│   ├── icons/
+│   │   └── Icons.tsx           # SVG icon components
+│   ├── Editor.tsx              # CodeMirror-based editor
+│   ├── Preview.tsx             # Live markdown preview
+│   ├── Toolbar.tsx             # Main toolbar with all controls
+│   ├── HelpModal.tsx           # Comprehensive help system
+│   ├── CheatSheetModal.tsx     # Markdown syntax reference
+│   └── preview-themes.ts       # Preview styling themes
+├── utils/
+│   └── exportUtils.ts          # HTML/PDF export functionality
+├── App.tsx                     # Main application component
+├── index.tsx                   # Application entry point
+├── types.ts                    # TypeScript type definitions
+├── vite.config.ts              # Vite configuration
+└── package.json                # Dependencies and scripts
+```
+
+## 🎯 Core Components
+
+### `Editor.tsx`
+- CodeMirror 6 integration with Markdown syntax highlighting
+- Custom keyboard shortcuts for all formatting operations
+- Search and replace functionality
+- Real-time content synchronization
+
+### `Preview.tsx`
+- Live HTML rendering with marked.js
+- Syntax highlighting for code blocks
+- Multiple theme support
+- Sanitized output with DOMPurify
+
+### `Toolbar.tsx`
+- Complete formatting controls
+- File operations (New, Open, Save, Export)
+- Help system dropdown
+- Theme selection
+
+### `HelpModal.tsx`
+- Complete keyboard shortcuts reference
+- Toolbar functionality explanations
+- Organized by categories
+- Always up-to-date with current features
+
+### `CheatSheetModal.tsx`
+- Quick Markdown syntax reference
+- Copy-paste ready examples
+- 8 organized categories
+- Visual syntax examples
+
+## 🔧 Development
+
+### Scripts
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run preview  # Preview production build
+```
+
+### Dependencies Management
+All external libraries are managed via NPM (not CDN) for better version control and offline development.
+
+### Browser Support
+- **Modern browsers** with File System Access API support
+- **Legacy fallback** for older browsers using download/upload patterns
+- **Responsive design** works on desktop and mobile
+
+## 🌐 Demo & Deployment
+
+**Live Demo:** [https://mark-alpha-five.vercel.app/](https://mark-alpha-five.vercel.app/)
+
+**GitHub Repository:** [https://github.com/Etschmia/mark](https://github.com/Etschmia/mark)
+
+### Deployment Options
+- **Vercel** (current)
+- **Netlify**
+- **GitHub Pages**
+- Any static hosting service
+
+## 🔐 Privacy & Security
+
+- **No registration required** - Complete privacy
+- **Local storage only** - Data never leaves your browser
+- **No cloud dependencies** - Works completely offline
+- **XSS protection** - All HTML output sanitized
+- **Modern security practices** - Content Security Policy compliant
+
+## 📄 License
+
+This project emphasizes privacy and accessibility by eliminating the need for user registration or cloud storage, making it ideal for users who value data privacy and offline functionality.
+
+---
+
+*Built with ❤️ for writers, developers, and documentation enthusiasts.*
