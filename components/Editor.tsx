@@ -11,6 +11,18 @@ import { php } from '@codemirror/lang-php';
 import { xml } from '@codemirror/lang-xml';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { indentWithTab } from '@codemirror/commands';
+import { searchKeymap, openSearchPanel } from '@codemirror/search';
+
+// Custom keymap to add Ctrl+F / Cmd+F for search
+const customSearchKeymap = [
+  {
+    key: 'Mod-f',
+    run: (view: EditorView) => {
+      openSearchPanel(view);
+      return true;
+    }
+  }
+];
 
 interface EditorProps {
   value: string;
@@ -24,6 +36,7 @@ export interface EditorRef {
   setSelection: (start: number, end: number) => void;
   getValue: () => string;
   insertText: (text: string, start?: number, end?: number) => void;
+  openSearchPanel: () => void;
 }
 
 export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll }, ref) => {
@@ -62,6 +75,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         selection: { anchor: from + text.length }
       });
       view.focus();
+    },
+    openSearchPanel: () => {
+      const view = viewRef.current;
+      if (!view) return;
+      openSearchPanel(view);
     }
   }), []);
 
@@ -79,7 +97,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         php(),
         xml(),
         oneDark,
-        keymap.of([indentWithTab]),
+        keymap.of([indentWithTab, ...searchKeymap, ...customSearchKeymap]),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChange(update.state.doc.toString());
@@ -108,6 +126,45 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
           },
           '.cm-focused': {
             outline: 'none'
+          },
+          // Style the search panel to match the dark theme
+          '.cm-panel': {
+            backgroundColor: '#374151',
+            border: '1px solid #4b5563',
+            borderRadius: '0.375rem'
+          },
+          '.cm-panel input': {
+            backgroundColor: '#1f2937',
+            border: '1px solid #4b5563',
+            borderRadius: '0.25rem',
+            color: '#f9fafb',
+            padding: '0.25rem 0.5rem'
+          },
+          '.cm-panel input:focus': {
+            outline: 'none',
+            borderColor: '#06b6d4'
+          },
+          '.cm-panel button': {
+            backgroundColor: '#4b5563',
+            border: '1px solid #6b7280',
+            borderRadius: '0.25rem',
+            color: '#f9fafb',
+            padding: '0.25rem 0.5rem',
+            margin: '0 0.125rem'
+          },
+          '.cm-panel button:hover': {
+            backgroundColor: '#6b7280'
+          },
+          '.cm-panel label': {
+            color: '#d1d5db'
+          },
+          '.cm-searchMatch': {
+            backgroundColor: '#fbbf24',
+            color: '#000000'
+          },
+          '.cm-searchMatch-selected': {
+            backgroundColor: '#f59e0b',
+            color: '#000000'
           }
         })
       ]

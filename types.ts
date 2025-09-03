@@ -13,4 +13,5 @@ export type FormatType =
   | 'strikethrough'
   | 'table'
   | 'image'
-  | 'link';
+  | 'link'
+  | 'search';

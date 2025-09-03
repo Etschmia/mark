@@ -293,6 +293,11 @@ const App: React.FC = () => {
     const editor = editorRef.current;
     if (!editor) return;
 
+    if (formatType === 'search') {
+      editor.openSearchPanel();
+      return;
+    }
+
     if (formatType === 'code') {
         const lang = options?.language;
         const selection = editor.getSelection();

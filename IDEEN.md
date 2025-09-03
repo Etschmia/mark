@@ -9,7 +9,7 @@ Hier ist eine Sammlung von Ideen zur weiteren Verbesserung des Projekts, kategor
 3.  **Zeilennummern:** Eine Leiste mit Zeilennummern im Editor, was besonders bei längeren Dokumenten hilfreich ist.
 4.  **Automatisches Schließen von Zeichen:** Automatisches Einfügen von schließenden Klammern, Anführungszeichen oder Markdown-Zeichen (z.B. bei `**` wird das zweite `**` automatisch ergänzt).
 5.  **Wort- und Zeichenzähler:** Eine kleine Statusleiste am unteren Rand des Editors, die die Anzahl der Wörter und Zeichen anzeigt.
-6.  **Suchen und Ersetzen:** Eine eingebaute Funktion, um im gesamten Dokument nach Text zu suchen und ihn zu ersetzen.
+6.  ~~**Suchen und Ersetzen:** Eine eingebaute Funktion, um im gesamten Dokument nach Text zu suchen und ihn zu ersetzen.~~ ✅ **ERLEDIGT - CodeMirror-Suchfunktion mit Tastaturkürzel implementiert**
 
 ### Vorschau & Export
 
