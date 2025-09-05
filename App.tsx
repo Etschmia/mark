@@ -8,6 +8,7 @@ import { EditorSettings } from './components/SettingsModal';
 import { HelpModal } from './components/HelpModal';
 import { CheatSheetModal } from './components/CheatSheetModal';
 import { SettingsModal } from './components/SettingsModal';
+import { pwaManager } from './utils/pwaManager';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -106,6 +107,9 @@ const App: React.FC = () => {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isCheatSheetModalOpen, setIsCheatSheetModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  
+  // PWA state
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   const addHistoryEntry = useCallback((newMarkdown: string) => {
     // When a new entry is added, clear any "future" history from previous undos
@@ -114,6 +118,34 @@ const App: React.FC = () => {
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
   }, [history, historyIndex]);
+
+  // Initialize PWA functionality
+  useEffect(() => {
+    // Handle offline status changes
+    pwaManager.onOfflineStatusChange((offline) => {
+      setIsOffline(offline);
+      if (offline) {
+        console.log('[PWA] App is now offline');
+      } else {
+        console.log('[PWA] App is back online');
+      }
+    });
+
+    // Handle URL shortcuts from PWA
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    
+    if (action === 'new') {
+      // Handle new file action
+      const newMarkdown = '';
+      const newFileName = 'untitled.md';
+      setMarkdown(newMarkdown);
+      setFileName(newFileName);
+      addHistoryEntry(newMarkdown);
+    } else if (action === 'help') {
+      setIsHelpModalOpen(true);
+    }
+  }, [addHistoryEntry]);
 
   const handleMarkdownChange = (newMarkdown: string) => {
     setMarkdown(newMarkdown);
@@ -529,6 +561,13 @@ const App: React.FC = () => {
         ? 'bg-slate-900 text-white' 
         : 'bg-gray-50 text-gray-900'
     }`}>
+      {/* Offline Indicator */}
+      {isOffline && (
+        <div className="bg-orange-600 text-white text-center py-2 text-sm font-medium">
+          📡 You're offline - Your work is saved locally and will sync when back online
+        </div>
+      )}
+      
       <header className={`flex-shrink-0 shadow-md z-10 ${
         settings.theme === 'dark'
           ? 'bg-slate-800 border-b border-slate-700'

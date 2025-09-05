@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-icons": "node scripts/generateIcons.mjs",
+    "pwa-validate": "echo 'Validating PWA configuration...' && node -e 'console.log(JSON.parse(require(\"fs\").readFileSync(\"./public/manifest.json\", \"utf8\")))'"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.6",

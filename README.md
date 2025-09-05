@@ -25,18 +25,22 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 ### 🛠️ **Advanced Tools**
 - **Complete Theme System** - Light/dark mode for entire interface with immediate switching
 - **Comprehensive Settings Modal** - Customize font size (10-24px), theme, debounce time (100-2000ms), line numbers, and auto-save
+- **Progressive Web App (PWA)** - Install as native app with offline functionality and custom icons
 - **Interactive Help System** - Keyboard shortcuts reference and Markdown cheat sheet in dropdown
 - **Code Syntax Highlighting** - Support for 12+ programming languages in preview
 - **File System Integration** - Modern File System Access API with legacy fallback
 - **Persistent Storage** - All settings, content, and filename automatically saved to localStorage
+- **Offline Support** - Continue working without internet connection with automatic sync
 
 ### 🎨 **User Experience**
 - **Complete Theme System** - Full light/dark mode for entire interface with persistent settings
+- **Progressive Web App** - Install as native app, works offline, with app shortcuts and notifications
 - **Comprehensive Settings Modal** - Font size, debounce time, line numbers, auto-save preferences
 - **No Registration Required** - Complete privacy, no cloud dependencies
 - **Responsive Design** - Works perfectly on desktop and mobile
 - **Intuitive Toolbar** - Visual buttons for all formatting options
 - **Multiple Preview Themes** - Customizable preview styling with persistent selection
+- **Offline Indicator** - Clear status when working without internet connection
 
 ## 🚀 Quick Start
 

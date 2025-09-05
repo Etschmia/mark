@@ -26,7 +26,7 @@ Hier ist eine Sammlung von Ideen zur weiteren Verbesserung des Projekts, kategor
 12. **Tab-Management:** Mehrere Dokumente gleichzeitig in Tabs öffnen und bearbeiten können.
 13. ~~**Einstellungs-Modal:** Ein Einstellungsfenster, in dem der Benutzer Dinge wie die Schriftgröße des Editors, das Standard-Theme oder die Debounce-Zeit für die Undo-Funktion anpassen kann.~~ ✅ **ERLEDIGT - Umfassendes Einstellungs-Modal mit Theme, Schriftgröße, Debounce-Zeit implementiert**
 14. ~~**Markdown-Spickzettel (Cheat Sheet):** Ein kleines Hilfe-Fenster oder ein Tab, das eine schnelle Übersicht über die gängigsten Markdown-Befehle anzeigt.~~ ✅ **ERLEDIGT - Hilfe-Dropdown mit Spickzettel und Vollhilfe implementiert**
-15. **Progressive Web App (PWA):** Die Anwendung als PWA konfigurieren, damit sie "installiert" werden kann und offline funktioniert.
+15. ~~**Progressive Web App (PWA):** Die Anwendung als PWA konfigurieren, damit sie "installiert" werden kann und offline funktioniert.~~ ✅ **ERLEDIGT - Vollständige PWA-Konfiguration mit Service Worker, Offline-Unterstützung, App-Installation und custom Icons**
 
 ### Code-Qualität & Architektur
 

@@ -1,0 +1,34 @@
+
+<svg width="384" height="384" viewBox="0 0 384 384" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="384" height="384" rx="38.400000000000006" fill="url(#bgGradient)"/>
+  
+  <!-- Main icon area -->
+  <g transform="translate(57.599999999999994, 57.599999999999994)">
+    <!-- Markdown "M" symbol -->
+    <path d="M 38.400000000000006 57.599999999999994 L 38.400000000000006 249.60000000000002 L 76.80000000000001 249.60000000000002 L 76.80000000000001 134.39999999999998 L 96 172.8 L 115.19999999999999 134.39999999999998 L 115.19999999999999 249.60000000000002 L 153.60000000000002 249.60000000000002 L 153.60000000000002 57.599999999999994 Z" fill="url(#iconGradient)"/>
+    
+    <!-- Document representation -->
+    <rect x="172.8" y="76.80000000000001" width="96" height="134.39999999999998" rx="7.68" fill="url(#iconGradient)" opacity="0.8"/>
+    
+    <!-- Text lines -->
+    <rect x="184.32" y="107.52000000000001" width="72.96000000000001" height="7.68" rx="3.84" fill="white" opacity="0.7"/>
+    <rect x="184.32" y="126.72" width="57.599999999999994" height="7.68" rx="3.84" fill="white" opacity="0.7"/>
+    <rect x="184.32" y="145.92000000000002" width="65.28" height="7.68" rx="3.84" fill="white" opacity="0.7"/>
+    <rect x="184.32" y="165.12" width="46.08" height="7.68" rx="3.84" fill="white" opacity="0.7"/>
+  </g>
+  
+  <!-- Subtle highlight -->
+  <rect width="384" height="115.19999999999999" rx="38.400000000000006" fill="url(#iconGradient)" opacity="0.1"/>
+</svg>
