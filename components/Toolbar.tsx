@@ -243,6 +243,52 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </div>
       </div>
       <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <button onClick={onNew} className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
+            New
+          </button>
+          <button onClick={onOpen} className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
+            Open
+          </button>
+        </div>
+        
+        <input
+          type="text"
+          value={fileName}
+          onChange={onFileNameChange}
+          className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 w-48 hidden sm:block"
+          placeholder="untitled.md"
+          aria-label="Filename"
+          spellCheck="false"
+        />
+        
+        <button onClick={onSave} className="px-3 py-1.5 text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
+          Save
+        </button>
+        
+        {/* Theme Dropdown */}
+        <div className="relative">
+          <select
+            value={selectedTheme}
+            onChange={(e) => onThemeChange(e.target.value)}
+            className="pl-3 pr-8 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 appearance-none"
+            aria-label="Preview Theme"
+          >
+            <option disabled value="" className="text-slate-400">
+              Theme
+            </option>
+            {themes.map(theme => (
+              <option key={theme} value={theme}>
+                {theme}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+          </div>
+        </div>
+        
+        {/* Help Dropdown */}
         <div className="relative" ref={helpDropdownRef}>
           <ToolButton onClick={() => setIsHelpDropdownOpen(prev => !prev)} title="Hilfe & Referenz">
             <HelpIcon />
@@ -281,28 +327,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </div>
         
-        {/* HIER IST DAS NEUE THEME-DROPDOWN */}
-        <div className="relative">
-          <select
-            value={selectedTheme}
-            onChange={(e) => onThemeChange(e.target.value)}
-            className="pl-3 pr-8 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 appearance-none"
-            aria-label="Preview Theme"
-          >
-            <option disabled value="" className="text-slate-400">
-              Theme
-            </option>
-            {themes.map(theme => (
-              <option key={theme} value={theme}>
-                {theme}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
-            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-          </div>
-        </div>
-        
         {/* GitHub Button */}
         <GitHubButton 
           connectionStatus={githubState.auth.isConnected ? 'connected' : 'disconnected'}
@@ -313,37 +337,18 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           isLoading={githubState.isLoadingRepos}
           error={githubState.error || undefined}
         />
-        
-        <input
-          type="text"
-          value={fileName}
-          onChange={onFileNameChange}
-          className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 w-48 hidden sm:block"
-          placeholder="untitled.md"
-          aria-label="Filename"
-          spellCheck="false"
-        />
-        <div className="flex items-center gap-2">
-          <button onClick={onNew} className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
-            New
+
+                {/* Install Button */}
+        {canInstallPWA && (
+          <button 
+            onClick={handleInstallApp} 
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-green-500"
+            title="Install App"
+          >
+            <InstallIcon />
+            Install App
           </button>
-          <button onClick={onOpen} className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
-            Open
-          </button>
-          <button onClick={onSave} className="px-3 py-1.5 text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
-            Save
-          </button>
-          {canInstallPWA && (
-            <button 
-              onClick={handleInstallApp} 
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-green-500"
-              title="Install App"
-            >
-              <InstallIcon />
-              Install App
-            </button>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
