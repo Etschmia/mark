@@ -1,5 +1,4 @@
 import { Octokit } from '@octokit/rest';
-import { createOAuthDeviceAuth } from '@octokit/auth-oauth-device';
 import { decode as base64Decode, encode as base64Encode } from 'js-base64';
 import type {
   GitHubUser,
@@ -13,11 +12,11 @@ import type {
 interface GitHubConfig {
   clientId: string;
   scopes: string[];
+  redirectUri: string;
 }
 
 class GitHubService {
   private octokit: Octokit | null = null;
-  private auth: any = null;
   private config: GitHubConfig;
 
   constructor() {
@@ -27,30 +26,42 @@ class GitHubService {
     // For development: Use 'Ov23liqOPAghglDE45gB' (example client ID)
     this.config = {
       clientId: 'Ov23liqOPAghglDE45gB', // Replace with your GitHub OAuth App client ID
-      scopes: ['public_repo', 'repo']
+      scopes: ['public_repo', 'repo'],
+      redirectUri: window.location.origin + window.location.pathname
     };
   }
 
   /**
-   * Initialize authentication using GitHub Device Flow
+   * Generate random string
    */
-  async initializeAuth(): Promise<{ deviceCode: string; userCode: string; verificationUri: string; interval: number }> {
+  private generateRandomString(length: number): string {
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    let text = '';
+    for (let i = 0; i < length; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+  }
+
+  /**
+   * Initialize authentication via GitHub OAuth popup
+   */
+  async initializeAuth(): Promise<void> {
     try {
-      this.auth = createOAuthDeviceAuth({
-        clientType: 'oauth-app',
-        clientId: this.config.clientId,
-        scopes: this.config.scopes,
-        onVerification: (verification) => {
-          // This will be handled by the UI component
-          return verification;
-        }
-      });
-
-      const { token, ...deviceInfo } = await this.auth({
-        type: 'oauth'
-      });
-
-      return deviceInfo;
+      // For client-side apps, we need to use a simpler approach
+      // We'll redirect to GitHub OAuth with a popup or direct redirect
+      const authUrl = new URL('https://github.com/login/oauth/authorize');
+      authUrl.searchParams.set('client_id', this.config.clientId);
+      authUrl.searchParams.set('redirect_uri', this.config.redirectUri);
+      authUrl.searchParams.set('scope', this.config.scopes.join(' '));
+      authUrl.searchParams.set('state', this.generateRandomString(32));
+      
+      // Store state for verification
+      localStorage.setItem('github_oauth_state', authUrl.searchParams.get('state')!);
+      
+      // For now, redirect to GitHub OAuth
+      // In production, you would need a backend service to handle the token exchange
+      window.location.href = authUrl.toString();
     } catch (error) {
       console.error('GitHub auth initialization failed:', error);
       throw new Error('Failed to initialize GitHub authentication');
@@ -58,44 +69,95 @@ class GitHubService {
   }
 
   /**
-   * Complete the device flow authentication
+   * Handle OAuth callback and prompt for token
+   * Since this is a client-side app without backend, we'll guide users to create a personal access token
    */
-  async completeAuth(deviceCode: string): Promise<{ token: string; user: GitHubUser }> {
+  async handleOAuthCallback(): Promise<{ token: string; user: GitHubUser } | null> {
     try {
-      if (!this.auth) {
-        throw new Error('Authentication not initialized');
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      const error = urlParams.get('error');
+      
+      // Check for OAuth errors
+      if (error) {
+        throw new Error(`OAuth error: ${error}`);
       }
+      
+      // If we have a code, show instructions for manual token creation
+      if (code && state) {
+        // Verify state parameter (CSRF protection)
+        const storedState = localStorage.getItem('github_oauth_state');
+        if (!storedState || state !== storedState) {
+          throw new Error('Invalid state parameter');
+        }
+        
+        // Clean up OAuth parameters
+        localStorage.removeItem('github_oauth_state');
+        
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Show instructions for creating a personal access token
+        this.showTokenInstructions();
+        return null;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('GitHub OAuth callback failed:', error);
+      
+      // Clean up OAuth parameters on error
+      localStorage.removeItem('github_oauth_state');
+      
+      throw error;
+    }
+  }
+  
+  /**
+   * Show instructions for creating a personal access token
+   */
+  private showTokenInstructions(): void {
+    const instructions = `
+To complete GitHub integration:
 
-      const { token } = await this.auth({
-        type: 'oauth',
-        deviceCode
-      });
+1. Visit: https://github.com/settings/tokens/new
+2. Create a new token with 'repo' and 'public_repo' scopes
+3. Copy the generated token
+4. Click 'Connect with GitHub' again and paste the token when prompted
 
+Note: This is required because this app runs entirely in your browser for security.`;
+    
+    alert(instructions);
+  }
+  
+  /**
+   * Authenticate with a personal access token
+   */
+  async authenticateWithToken(token: string): Promise<GitHubUser> {
+    try {
       // Initialize Octokit with the token
       this.octokit = new Octokit({
         auth: token
       });
 
-      // Get user information
+      // Get user information to validate token
       const { data: user } = await this.octokit.rest.users.getAuthenticated();
 
       // Store token securely
       this.storeToken(token);
 
       return {
-        token,
-        user: {
-          id: user.id,
-          login: user.login,
-          name: user.name,
-          email: user.email,
-          avatar_url: user.avatar_url,
-          html_url: user.html_url
-        }
+        id: user.id,
+        login: user.login,
+        name: user.name,
+        email: user.email,
+        avatar_url: user.avatar_url,
+        html_url: user.html_url
       };
     } catch (error) {
-      console.error('GitHub auth completion failed:', error);
-      throw new Error('Failed to complete GitHub authentication');
+      console.error('Token authentication failed:', error);
+      throw new Error('Invalid GitHub token');
     }
   }
 
@@ -421,7 +483,6 @@ class GitHubService {
    */
   disconnect(): void {
     this.octokit = null;
-    this.auth = null;
     this.clearToken();
   }
 

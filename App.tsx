@@ -187,7 +187,33 @@ const App: React.FC = () => {
     }
 
     // Initialize GitHub authentication if token exists
-    initializeGitHubAuth();
+    const initGitHub = async () => {
+      try {
+        // Check for OAuth callback first
+        const callbackResult = await githubService.handleOAuthCallback();
+        if (callbackResult) {
+          setGithubState(prev => ({
+            ...prev,
+            auth: {
+              isConnected: true,
+              user: callbackResult.user,
+              accessToken: callbackResult.token,
+              tokenExpiry: null
+            },
+            error: null
+          }));
+          return;
+        }
+        
+        // If no callback, try stored token
+        await initializeGitHubAuth();
+      } catch (error) {
+        console.error('Failed to initialize GitHub:', error);
+        // Continue without GitHub auth
+      }
+    };
+    
+    initGitHub();
     
     // Add global force update function for debugging
     (window as any).forceAppUpdate = async () => {
@@ -268,25 +294,68 @@ const App: React.FC = () => {
         error: null
       }));
 
-      const deviceInfo = await githubService.initializeAuth();
-      
-      // Show device code to user (this would typically be in a modal)
-      const userConsent = window.confirm(
-        `To connect to GitHub, please visit:\n${deviceInfo.verificationUri}\n\nAnd enter code: ${deviceInfo.userCode}\n\nClick OK after completing authorization.`
+      // Check if we already have a valid token
+      const storedToken = githubService.getStoredToken();
+      if (storedToken) {
+        try {
+          const user = await githubService.initializeWithToken(storedToken);
+          setGithubState(prev => ({
+            ...prev,
+            auth: {
+              isConnected: true,
+              user,
+              accessToken: storedToken,
+              tokenExpiry: null
+            },
+            error: null
+          }));
+          return;
+        } catch (error) {
+          // Token is invalid, continue with new authentication
+          console.log('Stored token is invalid, requesting new authentication');
+        }
+      }
+
+      // Check for OAuth callback
+      const callbackResult = await githubService.handleOAuthCallback();
+      if (callbackResult) {
+        setGithubState(prev => ({
+          ...prev,
+          auth: {
+            isConnected: true,
+            user: callbackResult.user,
+            accessToken: callbackResult.token,
+            tokenExpiry: null
+          },
+          error: null
+        }));
+        return;
+      }
+
+      // Prompt for personal access token
+      const token = prompt(
+        'Please enter your GitHub Personal Access Token:\n\n' +
+        '1. Visit: https://github.com/settings/tokens/new\n' +
+        '2. Create a token with "repo" and "public_repo" scopes\n' +
+        '3. Copy and paste the token below:'
       );
 
-      if (userConsent) {
-        const { token, user } = await githubService.completeAuth(deviceInfo.deviceCode);
-        
+      if (token && token.trim()) {
+        const user = await githubService.authenticateWithToken(token.trim());
         setGithubState(prev => ({
           ...prev,
           auth: {
             isConnected: true,
             user,
-            accessToken: token,
+            accessToken: token.trim(),
             tokenExpiry: null
           },
           error: null
+        }));
+      } else {
+        setGithubState(prev => ({
+          ...prev,
+          error: 'GitHub authentication cancelled'
         }));
       }
     } catch (error) {
@@ -298,8 +367,8 @@ const App: React.FC = () => {
           errorMessage = 'Connection timeout. Please check your internet connection and try again.';
         } else if (error.message.includes('rate limit')) {
           errorMessage = 'Rate limit exceeded. Please try again later.';
-        } else if (error.message.includes('unauthorized')) {
-          errorMessage = 'Authorization failed. Please check your GitHub credentials.';
+        } else if (error.message.includes('unauthorized') || error.message.includes('Invalid GitHub token')) {
+          errorMessage = 'Invalid GitHub token. Please check your token and try again.';
         } else {
           errorMessage = error.message;
         }
