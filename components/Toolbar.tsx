@@ -290,9 +290,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         
         {/* Help Dropdown */}
         <div className="relative" ref={helpDropdownRef}>
-          <ToolButton onClick={() => setIsHelpDropdownOpen(prev => !prev)} title="Hilfe & Referenz">
+          <button 
+            onClick={() => setIsHelpDropdownOpen(prev => !prev)} 
+            title="Hilfe & Referenz"
+            className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500"
+          >
             <HelpIcon />
-          </ToolButton>
+          </button>
           {isHelpDropdownOpen && (
             <div className="absolute left-0 z-20 mt-2 w-48 origin-top-left rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
               <button
