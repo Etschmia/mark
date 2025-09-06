@@ -1,6 +1,6 @@
 # Markdown Editor Pro
 
-A powerful, lightweight, browser-based Markdown editor designed for simplicity, privacy, and productivity. Features real-time syntax highlighting, live preview, comprehensive keyboard shortcuts, and advanced export capabilities.
+A powerful, lightweight, browser-based Markdown editor designed for simplicity, privacy, and productivity. Features real-time syntax highlighting, live preview, comprehensive keyboard shortcuts, advanced export capabilities, and seamless GitHub integration.
 
 ## ✨ Key Features
 
@@ -9,6 +9,15 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 - **Live Preview** - Instant HTML rendering with synchronized scrolling
 - **Split-View Interface** - Resizable panels for optimal workflow
 - **Dark Theme** - Eye-friendly design for extended writing sessions
+
+### 🐙 **GitHub Integration** (NEW!)
+- **Seamless GitHub Connection** - Connect with GitHub via secure OAuth Device Flow
+- **Repository Browser** - Browse all your repositories with search and filtering
+- **Direct File Loading** - Load Markdown files directly from GitHub repositories
+- **Enhanced Save Options** - Save locally or commit directly to GitHub with custom commit messages
+- **Branch Support** - Work with files across different branches
+- **Persistent Authentication** - Stay connected across browser sessions
+- **Offline Awareness** - Clear indicators when GitHub features are unavailable
 
 ### 🗏️ **Productivity Features**
 - **Complete Keyboard Shortcuts** - Full shortcut support for all formatting options (25+ shortcuts)
@@ -96,6 +105,11 @@ npm run build
 - **TypeScript 5.8.2** - Type-safe development
 - **Vite 7.0.6** - Lightning-fast build tool and dev server
 
+### GitHub Integration
+- **@octokit/rest** - Official GitHub REST API client
+- **@octokit/auth-oauth-device** - Secure OAuth Device Flow authentication
+- **js-base64** - Base64 encoding for GitHub file operations
+
 ### Editor & Parsing
 - **CodeMirror 6** - Professional code editor with syntax highlighting
 - **@codemirror/search** - Advanced search and replace functionality
@@ -123,9 +137,13 @@ markdown-editor-pro/
 │   ├── Toolbar.tsx             # Main toolbar with all controls
 │   ├── HelpModal.tsx           # Comprehensive help system
 │   ├── CheatSheetModal.tsx     # Markdown syntax reference
+│   ├── GitHubButton.tsx        # GitHub connection button
+│   ├── GitHubModal.tsx         # Repository and file browser
+│   ├── SaveOptionsModal.tsx    # Local vs GitHub save options
 │   └── preview-themes.ts       # Preview styling themes
 ├── utils/
-│   └── exportUtils.ts          # HTML/PDF export functionality
+│   ├── exportUtils.ts          # HTML/PDF export functionality
+│   └── githubService.ts        # GitHub API integration
 ├── App.tsx                     # Main application component
 ├── index.tsx                   # Application entry point
 ├── types.ts                    # TypeScript type definitions
@@ -150,12 +168,32 @@ markdown-editor-pro/
 ### `Toolbar.tsx`
 - Complete formatting controls
 - File operations (New, Open, Save, Export)
+- GitHub integration button
 - Help system dropdown
 - Theme selection
+
+### `GitHubButton.tsx`
+- GitHub connection status display
+- OAuth authentication management
+- Repository browsing trigger
+- User profile information
+
+### `GitHubModal.tsx`
+- Repository search and filtering
+- File system navigation
+- Markdown file selection
+- Branch and path management
+
+### `SaveOptionsModal.tsx`
+- Local vs GitHub save choice
+- Commit message composition
+- Change detection display
+- Permission validation
 
 ### `HelpModal.tsx`
 - Complete keyboard shortcuts reference
 - Toolbar functionality explanations
+- GitHub integration guide
 - Organized by categories
 - Always up-to-date with current features
 

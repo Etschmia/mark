@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FormatType } from '../types';
+import { FormatType, GitHubState, FileSource } from '../types';
 import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
 import { SettingsModal, EditorSettings } from './SettingsModal';
+import { GitHubButton } from './GitHubButton';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
@@ -31,6 +32,12 @@ interface ToolbarProps {
   setIsCheatSheetModalOpen: (open: boolean) => void;
   isSettingsModalOpen: boolean;
   setIsSettingsModalOpen: (open: boolean) => void;
+  // GitHub integration props
+  githubState: GitHubState;
+  onGitHubConnect: () => void;
+  onGitHubDisconnect: () => void;
+  onBrowseRepositories: () => void;
+  fileSource: FileSource;
 }
 
 const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean }> = ({ onClick, children, title, disabled = false }) => (
@@ -74,7 +81,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   isCheatSheetModalOpen,
   setIsCheatSheetModalOpen,
   isSettingsModalOpen,
-  setIsSettingsModalOpen
+  setIsSettingsModalOpen,
+  // GitHub props
+  githubState,
+  onGitHubConnect,
+  onGitHubDisconnect,
+  onBrowseRepositories,
+  fileSource
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
@@ -248,6 +261,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
           </div>
         </div>
+        
+        {/* GitHub Button */}
+        <GitHubButton 
+          connectionStatus={githubState.auth.isConnected ? 'connected' : 'disconnected'}
+          user={githubState.auth.user || undefined}
+          onConnect={onGitHubConnect}
+          onDisconnect={onGitHubDisconnect}
+          onBrowseRepos={onBrowseRepositories}
+          isLoading={githubState.isLoadingRepos}
+          error={githubState.error || undefined}
+        />
         
         <input
           type="text"

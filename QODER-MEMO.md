@@ -15,8 +15,9 @@
 - ✅ #13: Settings modal (font size, theme, debounce time, line numbers, auto-save)
 - ✅ #14: Markdown cheat sheet in help dropdown
 - ✅ #16: NPM dependency management
+- ✅ **NEW: GitHub Integration** - Complete GitHub connectivity with OAuth, repository browsing, file loading, and enhanced save options
 
-**Architecture:** React 19.1.1 + TypeScript 5.8.2 + Vite 7.0.6 + CodeMirror 6
+**Architecture:** React 19.1.1 + TypeScript 5.8.2 + Vite 7.0.6 + CodeMirror 6 + GitHub API Integration
 
 ## 🏗️ Key Technical Decisions
 
@@ -30,6 +31,16 @@
 - **File System Access API** (modern browsers) + legacy fallback
 - **LocalStorage persistence** for auto-save
 - **Export capabilities**: Markdown, HTML, PDF
+- **GitHub Integration**: OAuth authentication, repository browsing, direct file operations
+
+### GitHub Integration Architecture
+- **OAuth Device Flow** for secure authentication
+- **@octokit/rest** for GitHub API operations
+- **Persistent token storage** with validation
+- **Enhanced save workflow** with commit message support
+- **Repository browsing** with search and filtering
+- **Markdown file detection** and loading
+- **Branch and path navigation** support
 
 ### Help System
 - **Dropdown approach**: Help button → 2 options
@@ -49,17 +60,21 @@
 ## 📁 Critical Files
 
 ### Core Components
-- `App.tsx` - Central state, file ops, format routing, settings management
+- `App.tsx` - Central state, file ops, format routing, settings management, GitHub integration
 - `components/Editor.tsx` - CodeMirror integration + shortcuts + theme support
-- `components/Toolbar.tsx` - All UI controls + dropdowns
+- `components/Toolbar.tsx` - All UI controls + dropdowns + GitHub button
 - `components/HelpModal.tsx` - Complete help system
 - `components/CheatSheetModal.tsx` - Quick reference
 - `components/SettingsModal.tsx` - Theme and preference controls
+- `components/GitHubButton.tsx` - GitHub connection and status display
+- `components/GitHubModal.tsx` - Repository and file browser
+- `components/SaveOptionsModal.tsx` - Local vs GitHub save options
 
 ### Utilities
 - `utils/exportUtils.ts` - HTML/PDF export logic
+- `utils/githubService.ts` - GitHub API integration and authentication
 - `components/preview-themes.ts` - Preview styling
-- `types.ts` - TypeScript definitions
+- `types.ts` - TypeScript definitions including GitHub types
 
 ## 🔧 Dependencies Strategy
 
@@ -68,6 +83,7 @@
 - CodeMirror 6 (multiple packages)
 - marked 16.2.1, DOMPurify 3.2.6, highlight.js 11.11.1
 - jsPDF + html2canvas for PDF export
+- @octokit/rest, @octokit/auth-oauth-device, js-base64 for GitHub integration
 
 **Pattern:** All via NPM (no CDN), ES modules, strict versioning
 
@@ -164,4 +180,4 @@ Based on pattern, user may want:
 - Mobile experience improvements
 
 ---
-*Updated: After implementing complete settings modal with theme system, line numbers, and persistent localStorage*
+*Updated: After implementing complete GitHub integration with OAuth authentication, repository browsing, file operations, and enhanced save workflow*
