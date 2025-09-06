@@ -289,6 +289,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             className="pl-3 pr-8 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 appearance-none"
             aria-label="Preview Theme"
           >
+            <option disabled value="" className="text-slate-400">
+              Theme
+            </option>
             {themes.map(theme => (
               <option key={theme} value={theme}>
                 {theme}

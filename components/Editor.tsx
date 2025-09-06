@@ -247,7 +247,13 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       }),
       EditorView.domEventHandlers({
         scroll: (event) => {
-          if (onScroll) onScroll(event);
+          if (onScroll) {
+            // Make sure we're getting the right scroll element
+            const scrollElement = event.target as HTMLElement;
+            if (scrollElement && scrollElement.classList.contains('cm-scroller')) {
+              onScroll(event);
+            }
+          }
         }
       }),
       EditorView.theme({
@@ -256,15 +262,19 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
           fontSize: `${settings.fontSize}px`
         },
         '.cm-editor': {
-          height: '100%'
+          height: '100%',
+          overflow: 'hidden' // Let scroller handle overflow
         },
         '.cm-scroller': {
           padding: '24px',
-          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+          overflow: 'auto',
+          height: '100%',
+          maxHeight: '100%'
         },
         '.cm-content': {
           padding: '0',
-          minHeight: '100%'
+          minHeight: '100%' // Ensure content fills the space
         },
         '.cm-focused': {
           outline: 'none'
@@ -346,10 +356,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   }, [value]);
 
   return (
-    <div className={`rounded-lg h-full flex flex-col ${
+    <div className={`rounded-lg h-full flex flex-col overflow-hidden ${
       settings.theme === 'dark' ? 'bg-slate-800' : 'bg-white border border-gray-200'
     }`}>
-      <div ref={editorRef} className="w-full h-full" />
+      <div ref={editorRef} className="w-full h-full min-h-0" />
     </div>
   );
 });
