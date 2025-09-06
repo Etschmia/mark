@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/updateServiceWorkerVersion.mjs && vite build",
+    "build:dev": "vite build",
     "preview": "vite preview",
     "generate-icons": "node scripts/generateIcons.mjs",
-    "pwa-validate": "echo 'Validating PWA configuration...' && node -e 'console.log(JSON.parse(require(\"fs\").readFileSync(\"./public/manifest.json\", \"utf8\")))'"
+    "pwa-validate": "echo 'Validating PWA configuration...' && node -e 'console.log(JSON.parse(require(\"fs\").readFileSync(\"./public/manifest.json\", \"utf8\")))'",
+    "update-sw-version": "node scripts/updateServiceWorkerVersion.mjs",
+    "force-cache-clear": "echo 'This script helps clear PWA caches. Run: window.forceAppUpdate() in browser console'"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.6",

@@ -99,6 +99,68 @@ class PWAManager {
         console.log('[PWA] New service worker activated, reloading...');
         window.location.reload();
       });
+      
+      // Check for updates more frequently
+      setInterval(() => {
+        this.checkForUpdates();
+      }, 60000); // Check every minute
+    }
+  }
+
+  private async checkForUpdates(): Promise<void> {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          await registration.update();
+        }
+      } catch (error) {
+        console.error('[PWA] Update check failed:', error);
+      }
+    }
+  }
+
+  public async forceUpdate(): Promise<void> {
+    console.log('[PWA] Forcing app update...');
+    
+    if ('serviceWorker' in navigator) {
+      try {
+        // Send force update message to service worker
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration && registration.active) {
+          registration.active.postMessage({ type: 'FORCE_UPDATE' });
+        }
+        
+        // Clear browser cache
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(
+            cacheNames.map(cacheName => {
+              console.log('[PWA] Clearing cache:', cacheName);
+              return caches.delete(cacheName);
+            })
+          );
+        }
+        
+        // Unregister service worker and reload
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(
+          registrations.map(registration => {
+            console.log('[PWA] Unregistering service worker');
+            return registration.unregister();
+          })
+        );
+        
+        // Force reload with cache bypass
+        window.location.reload();
+      } catch (error) {
+        console.error('[PWA] Force update failed:', error);
+        // Fallback: just reload the page
+        window.location.reload();
+      }
+    } else {
+      // No service worker support, just reload
+      window.location.reload();
     }
   }
 
@@ -177,22 +239,34 @@ class PWAManager {
   }
 
   private createUpdateBanner(): HTMLElement {
+    // Remove existing banner if present
+    const existingBanner = document.querySelector('#pwa-update-banner');
+    if (existingBanner) {
+      existingBanner.remove();
+    }
+    
     const banner = document.createElement('div');
     banner.id = 'pwa-update-banner';
     banner.className = `
-      fixed top-0 left-0 right-0 z-50 
+      fixed top-0 left-0 right-0 z-[9999] 
       bg-blue-600 text-white 
       p-3 text-center text-sm
       transform -translate-y-full transition-transform duration-300
+      shadow-lg
     `;
     banner.innerHTML = `
-      <span>New version available!</span>
-      <button id="pwa-update-button" class="ml-4 px-3 py-1 bg-blue-800 rounded text-xs hover:bg-blue-700">
-        Update
-      </button>
-      <button id="pwa-dismiss-update" class="ml-2 px-3 py-1 bg-blue-800 rounded text-xs hover:bg-blue-700">
-        Dismiss
-      </button>
+      <div class="flex items-center justify-center gap-4">
+        <span>🚀 Neue Version verfügbar!</span>
+        <button id="pwa-update-button" class="px-3 py-1 bg-blue-800 rounded text-xs hover:bg-blue-700 transition-colors">
+          Jetzt aktualisieren
+        </button>
+        <button id="pwa-force-update-button" class="px-3 py-1 bg-red-600 rounded text-xs hover:bg-red-700 transition-colors">
+          Force Update
+        </button>
+        <button id="pwa-dismiss-update" class="px-3 py-1 bg-gray-600 rounded text-xs hover:bg-gray-700 transition-colors">
+          Später
+        </button>
+      </div>
     `;
 
     // Show banner with animation
@@ -200,11 +274,18 @@ class PWAManager {
       banner.style.transform = 'translateY(0)';
     }, 100);
 
-    // Handle update button
+    // Handle normal update button
     banner.querySelector('#pwa-update-button')?.addEventListener('click', () => {
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
       }
+      banner.remove();
+    });
+
+    // Handle force update button
+    banner.querySelector('#pwa-force-update-button')?.addEventListener('click', async () => {
+      banner.remove();
+      await this.forceUpdate();
     });
 
     // Handle dismiss button

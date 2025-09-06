@@ -1,4 +1,6 @@
-const CACHE_NAME = 'markdown-editor-pro-v1';
+// Dynamic cache name with timestamp to force updates
+const CACHE_VERSION = 1757175236100; // This will be replaced by build process
+const CACHE_NAME = `markdown-editor-pro-v${CACHE_VERSION}`;
 const urlsToCache = [
   '/',
   '/index.html',
@@ -69,44 +71,60 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        if (response) {
-          console.log('[ServiceWorker] Serving from cache:', event.request.url);
-          return response;
-        }
-
-        console.log('[ServiceWorker] Fetching from network:', event.request.url);
-        return fetch(event.request).then((response) => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response for caching
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        });
-      })
-      .catch((error) => {
-        console.error('[ServiceWorker] Fetch failed:', error);
-        
-        // Return offline page for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
-        
-        throw error;
-      })
+    // For HTML documents, try network first to get fresh content
+    event.request.mode === 'navigate' ? 
+      networkFirstStrategy(event.request) : 
+      cacheFirstStrategy(event.request)
   );
 });
+
+// Network-first strategy for HTML documents (ensures fresh content)
+async function networkFirstStrategy(request) {
+  try {
+    console.log('[ServiceWorker] Network first for:', request.url);
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse && networkResponse.status === 200) {
+      // Cache the fresh response
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+      return networkResponse;
+    }
+    
+    throw new Error('Network response not ok');
+  } catch (error) {
+    console.log('[ServiceWorker] Network failed, falling back to cache:', request.url);
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    throw error;
+  }
+}
+
+// Cache-first strategy for static assets
+async function cacheFirstStrategy(request) {
+  try {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      console.log('[ServiceWorker] Serving from cache:', request.url);
+      return cachedResponse;
+    }
+
+    console.log('[ServiceWorker] Fetching from network:', request.url);
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.error('[ServiceWorker] Fetch failed:', error);
+    throw error;
+  }
+}
 
 // Handle background sync for offline functionality
 self.addEventListener('sync', (event) => {
@@ -157,5 +175,22 @@ self.addEventListener('message', (event) => {
   
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'FORCE_UPDATE') {
+    // Clear all caches and update
+    event.waitUntil(
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            console.log('[ServiceWorker] Force clearing cache:', cacheName);
+            return caches.delete(cacheName);
+          })
+        );
+      }).then(() => {
+        console.log('[ServiceWorker] All caches cleared, updating...');
+        self.skipWaiting();
+      })
+    );
   }
 });

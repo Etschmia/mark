@@ -188,6 +188,29 @@ const App: React.FC = () => {
 
     // Initialize GitHub authentication if token exists
     initializeGitHubAuth();
+    
+    // Add global force update function for debugging
+    (window as any).forceAppUpdate = async () => {
+      console.log('🔄 Forcing app update via global function...');
+      await pwaManager.forceUpdate();
+    };
+    
+    // Add cache info function for debugging
+    (window as any).getCacheInfo = async () => {
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        console.log('📦 Active caches:', cacheNames);
+        for (const cacheName of cacheNames) {
+          const cache = await caches.open(cacheName);
+          const keys = await cache.keys();
+          console.log(`Cache ${cacheName}:`, keys.map(req => req.url));
+        }
+      }
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        console.log('🔧 Service worker registrations:', registrations);
+      }
+    };
   }, [addHistoryEntry]);
 
   // GitHub Authentication Functions
