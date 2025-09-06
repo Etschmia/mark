@@ -1,8 +1,7 @@
 
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
-import { EditorView, keymap } from '@codemirror/view';
+import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
-import { basicSetup } from 'codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { javascript } from '@codemirror/lang-javascript';
 import { sql } from '@codemirror/lang-sql';
@@ -12,10 +11,49 @@ import { xml } from '@codemirror/lang-xml';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { indentWithTab } from '@codemirror/commands';
 import { searchKeymap, openSearchPanel } from '@codemirror/search';
-import { lineNumbers } from '@codemirror/view';
 import { EditorSettings } from './SettingsModal';
 
-// Custom keymap to add Ctrl+F / Cmd+F for search
+// Import basic setup components
+import { 
+  closeBrackets, 
+  autocompletion, 
+  closeBracketsKeymap, 
+  completionKeymap 
+} from '@codemirror/autocomplete';
+import { 
+  defaultKeymap, 
+  historyKeymap,
+  history 
+} from '@codemirror/commands';
+import { 
+  bracketMatching, 
+  indentOnInput, 
+  syntaxHighlighting, 
+  defaultHighlightStyle, 
+  foldKeymap 
+} from '@codemirror/language';
+import { highlightSelectionMatches } from '@codemirror/search';
+
+// Create a basic setup that doesn't include line numbers by default
+const createBaseSetup = (includeLineNumbers: boolean) => [
+  history(),
+  EditorView.lineWrapping,
+  bracketMatching(),
+  closeBrackets(),
+  autocompletion(),
+  highlightSelectionMatches(),
+  indentOnInput(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  ...(includeLineNumbers ? [lineNumbers()] : []),
+  keymap.of([
+    ...closeBracketsKeymap,
+    ...defaultKeymap,
+    ...searchKeymap,
+    ...historyKeymap,
+    ...foldKeymap,
+    ...completionKeymap,
+  ]),
+];
 const customSearchKeymap = [
   {
     key: 'Mod-f',
@@ -230,7 +268,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     if (!editorRef.current) return;
 
     const extensions = [
-      basicSetup,
+      ...createBaseSetup(settings.showLineNumbers),
       markdown(),
       javascript(),
       sql(),
@@ -238,8 +276,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       php(),
       xml(),
       ...(settings.theme === 'dark' ? [oneDark] : []),
-      ...(settings.showLineNumbers ? [lineNumbers()] : []),
-      keymap.of([indentWithTab, ...searchKeymap, ...customSearchKeymap, ...createFormattingKeymap(onFormat)]),
+      keymap.of([indentWithTab, ...customSearchKeymap, ...createFormattingKeymap(onFormat)]),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           onChange(update.state.doc.toString());
