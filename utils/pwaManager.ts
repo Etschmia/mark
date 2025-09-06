@@ -189,48 +189,20 @@ class PWAManager {
   }
 
   private showInstallButton(): void {
-    const installButton = this.createInstallButton();
-    document.body.appendChild(installButton);
+    // Install button is now integrated into the toolbar
+    // Dispatch custom event to notify components
+    window.dispatchEvent(new CustomEvent('pwa-install-available'));
   }
 
   private hideInstallButton(): void {
-    const installButton = document.querySelector('#pwa-install-button');
-    if (installButton) {
-      installButton.remove();
-    }
+    // Install button is now integrated into the toolbar
+    // Dispatch custom event to notify components
+    window.dispatchEvent(new CustomEvent('pwa-install-hidden'));
   }
 
+  // This method is no longer used - install button is integrated into toolbar
   private createInstallButton(): HTMLElement {
-    // Remove existing button if present
-    this.hideInstallButton();
-    
-    const button = document.createElement('button');
-    button.id = 'pwa-install-button';
-    button.innerHTML = `
-      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-      </svg>
-      Install App
-    `;
-    button.className = `
-      fixed bottom-4 right-4 z-50 
-      flex items-center px-4 py-2 
-      bg-cyan-600 hover:bg-cyan-700 
-      text-white font-medium text-sm 
-      rounded-lg shadow-lg 
-      transition-all duration-200 
-      focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2
-      animate-bounce
-    `;
-    
-    button.addEventListener('click', async () => {
-      const installed = await this.installApp();
-      if (installed) {
-        button.style.display = 'none';
-      }
-    });
-
-    return button;
+    throw new Error('Install button is now integrated into the toolbar component');
   }
 
   private showUpdateAvailable(): void {

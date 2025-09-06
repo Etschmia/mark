@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType, GitHubState, FileSource } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
 import { SettingsModal, EditorSettings } from './SettingsModal';
 import { GitHubButton } from './GitHubButton';
+import { pwaManager } from '../utils/pwaManager';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
@@ -92,6 +93,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isHelpDropdownOpen, setIsHelpDropdownOpen] = useState(false);
+  const [canInstallPWA, setCanInstallPWA] = useState(false);
   const codeDropdownRef = useRef<HTMLDivElement>(null);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
   const helpDropdownRef = useRef<HTMLDivElement>(null);
@@ -111,6 +113,30 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle PWA install events
+  useEffect(() => {
+    const handleInstallAvailable = () => {
+      setCanInstallPWA(true);
+    };
+    
+    const handleInstallHidden = () => {
+      setCanInstallPWA(false);
+    };
+    
+    // Check initial install status
+    const status = pwaManager.getInstallationStatus();
+    setCanInstallPWA(status.canInstall);
+    
+    // Listen for PWA events
+    window.addEventListener('pwa-install-available', handleInstallAvailable);
+    window.addEventListener('pwa-install-hidden', handleInstallHidden);
+    
+    return () => {
+      window.removeEventListener('pwa-install-available', handleInstallAvailable);
+      window.removeEventListener('pwa-install-hidden', handleInstallHidden);
     };
   }, []);
   
@@ -137,6 +163,18 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
     setIsExportDropdownOpen(false);
+  };
+
+  const handleInstallApp = async () => {
+    try {
+      const installed = await pwaManager.installApp();
+      if (installed) {
+        setCanInstallPWA(false);
+      }
+    } catch (error) {
+      console.error('Install failed:', error);
+      alert(`Installation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   return (
@@ -292,6 +330,16 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <button onClick={onSave} className="px-3 py-1.5 text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
             Save
           </button>
+          {canInstallPWA && (
+            <button 
+              onClick={handleInstallApp} 
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-green-500"
+              title="Install App"
+            >
+              <InstallIcon />
+              Install App
+            </button>
+          )}
         </div>
       </div>
     </div>
