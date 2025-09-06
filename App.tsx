@@ -1024,24 +1024,19 @@ const App: React.FC = () => {
     if (isSyncingScroll.current) return;
 
     isSyncingScroll.current = true;
-    console.log(`Scroll event from ${source}`, event?.target);
 
     try {
       if (source === 'editor' && event && previewRef.current) {
         // Get scroll info from the CodeMirror scroll event
         const scrollElement = event.target as HTMLElement;
-        console.log('Editor scroll element:', scrollElement?.className, scrollElement?.scrollTop, scrollElement?.scrollHeight);
         
         if (scrollElement && scrollElement.scrollHeight > scrollElement.clientHeight) {
           const scrollPercentage = scrollElement.scrollTop / 
             (scrollElement.scrollHeight - scrollElement.clientHeight);
           
-          console.log('Editor scroll percentage:', scrollPercentage);
-          
           const previewScrollHeight = previewRef.current.scrollHeight - previewRef.current.clientHeight;
           const targetScrollTop = scrollPercentage * previewScrollHeight;
           
-          console.log('Setting preview scroll to:', targetScrollTop);
           previewRef.current.scrollTop = targetScrollTop;
         }
       } else if (source === 'preview' && previewRef.current && editorRef.current) {
@@ -1051,21 +1046,16 @@ const App: React.FC = () => {
         if (previewScrollHeight <= 0) return;
         
         const scrollPercentage = previewRef.current.scrollTop / previewScrollHeight;
-        console.log('Preview scroll percentage:', scrollPercentage);
         
         // Find the CodeMirror scroller element
         const editorContainer = document.querySelector('.cm-scroller') as HTMLElement;
-        console.log('Found editor container:', editorContainer?.scrollTop, editorContainer?.scrollHeight);
         
         if (editorContainer) {
           const editorScrollHeight = editorContainer.scrollHeight - editorContainer.clientHeight;
           
           if (editorScrollHeight > 0) {
             const targetScrollTop = scrollPercentage * editorScrollHeight;
-            console.log('Setting editor scroll to:', targetScrollTop);
             editorContainer.scrollTop = targetScrollTop;
-          } else {
-            console.log('Editor cannot scroll - scrollHeight too small:', editorContainer.scrollHeight, editorContainer.clientHeight);
           }
         }
       }
