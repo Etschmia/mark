@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Editor, EditorRef } from './components/Editor';
 import { Preview } from './components/Preview';
 import { Toolbar } from './components/Toolbar';
-import { FormatType, GitHubState, GitHubUser, GitHubRepository, GitHubFile, GitHubCommitOptions, FileSource } from './types';
+import { FormatType, GitHubState, GitHubUser, GitHubRepository, GitHubFile, GitHubCommitOptions, FileSource, TabManagerState, Tab, EditorState } from './types';
 import { themes } from './components/preview-themes';
 import { EditorSettings } from './components/SettingsModal';
 import { HelpModal } from './components/HelpModal';
@@ -12,6 +12,7 @@ import { pwaManager } from './utils/pwaManager';
 import { githubService } from './utils/githubService';
 import { GitHubModal } from './components/GitHubModal';
 import { SaveOptionsModal } from './components/SaveOptionsModal';
+import { TabManager } from './utils/tabManager';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -33,11 +34,13 @@ declare global {
 }
 
 const App: React.FC = () => {
-  // Load persisted state from localStorage
-  const getPersistedState = () => {
+  // Initialize TabManager
+  const tabManagerRef = useRef<TabManager>(new TabManager());
+  const [tabManagerState, setTabManagerState] = useState<TabManagerState>(tabManagerRef.current.getState());
+
+  // Load persisted state from localStorage (for settings only, tabs are handled by TabManager)
+  const getPersistedSettings = () => {
     try {
-      const savedMarkdown = localStorage.getItem('markdown-editor-content');
-      const savedFileName = localStorage.getItem('markdown-editor-filename');
       const savedSettings = localStorage.getItem('markdown-editor-settings');
       
       const defaultSettings: EditorSettings = {
@@ -49,37 +52,34 @@ const App: React.FC = () => {
         showLineNumbers: false
       };
       
-      return {
-        markdown: savedMarkdown || '# Hello, Markdown!\n\nStart typing here...',
-        fileName: savedFileName || 'untitled.md',
-        settings: savedSettings ? { ...defaultSettings, ...JSON.parse(savedSettings) } : defaultSettings
-      };
+      return savedSettings ? { ...defaultSettings, ...JSON.parse(savedSettings) } : defaultSettings;
     } catch (error) {
-      console.warn('Failed to load persisted state from localStorage:', error);
+      console.warn('Failed to load persisted settings from localStorage:', error);
       return {
-        markdown: '# Hello, Markdown!\n\nStart typing here...',
-        fileName: 'untitled.md',
-        settings: {
-          theme: 'dark',
-          fontSize: 14,
-          debounceTime: 500,
-          previewTheme: 'Default',
-          autoSave: true,
-          showLineNumbers: false
-        }
+        theme: 'dark',
+        fontSize: 14,
+        debounceTime: 500,
+        previewTheme: 'Default',
+        autoSave: true,
+        showLineNumbers: false
       };
     }
   };
 
-  const persistedState = getPersistedState();
-  const [markdown, setMarkdown] = useState<string>(persistedState.markdown);
-  const [fileName, setFileName] = useState<string>(persistedState.fileName);
-  const [settings, setSettings] = useState<EditorSettings>(persistedState.settings);
+  const persistedSettings = getPersistedSettings();
+  
+  // Get active tab for current state
+  const activeTab = tabManagerRef.current.getActiveTab();
+  
+  // State derived from active tab
+  const [markdown, setMarkdown] = useState<string>(activeTab?.content || '');
+  const [fileName, setFileName] = useState<string>(activeTab?.filename || 'untitled.md');
+  const [settings, setSettings] = useState<EditorSettings>(persistedSettings);
   const editorRef = useRef<EditorRef>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const fileHandleRef = useRef<FileSystemFileHandle | null>(null); // For File System Access API
+  const fileHandleRef = useRef<FileSystemFileHandle | null>(activeTab?.fileHandle || null);
 
-  const [previewTheme, setPreviewTheme] = useState<string>(persistedState.settings.previewTheme);
+  const [previewTheme, setPreviewTheme] = useState<string>(persistedSettings.previewTheme);
 
   // Handle settings changes
   const handleSettingsChange = useCallback((newSettings: EditorSettings) => {
@@ -98,9 +98,9 @@ const App: React.FC = () => {
   const [isResizing, setIsResizing] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   
-  // State for Undo/Redo
-  const [history, setHistory] = useState<string[]>([persistedState.markdown]);
-  const [historyIndex, setHistoryIndex] = useState(0);
+  // State for Undo/Redo (now managed per tab)
+  const [history, setHistory] = useState<string[]>(activeTab?.history || [activeTab?.content || '']);
+  const [historyIndex, setHistoryIndex] = useState(activeTab?.historyIndex || 0);
   const debounceRef = useRef<number | null>(null);
 
   // Ref to prevent scroll event loops
@@ -136,12 +136,126 @@ const App: React.FC = () => {
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const [isSaveOptionsModalOpen, setIsSaveOptionsModalOpen] = useState(false);
   
-  // File source tracking
-  const [fileSource, setFileSource] = useState<FileSource>({ type: 'local' });
-  const [originalContent, setOriginalContent] = useState<string>(''); // Track original content for change detection
+  // File source tracking (now managed per tab)
+  const [fileSource, setFileSource] = useState<FileSource>(activeTab?.fileSource || { type: 'local' });
+  const [originalContent, setOriginalContent] = useState<string>(activeTab?.originalContent || ''); // Track original content for change detection
   
   // PWA state
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  // Tab Manager subscription
+  useEffect(() => {
+    const unsubscribe = tabManagerRef.current.subscribe((newState) => {
+      setTabManagerState(newState);
+      // Sync active tab state when tab manager state changes
+      syncActiveTabToState();
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // State synchronization methods
+  const syncActiveTabToState = useCallback(() => {
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (activeTab) {
+      setMarkdown(activeTab.content);
+      setFileName(activeTab.filename);
+      setHistory(activeTab.history);
+      setHistoryIndex(activeTab.historyIndex);
+      setFileSource(activeTab.fileSource);
+      setOriginalContent(activeTab.originalContent);
+      fileHandleRef.current = activeTab.fileHandle;
+    }
+  }, []);
+
+  const syncStateToActiveTab = useCallback(() => {
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (activeTab) {
+      // Update tab content
+      tabManagerRef.current.updateTabContent(activeTab.id, markdown);
+      
+      // Update tab filename if changed
+      if (activeTab.filename !== fileName) {
+        tabManagerRef.current.updateTabFilename(activeTab.id, fileName);
+      }
+      
+      // Update file handle if changed
+      if (activeTab.fileHandle !== fileHandleRef.current) {
+        tabManagerRef.current.updateTabFileHandle(activeTab.id, fileHandleRef.current);
+      }
+      
+      // Update editor state if available
+      if (editorRef.current) {
+        const selection = editorRef.current.getSelection();
+        const editorState: EditorState = {
+          cursorPosition: selection.start,
+          scrollPosition: 0, // TODO: Get actual scroll position
+          selection: { start: selection.start, end: selection.end }
+        };
+        tabManagerRef.current.updateTabEditorState(activeTab.id, editorState);
+      }
+    }
+  }, [markdown, fileName]);
+
+  // Tab operation handlers
+  const createNewTab = useCallback((content?: string, filename?: string, fileHandle?: FileSystemFileHandle, fileSource?: FileSource) => {
+    // Sync current state to active tab before creating new tab
+    syncStateToActiveTab();
+    
+    const newTabId = tabManagerRef.current.createTab(content, filename, fileHandle, fileSource);
+    return newTabId;
+  }, [syncStateToActiveTab]);
+
+  const closeTab = useCallback((tabId: string) => {
+    const tab = tabManagerRef.current.getTab(tabId);
+    if (!tab) return false;
+
+    // Check for unsaved changes and handle confirmation in UI layer
+    if (tab.hasUnsavedChanges) {
+      // This should trigger a confirmation dialog in the UI
+      // For now, we'll return false to indicate confirmation needed
+      return false;
+    }
+
+    return tabManagerRef.current.closeTab(tabId);
+  }, []);
+
+  const forceCloseTab = useCallback((tabId: string) => {
+    return tabManagerRef.current.forceCloseTab(tabId);
+  }, []);
+
+  const switchToTab = useCallback((tabId: string) => {
+    // Sync current state to active tab before switching
+    syncStateToActiveTab();
+    
+    const success = tabManagerRef.current.switchToTab(tabId);
+    if (success) {
+      // State will be synced via the subscription callback
+      syncActiveTabToState();
+    }
+    return success;
+  }, [syncStateToActiveTab, syncActiveTabToState]);
+
+  const duplicateTab = useCallback((tabId: string) => {
+    const newTabId = tabManagerRef.current.duplicateTab(tabId);
+    return newTabId;
+  }, []);
+
+  const closeOtherTabs = useCallback((keepTabId: string) => {
+    return tabManagerRef.current.closeOtherTabs(keepTabId);
+  }, []);
+
+  const forceCloseOtherTabs = useCallback((keepTabId: string) => {
+    return tabManagerRef.current.forceCloseOtherTabs(keepTabId);
+  }, []);
+
+  const closeAllTabs = useCallback(() => {
+    return tabManagerRef.current.closeAllTabs();
+  }, []);
+
+  const forceCloseAllTabs = useCallback(() => {
+    return tabManagerRef.current.forceCloseAllTabs();
+  }, []);
 
   const addHistoryEntry = useCallback((newMarkdown: string) => {
     // When a new entry is added, clear any "future" history from previous undos
@@ -149,15 +263,24 @@ const App: React.FC = () => {
     newHistory.push(newMarkdown);
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
+    
+    // Also update the active tab's history
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (activeTab) {
+      tabManagerRef.current.addToTabHistory(activeTab.id, newMarkdown);
+    }
   }, [history, historyIndex]);
 
   // Check if current content differs from original (for GitHub files)
   const hasUnsavedChanges = useCallback(() => {
-    if (fileSource.type === 'github') {
-      return markdown !== originalContent;
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (!activeTab) return false;
+    
+    if (activeTab.fileSource.type === 'github') {
+      return activeTab.content !== activeTab.originalContent;
     }
     return false; // Local files don't need change tracking for save options
-  }, [markdown, originalContent, fileSource.type]);
+  }, []);
 
   // Initialize PWA functionality
   useEffect(() => {
@@ -177,11 +300,7 @@ const App: React.FC = () => {
     
     if (action === 'new') {
       // Handle new file action
-      const newMarkdown = '';
-      const newFileName = 'untitled.md';
-      setMarkdown(newMarkdown);
-      setFileName(newFileName);
-      addHistoryEntry(newMarkdown);
+      createNewTab('', 'untitled.md', null, { type: 'local' });
     } else if (action === 'help') {
       setIsHelpModalOpen(true);
     }
@@ -499,25 +618,43 @@ const App: React.FC = () => {
     try {
       setGithubState(prev => ({ ...prev, isLoadingFile: true, error: null }));
       
+      // Check if this GitHub file is already open in another tab
+      const fileSource: FileSource = {
+        type: 'github',
+        repository: githubState.currentRepository!,
+        path: file.path,
+        sha: file.sha
+      };
+      
+      const existingTab = tabManagerRef.current.findTabByFileSource(fileSource);
+      if (existingTab) {
+        // Switch to existing tab
+        switchToTab(existingTab.id);
+        setGithubState(prev => ({
+          ...prev,
+          currentFile: file,
+          isLoadingFile: false
+        }));
+        setIsGitHubModalOpen(false);
+        return;
+      }
+      
       const content = await githubService.getFileContent(
         githubState.currentRepository!.owner.login,
         githubState.currentRepository!.name,
         file.path
       );
       
-      // Load the file into the editor
-      setMarkdown(content);
-      setFileName(file.name);
-      addHistoryEntry(content);
-      setOriginalContent(content); // Track original content for change detection
+      // Create new tab for the GitHub file
+      const newTabId = createNewTab(content, file.name, null, fileSource);
       
-      // Update file source and GitHub state
-      setFileSource({
-        type: 'github',
-        repository: githubState.currentRepository!,
-        path: file.path,
-        sha: file.sha
-      });
+      // Update the new tab's original content for change tracking
+      const newTab = tabManagerRef.current.getTab(newTabId);
+      if (newTab) {
+        // Update original content directly in the tab
+        const updatedTab = { ...newTab, originalContent: content };
+        tabManagerRef.current.updateTabContent(newTabId, content);
+      }
       
       setGithubState(prev => ({
         ...prev,
@@ -564,30 +701,49 @@ const App: React.FC = () => {
   };
 
   const handleGitHubSave = async (options: GitHubCommitOptions) => {
-    if (!githubState.currentRepository || !githubState.currentFile) {
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (!githubState.currentRepository || !githubState.currentFile || !activeTab) {
       throw new Error('No GitHub file selected');
     }
 
     try {
       setGithubState(prev => ({ ...prev, isCommitting: true, error: null }));
       
+      // Sync current state to active tab before saving
+      syncStateToActiveTab();
+      
       const result = await githubService.saveFile(
         githubState.currentRepository.owner.login,
         githubState.currentRepository.name,
         githubState.currentFile.path,
-        markdown,
+        activeTab.content,
         {
           ...options,
-          sha: fileSource.sha // Include current SHA for updates
+          sha: activeTab.fileSource.sha // Include current SHA for updates
         }
       );
       
-      // Update file source with new SHA and original content
-      setFileSource(prev => ({
-        ...prev,
+      // Update tab's file source with new SHA and mark as saved
+      const updatedFileSource: FileSource = {
+        ...activeTab.fileSource,
         sha: result.content.sha
-      }));
-      setOriginalContent(markdown); // Update original content after successful save
+      };
+      
+      // Update the tab with new file source and original content
+      const updatedTab = {
+        ...activeTab,
+        fileSource: updatedFileSource,
+        originalContent: activeTab.content,
+        hasUnsavedChanges: false,
+        lastModified: Date.now()
+      };
+      
+      // Update tab in manager
+      tabManagerRef.current.markTabAsSaved(activeTab.id);
+      
+      // Update local state
+      setFileSource(updatedFileSource);
+      setOriginalContent(activeTab.content);
       
       setGithubState(prev => ({
         ...prev,
@@ -611,13 +767,10 @@ const App: React.FC = () => {
   const handleMarkdownChange = (newMarkdown: string) => {
     setMarkdown(newMarkdown);
     
-    // Persist to localStorage immediately for content changes (if auto-save enabled)
-    if (settings.autoSave) {
-      try {
-        localStorage.setItem('markdown-editor-content', newMarkdown);
-      } catch (error) {
-        console.warn('Failed to persist markdown content to localStorage:', error);
-      }
+    // Update active tab content immediately
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (activeTab) {
+      tabManagerRef.current.updateTabContent(activeTab.id, newMarkdown);
     }
 
     if (debounceRef.current) {
@@ -633,37 +786,25 @@ const App: React.FC = () => {
     const newFileName = event.target.value;
     setFileName(newFileName);
     
-    // Persist filename to localStorage
-    try {
-      localStorage.setItem('markdown-editor-filename', newFileName);
-    } catch (error) {
-      console.warn('Failed to persist filename to localStorage:', error);
+    // Update active tab filename
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (activeTab) {
+      tabManagerRef.current.updateTabFilename(activeTab.id, newFileName);
     }
   };
 
   const handleNewFile = useCallback(() => {
     const newMarkdown = '';
     const newFileName = 'untitled.md';
-    setMarkdown(newMarkdown);
-    setFileName(newFileName);
-    addHistoryEntry(newMarkdown);
-    fileHandleRef.current = null; // Reset the file handle for the new file
     
-    // Reset file source to local
-    setFileSource({ type: 'local' });
+    // Create new tab instead of clearing current content
+    createNewTab(newMarkdown, newFileName, null, { type: 'local' });
+    
+    // Reset GitHub state for new file
     setGithubState(prev => ({ ...prev, currentFile: null }));
-    setOriginalContent(''); // Reset original content tracking
-    
-    // Persist new file state to localStorage
-    try {
-      localStorage.setItem('markdown-editor-content', newMarkdown);
-      localStorage.setItem('markdown-editor-filename', newFileName);
-    } catch (error) {
-      console.warn('Failed to persist new file state to localStorage:', error);
-    }
     
     editorRef.current?.focus();
-  }, [addHistoryEntry]);
+  }, [createNewTab]);
 
   const handleOpenFile = useCallback(async () => {
     // Modern "Open" logic using File System Access API
@@ -675,24 +816,24 @@ const App: React.FC = () => {
             accept: { 'text/markdown': ['.md', '.txt', '.markdown'] }
           }],
         });
-        fileHandleRef.current = handle;
+        
         const file = await handle.getFile();
         const content = await file.text();
-        setMarkdown(content);
-        setFileName(file.name);
-        addHistoryEntry(content);
         
-        // Reset to local file source
-        setFileSource({ type: 'local' });
+        // Check if file is already open in another tab
+        const existingTab = tabManagerRef.current.findTabByFilename(file.name);
+        if (existingTab) {
+          // Switch to existing tab
+          switchToTab(existingTab.id);
+          return;
+        }
+        
+        // Create new tab for the opened file
+        createNewTab(content, file.name, handle, { type: 'local' });
+        
+        // Reset GitHub state
         setGithubState(prev => ({ ...prev, currentFile: null }));
         
-        // Persist opened file state to localStorage
-        try {
-          localStorage.setItem('markdown-editor-content', content);
-          localStorage.setItem('markdown-editor-filename', file.name);
-        } catch (error) {
-          console.warn('Failed to persist opened file state to localStorage:', error);
-        }
         return; // Success: exit and don't fall through
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') {
@@ -714,32 +855,36 @@ const App: React.FC = () => {
         const reader = new FileReader();
         reader.onload = (e) => {
           const content = e.target?.result as string;
-          setMarkdown(content);
-          setFileName(file.name);
-          addHistoryEntry(content);
-          fileHandleRef.current = null; // Ensure handle is cleared for legacy open
           
-          // Reset to local file source
-          setFileSource({ type: 'local' });
-          setGithubState(prev => ({ ...prev, currentFile: null }));
-          
-          // Persist opened file state to localStorage
-          try {
-            localStorage.setItem('markdown-editor-content', content);
-            localStorage.setItem('markdown-editor-filename', file.name);
-          } catch (error) {
-            console.warn('Failed to persist opened file state to localStorage:', error);
+          // Check if file is already open in another tab
+          const existingTab = tabManagerRef.current.findTabByFilename(file.name);
+          if (existingTab) {
+            // Switch to existing tab
+            switchToTab(existingTab.id);
+            return;
           }
+          
+          // Create new tab for the opened file
+          createNewTab(content, file.name, null, { type: 'local' });
+          
+          // Reset GitHub state
+          setGithubState(prev => ({ ...prev, currentFile: null }));
         };
         reader.readAsText(file);
       }
     };
     input.click();
-  }, [addHistoryEntry]);
+  }, [createNewTab, switchToTab]);
 
   const handleSaveFile = useCallback(async () => {
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (!activeTab) return;
+
+    // Sync current state to active tab before saving
+    syncStateToActiveTab();
+
     // If this is a GitHub file, show save options modal
-    if (fileSource.type === 'github' && githubState.auth.isConnected) {
+    if (activeTab.fileSource.type === 'github' && githubState.auth.isConnected) {
       setIsSaveOptionsModalOpen(true);
       return;
     }
@@ -747,35 +892,35 @@ const App: React.FC = () => {
     // Original local save logic
     const saveOperation = async (handle: FileSystemFileHandle) => {
         const writable = await handle.createWritable();
-        await writable.write(markdown);
+        await writable.write(activeTab.content);
         await writable.close();
     };
 
     // Modern "Save" / "Save As" logic using File System Access API
     if (window.showSaveFilePicker) {
         try {
-            if (fileHandleRef.current) {
+            if (activeTab.fileHandle) {
                 // "Save" to the existing file handle
-                await saveOperation(fileHandleRef.current);
+                await saveOperation(activeTab.fileHandle);
+                
+                // Mark tab as saved
+                tabManagerRef.current.markTabAsSaved(activeTab.id);
             } else {
                 // "Save As" for a new file
                 const handle = await window.showSaveFilePicker({
-                    suggestedName: fileName.trim() || 'untitled.md',
+                    suggestedName: activeTab.filename.trim() || 'untitled.md',
                     types: [{
                         description: 'Markdown Files',
                         accept: { 'text/markdown': ['.md', '.txt', '.markdown'] }
                     }],
                 });
-                fileHandleRef.current = handle;
-                setFileName(handle.name);
-                await saveOperation(handle);
                 
-                // Persist saved filename to localStorage
-                try {
-                  localStorage.setItem('markdown-editor-filename', handle.name);
-                } catch (error) {
-                  console.warn('Failed to persist saved filename to localStorage:', error);
-                }
+                // Update tab with new file handle and filename
+                tabManagerRef.current.updateTabFileHandle(activeTab.id, handle);
+                tabManagerRef.current.updateTabFilename(activeTab.id, handle.name);
+                tabManagerRef.current.markTabAsSaved(activeTab.id);
+                
+                await saveOperation(handle);
             }
             return; // Success: exit and don't fall through
         } catch (err) {
@@ -788,8 +933,8 @@ const App: React.FC = () => {
     }
 
     // Legacy fallback "Save" (always triggers a download)
-    const downloadName = fileName.trim() || 'untitled.md';
-    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+    const downloadName = activeTab.filename.trim() || 'untitled.md';
+    const blob = new Blob([activeTab.content], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -798,7 +943,10 @@ const App: React.FC = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [markdown, fileName, fileSource, githubState.auth.isConnected]);
+    
+    // Mark tab as saved for legacy save as well
+    tabManagerRef.current.markTabAsSaved(activeTab.id);
+  }, [syncStateToActiveTab, githubState.auth.isConnected]);
   
   const applyFormatting = (prefix: string, suffix: string = prefix) => {
     const editor = editorRef.current;
@@ -969,11 +1117,17 @@ const App: React.FC = () => {
   }, [addHistoryEntry]);
 
   const handleUndo = useCallback(() => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setMarkdown(history[newIndex]);
-    }
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (!activeTab || historyIndex <= 0) return;
+    
+    const newIndex = historyIndex - 1;
+    const previousContent = history[newIndex];
+    
+    setHistoryIndex(newIndex);
+    setMarkdown(previousContent);
+    
+    // Update active tab content and history index
+    tabManagerRef.current.updateTabContent(activeTab.id, previousContent);
   }, [history, historyIndex]);
 
   // --- Resizer Logic ---

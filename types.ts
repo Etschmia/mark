@@ -179,3 +179,93 @@ export interface FileSource {
   path?: string;
   sha?: string;
 }
+
+// File System Access API Types
+export interface FileSystemFileHandle {
+  getFile: () => Promise<File>;
+  createWritable: () => Promise<FileSystemWritableFileStream>;
+  name: string;
+}
+
+export interface FileSystemWritableFileStream {
+  write: (data: BlobPart) => Promise<void>;
+  close: () => Promise<void>;
+}
+
+// Tab Management Types
+export interface EditorState {
+  cursorPosition: number;
+  scrollPosition: number;
+  selection: { start: number; end: number };
+}
+
+export interface Tab {
+  id: string;
+  filename: string;
+  content: string;
+  fileHandle: FileSystemFileHandle | null;
+  fileSource: FileSource;
+  originalContent: string; // For GitHub change tracking
+  history: string[];
+  historyIndex: number;
+  editorState: EditorState;
+  hasUnsavedChanges: boolean;
+  createdAt: number;
+  lastModified: number;
+}
+
+export interface TabManagerState {
+  tabs: Tab[];
+  activeTabId: string;
+  nextTabId: number;
+}
+
+// Tab Component Props
+export interface TabProps {
+  tab: Tab;
+  isActive: boolean;
+  onSelect: () => void;
+  onClose: () => void;
+  onContextMenu: (event: React.MouseEvent) => void;
+  theme: 'light' | 'dark';
+}
+
+export interface TabBarProps {
+  tabs: Tab[];
+  activeTabId: string;
+  onTabSelect: (tabId: string) => void;
+  onTabClose: (tabId: string) => void;
+  onTabCreate: () => void;
+  onTabContextMenu: (tabId: string, event: React.MouseEvent) => void;
+  theme: 'light' | 'dark';
+}
+
+export interface TabContextMenuProps {
+  isOpen: boolean;
+  position: { x: number; y: number };
+  tabId: string;
+  onClose: () => void;
+  onCloseTab: (tabId: string) => void;
+  onCloseOtherTabs: (tabId: string) => void;
+  onCloseAllTabs: () => void;
+  onDuplicateTab: (tabId: string) => void;
+}
+
+// Persistence Types
+export interface PersistedTabState {
+  version: string;
+  tabs: {
+    id: string;
+    filename: string;
+    content: string;
+    fileSource: FileSource;
+    originalContent: string;
+    history: string[];
+    historyIndex: number;
+    editorState: EditorState;
+    hasUnsavedChanges: boolean;
+    createdAt: number;
+    lastModified: number;
+  }[];
+  activeTabId: string;
+}
