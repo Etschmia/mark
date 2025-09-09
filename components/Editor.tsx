@@ -279,7 +279,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       keymap.of([indentWithTab, ...customSearchKeymap, ...createFormattingKeymap(onFormat)]),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
-          onChange(update.state.doc.toString());
+          const newValue = update.state.doc.toString();
+          const selection = update.state.selection.main;
+          // console.log('🔵 EDITOR CHANGE - Cursor at:', selection.from, 'Content length:', newValue.length);
+          onChange(newValue);
         }
       }),
       EditorView.domEventHandlers({
@@ -373,24 +376,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     return () => {
       view.destroy();
     };
-  }, [settings]); // Re-render when settings change
+  }, [settings.theme, settings.fontSize, settings.showLineNumbers]); // Only re-render when specific settings change
 
-  // Update editor content when value prop changes
-  useEffect(() => {
-    const view = viewRef.current;
-    if (!view) return;
-    
-    const currentValue = view.state.doc.toString();
-    if (currentValue !== value) {
-      view.dispatch({
-        changes: {
-          from: 0,
-          to: currentValue.length,
-          insert: value
-        }
-      });
-    }
-  }, [value]);
+  // DO NOT update editor content from value prop during normal typing!
+  // This causes cursor jumps. Content updates should only happen during tab switches
+  // which are handled by recreating the editor with new initial content.
 
   return (
     <div className={`rounded-lg h-full flex flex-col overflow-hidden ${

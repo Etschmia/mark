@@ -39,6 +39,8 @@ interface ToolbarProps {
   onGitHubDisconnect: () => void;
   onBrowseRepositories: () => void;
   fileSource: FileSource;
+  // Save state props
+  hasUnsavedChanges: boolean;
 }
 
 const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean }> = ({ onClick, children, title, disabled = false }) => (
@@ -88,7 +90,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onGitHubConnect,
   onGitHubDisconnect,
   onBrowseRepositories,
-  fileSource
+  fileSource,
+  // Save state props
+  hasUnsavedChanges
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
@@ -262,7 +266,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           spellCheck="false"
         />
         
-        <button onClick={onSave} className="px-3 py-1.5 text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
+        <button 
+          onClick={onSave} 
+          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 ${
+            hasUnsavedChanges 
+              ? 'text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500' 
+              : 'text-slate-300 bg-slate-700 hover:bg-slate-600 focus:ring-cyan-500'
+          }`}
+        >
           Save
         </button>
         

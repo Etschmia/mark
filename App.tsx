@@ -165,10 +165,18 @@ const App: React.FC = () => {
 
   // Tab Manager subscription
   useEffect(() => {
+    let lastActiveTabId = tabManagerRef.current.getState().activeTabId;
+    
     const unsubscribe = tabManagerRef.current.subscribe((newState) => {
+      const previousState = tabManagerState;
       setTabManagerState(newState);
-      // Sync active tab state when tab manager state changes
-      syncActiveTabToState();
+      
+      // Only sync active tab state when the active tab actually changes (not on content updates)
+      if (newState.activeTabId !== lastActiveTabId) {
+        // console.log('🟢 REAL TAB SWITCH detected:', lastActiveTabId, '→', newState.activeTabId);
+        lastActiveTabId = newState.activeTabId;
+        syncActiveTabToState();
+      }
     });
 
     return () => {
@@ -188,6 +196,15 @@ const App: React.FC = () => {
   const syncActiveTabToState = useCallback(() => {
     const activeTab = tabManagerRef.current.getActiveTab();
     if (activeTab) {
+      // console.log('🟢 App syncActiveTabToState - TAB SWITCH:', {
+      //   tabId: activeTab.id,
+      //   filename: activeTab.filename,
+      //   contentLength: activeTab.content.length,
+      //   contentPreview: activeTab.content.substring(0, 50) + (activeTab.content.length > 50 ? '...' : ''),
+      //   willSetMarkdown: true,
+      //   thisWillTriggerEditorValueProp: true
+      // });
+      
       setMarkdown(activeTab.content);
       setFileName(activeTab.filename);
       setHistory(activeTab.history);
@@ -199,11 +216,13 @@ const App: React.FC = () => {
       // Restore editor state after a short delay to ensure editor is ready
       setTimeout(() => {
         if (editorRef.current && activeTab.editorState) {
+          // Only restore if the selection is valid for the current content length
+          const contentLength = activeTab.content.length;
+          const selectionStart = Math.min(activeTab.editorState.selection.start, contentLength);
+          const selectionEnd = Math.min(activeTab.editorState.selection.end, contentLength);
+          
           // Restore cursor position and selection
-          editorRef.current.setSelection(
-            activeTab.editorState.selection.start,
-            activeTab.editorState.selection.end
-          );
+          editorRef.current.setSelection(selectionStart, selectionEnd);
           
           // Restore scroll position
           const scrollElement = document.querySelector('.cm-scroller') as HTMLElement;
@@ -433,6 +452,28 @@ const App: React.FC = () => {
     }
     return false; // Local files don't need change tracking for save options
   }, []);
+
+  // Check if there are unsaved changes for toolbar display
+  const hasUnsavedChangesForToolbar = useCallback(() => {
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (!activeTab) return false;
+    
+    // Default placeholder content should not be considered as unsaved changes
+    const defaultContent = '# Hello, Markdown!\n\nStart typing here...';
+    
+    // If content is still the default placeholder, no unsaved changes
+    if (activeTab.content === defaultContent) {
+      return false;
+    }
+    
+    // For GitHub files, check against original content
+    if (activeTab.fileSource.type === 'github') {
+      return activeTab.content !== activeTab.originalContent;
+    }
+    
+    // For local files, check if tab has unsaved changes flag
+    return activeTab.hasUnsavedChanges;
+  }, [markdown, fileName]); // Re-evaluate when content or filename changes
 
   // Initialize PWA functionality
   useEffect(() => {
@@ -917,7 +958,10 @@ const App: React.FC = () => {
   };
 
   const handleMarkdownChange = (newMarkdown: string) => {
-    setMarkdown(newMarkdown);
+    // console.log('🟡 APP handleMarkdownChange - Length:', newMarkdown.length);
+    
+    // Don't update the markdown state immediately to prevent editor re-render
+    // setMarkdown(newMarkdown); // This causes the cursor jump!
     
     // Update active tab content immediately
     const activeTab = tabManagerRef.current.getActiveTab();
@@ -930,6 +974,9 @@ const App: React.FC = () => {
     }
 
     debounceRef.current = window.setTimeout(() => {
+      // console.log('🟠 APP setMarkdown after debounce - THIS TRIGGERS EDITOR VALUE PROP!');
+      // Update markdown state after debounce to prevent frequent re-renders
+      setMarkdown(newMarkdown);
       addHistoryEntry(newMarkdown);
     }, settings.debounceTime); // Use settings debounce time
   };
@@ -1467,6 +1514,8 @@ const App: React.FC = () => {
           onGitHubDisconnect={handleGitHubDisconnect}
           onBrowseRepositories={handleBrowseRepositories}
           fileSource={fileSource}
+          // Save state props
+          hasUnsavedChanges={hasUnsavedChangesForToolbar()}
         />
       </header>
       <main
