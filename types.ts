@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 export type FormatType =
   | 'bold'
   | 'italic'
@@ -226,7 +228,7 @@ export interface TabProps {
   isActive: boolean;
   onSelect: () => void;
   onClose: () => void;
-  onContextMenu: (event: React.MouseEvent) => void;
+  onContextMenu: (event: React.MouseEvent<HTMLElement>) => void;
   theme: 'light' | 'dark';
 }
 
@@ -236,7 +238,7 @@ export interface TabBarProps {
   onTabSelect: (tabId: string) => void;
   onTabClose: (tabId: string) => void;
   onTabCreate: () => void;
-  onTabContextMenu: (tabId: string, event: React.MouseEvent) => void;
+  onTabContextMenu: (tabId: string, event: React.MouseEvent<HTMLElement>) => void;
   theme: 'light' | 'dark';
 }
 

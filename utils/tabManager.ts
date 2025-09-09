@@ -13,6 +13,7 @@ import {
 
 const STORAGE_KEY = 'markdown-editor-tabs';
 const STORAGE_VERSION = '1.0.0';
+const DEBOUNCE_DELAY = 500; // 500ms debounce for persistence
 
 // Legacy storage keys for migration
 const LEGACY_CONTENT_KEY = 'markdown-editor-content';
@@ -22,6 +23,7 @@ const LEGACY_SETTINGS_KEY = 'markdown-editor-settings';
 export class TabManager {
   private state: TabManagerState;
   private listeners: Array<(state: TabManagerState) => void> = [];
+  private persistenceDebounceTimer: number | null = null;
 
   constructor(initialState?: TabManagerState) {
     this.state = initialState || this.loadPersistedState();
@@ -78,10 +80,30 @@ export class TabManager {
   /**
    * Update state and notify listeners
    */
-  private updateState(newState: TabManagerState): void {
+  private updateState(newState: TabManagerState, immediate = false): void {
     this.state = newState;
-    this.persistState();
+    
+    if (immediate) {
+      this.persistState();
+    } else {
+      this.debouncedPersistState();
+    }
+    
     this.notifyListeners();
+  }
+
+  /**
+   * Debounced persistence to avoid excessive localStorage writes
+   */
+  private debouncedPersistState(): void {
+    if (this.persistenceDebounceTimer) {
+      clearTimeout(this.persistenceDebounceTimer);
+    }
+    
+    this.persistenceDebounceTimer = window.setTimeout(() => {
+      this.persistState();
+      this.persistenceDebounceTimer = null;
+    }, DEBOUNCE_DELAY);
   }
 
   /**
@@ -104,7 +126,7 @@ export class TabManager {
       nextTabId: this.state.nextTabId + 1
     };
 
-    this.updateState(newState);
+    this.updateState(newState, true); // Immediate persistence for tab creation
     return newTab.id;
   }
 
@@ -143,7 +165,7 @@ export class TabManager {
       activeTabId: newActiveTabId
     };
 
-    this.updateState(newState);
+    this.updateState(newState, true); // Immediate persistence for tab closing
     return true;
   }
 
@@ -190,7 +212,7 @@ export class TabManager {
       activeTabId: tabId
     };
 
-    this.updateState(newState);
+    this.updateState(newState, true); // Immediate persistence for tab switching
     return true;
   }
 
@@ -309,7 +331,7 @@ export class TabManager {
       tabs: newTabs
     };
 
-    this.updateState(newState);
+    this.updateState(newState); // Debounced persistence for content changes
     return true;
   }
 
@@ -349,7 +371,7 @@ export class TabManager {
       tabs: newTabs
     };
 
-    this.updateState(newState);
+    this.updateState(newState); // Debounced persistence for editor state changes
     return true;
   }
 
@@ -411,6 +433,56 @@ export class TabManager {
     if (tabIndex === -1) return false;
 
     const updatedTab = markTabAsSaved(this.state.tabs[tabIndex]);
+    const newTabs = [...this.state.tabs];
+    newTabs[tabIndex] = updatedTab;
+
+    const newState: TabManagerState = {
+      ...this.state,
+      tabs: newTabs
+    };
+
+    this.updateState(newState);
+    return true;
+  }
+
+  /**
+   * Update tab file source
+   */
+  updateTabFileSource(tabId: string, fileSource: FileSource): boolean {
+    const tabIndex = this.state.tabs.findIndex(t => t.id === tabId);
+    if (tabIndex === -1) return false;
+
+    const updatedTab = {
+      ...this.state.tabs[tabIndex],
+      fileSource,
+      lastModified: Date.now()
+    };
+
+    const newTabs = [...this.state.tabs];
+    newTabs[tabIndex] = updatedTab;
+
+    const newState: TabManagerState = {
+      ...this.state,
+      tabs: newTabs
+    };
+
+    this.updateState(newState);
+    return true;
+  }
+
+  /**
+   * Update tab original content
+   */
+  updateTabOriginalContent(tabId: string, originalContent: string): boolean {
+    const tabIndex = this.state.tabs.findIndex(t => t.id === tabId);
+    if (tabIndex === -1) return false;
+
+    const updatedTab = {
+      ...this.state.tabs[tabIndex],
+      originalContent,
+      lastModified: Date.now()
+    };
+
     const newTabs = [...this.state.tabs];
     newTabs[tabIndex] = updatedTab;
 
@@ -612,5 +684,32 @@ export class TabManager {
     } catch (error) {
       console.warn('Failed to clear persisted state:', error);
     }
+  }
+
+  /**
+   * Force immediate persistence of current state
+   */
+  forcePersist(): void {
+    if (this.persistenceDebounceTimer) {
+      clearTimeout(this.persistenceDebounceTimer);
+      this.persistenceDebounceTimer = null;
+    }
+    this.persistState();
+  }
+
+  /**
+   * Cleanup method to clear any pending timers
+   */
+  destroy(): void {
+    if (this.persistenceDebounceTimer) {
+      clearTimeout(this.persistenceDebounceTimer);
+      this.persistenceDebounceTimer = null;
+    }
+    
+    // Persist any pending changes immediately
+    this.persistState();
+    
+    // Clear listeners
+    this.listeners = [];
   }
 }

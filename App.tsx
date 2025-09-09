@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Editor, EditorRef } from './components/Editor';
 import { Preview } from './components/Preview';
 import { Toolbar } from './components/Toolbar';
+import { TabBar } from './components/TabBar';
 import { FormatType, GitHubState, GitHubUser, GitHubRepository, GitHubFile, GitHubCommitOptions, FileSource, TabManagerState, Tab, EditorState } from './types';
 import { themes } from './components/preview-themes';
 import { EditorSettings } from './components/SettingsModal';
@@ -105,6 +106,9 @@ const App: React.FC = () => {
 
   // Ref to prevent scroll event loops
   const isSyncingScroll = useRef(false);
+  
+  // Debounce ref for editor state updates
+  const editorStateDebounceRef = useRef<number | null>(null);
 
   // Modal states
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
@@ -151,7 +155,17 @@ const App: React.FC = () => {
       syncActiveTabToState();
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      
+      // Cleanup debounce timers
+      if (editorStateDebounceRef.current) {
+        clearTimeout(editorStateDebounceRef.current);
+      }
+      
+      // Cleanup tab manager
+      tabManagerRef.current.destroy();
+    };
   }, []);
 
   // State synchronization methods
@@ -165,6 +179,23 @@ const App: React.FC = () => {
       setFileSource(activeTab.fileSource);
       setOriginalContent(activeTab.originalContent);
       fileHandleRef.current = activeTab.fileHandle;
+      
+      // Restore editor state after a short delay to ensure editor is ready
+      setTimeout(() => {
+        if (editorRef.current && activeTab.editorState) {
+          // Restore cursor position and selection
+          editorRef.current.setSelection(
+            activeTab.editorState.selection.start,
+            activeTab.editorState.selection.end
+          );
+          
+          // Restore scroll position
+          const scrollElement = document.querySelector('.cm-scroller') as HTMLElement;
+          if (scrollElement && activeTab.editorState.scrollPosition > 0) {
+            scrollElement.scrollTop = activeTab.editorState.scrollPosition;
+          }
+        }
+      }, 50); // Small delay to ensure DOM is updated
     }
   }, []);
 
@@ -184,18 +215,31 @@ const App: React.FC = () => {
         tabManagerRef.current.updateTabFileHandle(activeTab.id, fileHandleRef.current);
       }
       
+      // Update file source if changed
+      if (JSON.stringify(activeTab.fileSource) !== JSON.stringify(fileSource)) {
+        tabManagerRef.current.updateTabFileSource(activeTab.id, fileSource);
+      }
+      
+      // Update original content if changed
+      if (activeTab.originalContent !== originalContent) {
+        tabManagerRef.current.updateTabOriginalContent(activeTab.id, originalContent);
+      }
+      
       // Update editor state if available
       if (editorRef.current) {
         const selection = editorRef.current.getSelection();
+        const scrollElement = document.querySelector('.cm-scroller') as HTMLElement;
+        const scrollPosition = scrollElement ? scrollElement.scrollTop : 0;
+        
         const editorState: EditorState = {
           cursorPosition: selection.start,
-          scrollPosition: 0, // TODO: Get actual scroll position
+          scrollPosition: scrollPosition,
           selection: { start: selection.start, end: selection.end }
         };
         tabManagerRef.current.updateTabEditorState(activeTab.id, editorState);
       }
     }
-  }, [markdown, fileName]);
+  }, [markdown, fileName, fileSource, originalContent]);
 
   // Tab operation handlers
   const createNewTab = useCallback((content?: string, filename?: string, fileHandle?: FileSystemFileHandle, fileSource?: FileSource) => {
@@ -230,7 +274,11 @@ const App: React.FC = () => {
     
     const success = tabManagerRef.current.switchToTab(tabId);
     if (success) {
+      // Force immediate persistence for tab switching
+      tabManagerRef.current.forcePersist();
+      
       // State will be synced via the subscription callback
+      // But we'll also do it immediately to ensure UI updates
       syncActiveTabToState();
     }
     return success;
@@ -782,6 +830,33 @@ const App: React.FC = () => {
     }, settings.debounceTime); // Use settings debounce time
   };
 
+  // Handle editor scroll events to preserve scroll position
+  const handleEditorScroll = useCallback((event: Event) => {
+    if (isSyncingScroll.current) return;
+    
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (!activeTab || !editorRef.current) return;
+
+    // Debounce editor state updates to avoid excessive calls
+    if (editorStateDebounceRef.current) {
+      clearTimeout(editorStateDebounceRef.current);
+    }
+
+    editorStateDebounceRef.current = window.setTimeout(() => {
+      const selection = editorRef.current!.getSelection();
+      const scrollElement = event.target as HTMLElement;
+      const scrollPosition = scrollElement.scrollTop;
+
+      const editorState: EditorState = {
+        cursorPosition: selection.start,
+        scrollPosition: scrollPosition,
+        selection: { start: selection.start, end: selection.end }
+      };
+
+      tabManagerRef.current.updateTabEditorState(activeTab.id, editorState);
+    }, 100); // 100ms debounce for editor state updates
+  }, []);
+
   const handleFileNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFileName = event.target.value;
     setFileName(newFileName);
@@ -1192,6 +1267,9 @@ const App: React.FC = () => {
           const targetScrollTop = scrollPercentage * previewScrollHeight;
           
           previewRef.current.scrollTop = targetScrollTop;
+          
+          // Preserve scroll position in active tab state
+          handleEditorScroll(event);
         }
       } else if (source === 'preview' && previewRef.current && editorRef.current) {
         // Get preview scroll info and prevent division by zero
@@ -1291,14 +1369,30 @@ const App: React.FC = () => {
         ref={mainRef}
         className="flex-grow grid grid-cols-1 md:grid-cols-[50%_auto_1fr] gap-2 p-4 overflow-hidden"
       >
-        <Editor 
-          value={markdown} 
-          onChange={handleMarkdownChange}
-          onScroll={(event) => handleScroll('editor', event)}
-          onFormat={handleFormat}
-          settings={settings}
-          ref={editorRef}
-        />
+        <div className="flex flex-col">
+          {/* TabBar - conditionally rendered when multiple tabs exist */}
+          <TabBar
+            tabs={tabManagerState.tabs}
+            activeTabId={tabManagerState.activeTabId}
+            onTabSelect={switchToTab}
+            onTabClose={closeTab}
+            onTabCreate={handleNewFile}
+            onTabContextMenu={(tabId, event) => {
+              // TODO: Implement context menu in future task
+              console.log('Context menu for tab:', tabId, event);
+            }}
+            theme={settings.theme}
+          />
+          
+          <Editor 
+            value={markdown} 
+            onChange={handleMarkdownChange}
+            onScroll={(event) => handleScroll('editor', event)}
+            onFormat={handleFormat}
+            settings={settings}
+            ref={editorRef}
+          />
+        </div>
         
         <div
           onMouseDown={handleMouseDown}

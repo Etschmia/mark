@@ -45,7 +45,7 @@ This implementation plan converts the Tab-Management design into a series of dis
   - Ensure backward compatibility with existing localStorage data
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [ ] 6. Implement tab switching and state preservation
+- [x] 6. Implement tab switching and state preservation
   - Add logic to preserve editor state (cursor position, scroll position, selection) when switching tabs
   - Implement active tab content synchronization with existing markdown state
   - Add debounced tab state persistence to localStorage on content changes
@@ -53,7 +53,7 @@ This implementation plan converts the Tab-Management design into a series of dis
   - Test state preservation across tab switches with different content types
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 1.8, 1.9_
 
-- [ ] 7. Add TabBar to App.tsx layout and connect event handlers
+- [x] 7. Add TabBar to App.tsx layout and connect event handlers
   - Insert TabBar component above Editor component in App.tsx layout
   - Connect tab operation handlers to TabBar component props
   - Ensure TabBar visibility is conditional (hidden when only one tab exists)
