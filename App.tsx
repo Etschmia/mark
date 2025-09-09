@@ -13,7 +13,9 @@ import { pwaManager } from './utils/pwaManager';
 import { githubService } from './utils/githubService';
 import { GitHubModal } from './components/GitHubModal';
 import { SaveOptionsModal } from './components/SaveOptionsModal';
+import { ConfirmationModal } from './components/ConfirmationModal';
 import { TabManager } from './utils/tabManager';
+import { TabContextMenu } from './components/TabContextMenu';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -115,6 +117,11 @@ const App: React.FC = () => {
   const [isCheatSheetModalOpen, setIsCheatSheetModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   
+  // Tab context menu state
+  const [isTabContextMenuOpen, setIsTabContextMenuOpen] = useState(false);
+  const [tabContextMenuPosition, setTabContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [tabContextMenuTabId, setTabContextMenuTabId] = useState<string | null>(null);
+  
   // GitHub integration state
   const [githubState, setGithubState] = useState<GitHubState>({
     auth: {
@@ -139,6 +146,15 @@ const App: React.FC = () => {
   // GitHub modal states
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const [isSaveOptionsModalOpen, setIsSaveOptionsModalOpen] = useState(false);
+  
+  // Tab confirmation modal states
+  const [isTabConfirmationOpen, setIsTabConfirmationOpen] = useState(false);
+  const [tabConfirmationData, setTabConfirmationData] = useState<{
+    type: 'close' | 'closeOthers' | 'closeAll';
+    tabId?: string;
+    tabName?: string;
+    callback?: () => void;
+  } | null>(null);
   
   // File source tracking (now managed per tab)
   const [fileSource, setFileSource] = useState<FileSource>(activeTab?.fileSource || { type: 'local' });
@@ -254,10 +270,15 @@ const App: React.FC = () => {
     const tab = tabManagerRef.current.getTab(tabId);
     if (!tab) return false;
 
-    // Check for unsaved changes and handle confirmation in UI layer
+    // Check for unsaved changes and show confirmation dialog
     if (tab.hasUnsavedChanges) {
-      // This should trigger a confirmation dialog in the UI
-      // For now, we'll return false to indicate confirmation needed
+      setTabConfirmationData({
+        type: 'close',
+        tabId,
+        tabName: tab.filename,
+        callback: () => tabManagerRef.current.forceCloseTab(tabId)
+      });
+      setIsTabConfirmationOpen(true);
       return false;
     }
 
@@ -290,6 +311,25 @@ const App: React.FC = () => {
   }, []);
 
   const closeOtherTabs = useCallback((keepTabId: string) => {
+    const keepTab = tabManagerRef.current.getTab(keepTabId);
+    if (!keepTab) return false;
+
+    // Check if any other tabs have unsaved changes
+    const otherTabs = tabManagerRef.current.getTabs().filter(t => t.id !== keepTabId);
+    const hasUnsavedOtherTabs = otherTabs.some(tab => tab.hasUnsavedChanges);
+    
+    if (hasUnsavedOtherTabs) {
+      const unsavedCount = otherTabs.filter(tab => tab.hasUnsavedChanges).length;
+      setTabConfirmationData({
+        type: 'closeOthers',
+        tabId: keepTabId,
+        tabName: `${unsavedCount} tab${unsavedCount > 1 ? 's' : ''}`,
+        callback: () => tabManagerRef.current.forceCloseOtherTabs(keepTabId)
+      });
+      setIsTabConfirmationOpen(true);
+      return false;
+    }
+
     return tabManagerRef.current.closeOtherTabs(keepTabId);
   }, []);
 
@@ -298,11 +338,75 @@ const App: React.FC = () => {
   }, []);
 
   const closeAllTabs = useCallback(() => {
+    // Check if any tabs have unsaved changes
+    const tabs = tabManagerRef.current.getTabs();
+    const hasUnsavedTabs = tabs.some(tab => tab.hasUnsavedChanges);
+    
+    if (hasUnsavedTabs) {
+      const unsavedCount = tabs.filter(tab => tab.hasUnsavedChanges).length;
+      setTabConfirmationData({
+        type: 'closeAll',
+        tabName: `${unsavedCount} tab${unsavedCount > 1 ? 's' : ''}`,
+        callback: () => tabManagerRef.current.forceCloseAllTabs()
+      });
+      setIsTabConfirmationOpen(true);
+      return false;
+    }
+
     return tabManagerRef.current.closeAllTabs();
   }, []);
 
   const forceCloseAllTabs = useCallback(() => {
     return tabManagerRef.current.forceCloseAllTabs();
+  }, []);
+
+  // Tab context menu handlers
+  const handleTabContextMenu = useCallback((tabId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    setTabContextMenuTabId(tabId);
+    setTabContextMenuPosition({ x: event.clientX, y: event.clientY });
+    setIsTabContextMenuOpen(true);
+  }, []);
+
+  const handleTabContextMenuClose = useCallback(() => {
+    setIsTabContextMenuOpen(false);
+    setTabContextMenuTabId(null);
+  }, []);
+
+  const handleTabContextMenuCloseTab = useCallback((tabId: string) => {
+    closeTab(tabId);
+    handleTabContextMenuClose();
+  }, [closeTab, handleTabContextMenuClose]);
+
+  const handleTabContextMenuCloseOtherTabs = useCallback((tabId: string) => {
+    closeOtherTabs(tabId);
+    handleTabContextMenuClose();
+  }, [closeOtherTabs, handleTabContextMenuClose]);
+
+  const handleTabContextMenuCloseAllTabs = useCallback(() => {
+    closeAllTabs();
+    handleTabContextMenuClose();
+  }, [closeAllTabs, handleTabContextMenuClose]);
+
+  const handleTabContextMenuDuplicateTab = useCallback((tabId: string) => {
+    duplicateTab(tabId);
+    handleTabContextMenuClose();
+  }, [duplicateTab, handleTabContextMenuClose]);
+
+  // Tab confirmation modal handlers
+  const handleTabConfirmationConfirm = useCallback(() => {
+    if (tabConfirmationData?.callback) {
+      tabConfirmationData.callback();
+    }
+    setIsTabConfirmationOpen(false);
+    setTabConfirmationData(null);
+  }, [tabConfirmationData]);
+
+  const handleTabConfirmationCancel = useCallback(() => {
+    setIsTabConfirmationOpen(false);
+    setTabConfirmationData(null);
   }, []);
 
   const addHistoryEntry = useCallback((newMarkdown: string) => {
@@ -1377,10 +1481,7 @@ const App: React.FC = () => {
             onTabSelect={switchToTab}
             onTabClose={closeTab}
             onTabCreate={handleNewFile}
-            onTabContextMenu={(tabId, event) => {
-              // TODO: Implement context menu in future task
-              console.log('Context menu for tab:', tabId, event);
-            }}
+            onTabContextMenu={handleTabContextMenu}
             theme={settings.theme}
           />
           
@@ -1457,6 +1558,43 @@ const App: React.FC = () => {
         commitError={githubState.error || undefined}
         isConnected={githubState.auth.isConnected}
         canPush={githubState.currentRepository?.permissions?.push ?? false}
+      />
+
+      {/* Tab Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isTabConfirmationOpen}
+        title={
+          tabConfirmationData?.type === 'close' 
+            ? 'Close Tab with Unsaved Changes?'
+            : tabConfirmationData?.type === 'closeOthers'
+            ? 'Close Other Tabs with Unsaved Changes?'
+            : 'Close All Tabs with Unsaved Changes?'
+        }
+        message={
+          tabConfirmationData?.type === 'close'
+            ? `The tab "${tabConfirmationData.tabName}" has unsaved changes. Are you sure you want to close it? Your changes will be lost.`
+            : tabConfirmationData?.type === 'closeOthers'
+            ? `${tabConfirmationData.tabName} with unsaved changes will be closed. Are you sure you want to continue? Your changes will be lost.`
+            : `${tabConfirmationData?.tabName} with unsaved changes will be closed. Are you sure you want to continue? Your changes will be lost.`
+        }
+        confirmText="Close"
+        cancelText="Cancel"
+        onConfirm={handleTabConfirmationConfirm}
+        onCancel={handleTabConfirmationCancel}
+        theme={settings.theme}
+        variant="danger"
+      />
+
+      {/* Tab Context Menu */}
+      <TabContextMenu
+        isOpen={isTabContextMenuOpen}
+        position={tabContextMenuPosition}
+        tabId={tabContextMenuTabId || ''}
+        onClose={handleTabContextMenuClose}
+        onCloseTab={handleTabContextMenuCloseTab}
+        onCloseOtherTabs={handleTabContextMenuCloseOtherTabs}
+        onCloseAllTabs={handleTabContextMenuCloseAllTabs}
+        onDuplicateTab={handleTabContextMenuDuplicateTab}
       />
     </div>
   );

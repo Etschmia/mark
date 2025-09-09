@@ -101,20 +101,22 @@ export const hasUnsavedChanges = (tab: Tab): boolean => {
   if (tab.fileSource.type === 'github') {
     return tab.content !== tab.originalContent;
   }
-  // For local files, we consider changes unsaved if content differs from last save
-  // This will be refined when we implement actual save tracking
-  return tab.hasUnsavedChanges;
+  // For local files, check if content differs from original content or if explicitly marked as unsaved
+  return tab.content !== tab.originalContent || tab.hasUnsavedChanges;
 };
 
 /**
  * Update tab content and mark as modified
  */
-export const updateTabContent = (tab: Tab, newContent: string): Tab => ({
-  ...tab,
-  content: newContent,
-  hasUnsavedChanges: newContent !== tab.originalContent,
-  lastModified: Date.now()
-});
+export const updateTabContent = (tab: Tab, newContent: string): Tab => {
+  const hasChanges = newContent !== tab.originalContent;
+  return {
+    ...tab,
+    content: newContent,
+    hasUnsavedChanges: hasChanges,
+    lastModified: Date.now()
+  };
+};
 
 /**
  * Add entry to tab history
