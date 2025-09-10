@@ -20,7 +20,9 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 - **Offline Awareness** - Clear indicators when GitHub features are unavailable
 
 ### 🗏️ **Productivity Features**
-- **Complete Keyboard Shortcuts** - Full shortcut support for all formatting options (25+ shortcuts)
+- **Multi-Tab Interface** - Work with multiple documents simultaneously with full state preservation
+- **Complete Keyboard Shortcuts** - Full shortcut support for all formatting and tab management (30+ shortcuts)
+- **Tab Navigation Shortcuts** - Efficient keyboard-based tab switching and management
 - **Search and Replace** - Powerful find/replace with regex support and highlighting
 - **Undo/Redo System** - Comprehensive history management with configurable debounce time
 - **Auto-Save to LocalStorage** - Never lose your work with persistent content and settings
@@ -91,6 +93,13 @@ npm run build
 - `Ctrl/Cmd + Z` - Undo
 - `Ctrl/Cmd + K` - Insert link
 - `Ctrl/Cmd + M` - Insert image
+
+### Tab Management
+- `Ctrl/Cmd + Shift + T` - New tab
+- `Ctrl/Cmd + W` - Close tab (with unsaved changes protection)
+- `Ctrl/Cmd + Tab` - Next tab
+- `Ctrl/Cmd + Shift + Tab` - Previous tab
+- `Ctrl/Cmd + 1-9` - Switch to tab by number
 
 ### File Operations
 - `Ctrl/Cmd + N` - New document

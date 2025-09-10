@@ -37,6 +37,13 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
       { keys: 'Tab', description: 'Indent - Indents selected lines' },
       { keys: 'Escape', description: 'Close - Closes search panel or help modal' },
     ]},
+    { category: 'Tab Management', shortcuts: [
+      { keys: 'Ctrl/Cmd + Shift + T', description: 'New Tab - Creates new document tab' },
+      { keys: 'Ctrl/Cmd + W', description: 'Close Tab - Closes current tab (with unsaved changes protection)' },
+      { keys: 'Ctrl/Cmd + Tab', description: 'Next Tab - Switches to next tab' },
+      { keys: 'Ctrl/Cmd + Shift + Tab', description: 'Previous Tab - Switches to previous tab' },
+      { keys: 'Ctrl/Cmd + 1-9', description: 'Switch to Tab - Switches to tab by number (1st-9th tab)' },
+    ]},
     { category: 'File Operations', shortcuts: [
       { keys: 'Ctrl/Cmd + N', description: 'New - Creates new document' },
       { keys: 'Ctrl/Cmd + S', description: 'Save - Saves current document' },
