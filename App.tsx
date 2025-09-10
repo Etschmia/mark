@@ -9,6 +9,7 @@ import { EditorSettings } from './components/SettingsModal';
 import { HelpModal } from './components/HelpModal';
 import { CheatSheetModal } from './components/CheatSheetModal';
 import { SettingsModal } from './components/SettingsModal';
+import { AboutModal } from './components/AboutModal';
 import { pwaManager } from './utils/pwaManager';
 import { githubService } from './utils/githubService';
 import { GitHubModal } from './components/GitHubModal';
@@ -116,6 +117,7 @@ const App: React.FC = () => {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isCheatSheetModalOpen, setIsCheatSheetModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   
   // Tab context menu state
   const [isTabContextMenuOpen, setIsTabContextMenuOpen] = useState(false);
@@ -388,7 +390,7 @@ const App: React.FC = () => {
       // Don't handle shortcuts when typing in input fields or modals are open
       const target = event.target as HTMLElement;
       const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
-      const isModalOpen = isHelpModalOpen || isCheatSheetModalOpen || isSettingsModalOpen || isGitHubModalOpen || isSaveOptionsModalOpen || isTabConfirmationOpen;
+      const isModalOpen = isHelpModalOpen || isCheatSheetModalOpen || isSettingsModalOpen || isAboutModalOpen || isGitHubModalOpen || isSaveOptionsModalOpen || isTabConfirmationOpen;
       
       if (isInputField || isModalOpen) {
         return;
@@ -458,7 +460,7 @@ const App: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [tabManagerState.activeTabId, isHelpModalOpen, isCheatSheetModalOpen, isSettingsModalOpen, isGitHubModalOpen, isSaveOptionsModalOpen, isTabConfirmationOpen, switchToTab, closeTab, createNewTab]);
+  }, [tabManagerState.activeTabId, isHelpModalOpen, isCheatSheetModalOpen, isSettingsModalOpen, isAboutModalOpen, isGitHubModalOpen, isSaveOptionsModalOpen, isTabConfirmationOpen, switchToTab, closeTab, createNewTab]);
 
   // Tab context menu handlers
   const handleTabContextMenu = useCallback((tabId: string, event: React.MouseEvent) => {
@@ -1589,6 +1591,8 @@ const App: React.FC = () => {
           setIsCheatSheetModalOpen={setIsCheatSheetModalOpen}
           isSettingsModalOpen={isSettingsModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
+          isAboutModalOpen={isAboutModalOpen}
+          setIsAboutModalOpen={setIsAboutModalOpen}
           // GitHub integration props
           githubState={githubState}
           onGitHubConnect={handleGitHubConnect}
@@ -1659,6 +1663,11 @@ const App: React.FC = () => {
         settings={settings}
         onSettingsChange={handleSettingsChange}
         availablePreviewThemes={Object.keys(themes)}
+      />
+      
+      <AboutModal 
+        isOpen={isAboutModalOpen}
+        onClose={() => setIsAboutModalOpen(false)}
       />
 
       {/* GitHub Integration Modals */}

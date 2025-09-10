@@ -5,6 +5,7 @@ import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
 import { SettingsModal, EditorSettings } from './SettingsModal';
+import { AboutModal } from './AboutModal';
 import { GitHubButton } from './GitHubButton';
 import { pwaManager } from '../utils/pwaManager';
 
@@ -33,6 +34,8 @@ interface ToolbarProps {
   setIsCheatSheetModalOpen: (open: boolean) => void;
   isSettingsModalOpen: boolean;
   setIsSettingsModalOpen: (open: boolean) => void;
+  isAboutModalOpen: boolean;
+  setIsAboutModalOpen: (open: boolean) => void;
   // GitHub integration props
   githubState: GitHubState;
   onGitHubConnect: () => void;
@@ -85,6 +88,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   setIsCheatSheetModalOpen,
   isSettingsModalOpen,
   setIsSettingsModalOpen,
+  isAboutModalOpen,
+  setIsAboutModalOpen,
   // GitHub props
   githubState,
   onGitHubConnect,
@@ -337,6 +342,16 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
                 ⚙️ Einstellungen
+              </button>
+              <div className="border-t border-slate-600 my-1"></div>
+              <button
+                onClick={() => {
+                  setIsAboutModalOpen(true);
+                  setIsHelpDropdownOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+              >
+                ℹ️ Über diese App
               </button>
             </div>
           )}
