@@ -24,6 +24,52 @@ export const createDefaultFileSource = (): FileSource => ({
 });
 
 /**
+ * Generate a unique filename by checking existing tab names
+ */
+export const generateUniqueFilename = (baseFilename: string, existingTabs: Tab[]): string => {
+  const existingFilenames = existingTabs.map(tab => tab.filename);
+  
+  // If the base filename doesn't exist, return it as is
+  if (!existingFilenames.includes(baseFilename)) {
+    return baseFilename;
+  }
+  
+  // Extract the name and extension
+  const lastDotIndex = baseFilename.lastIndexOf('.');
+  const name = lastDotIndex !== -1 ? baseFilename.substring(0, lastDotIndex) : baseFilename;
+  const extension = lastDotIndex !== -1 ? baseFilename.substring(lastDotIndex) : '';
+  
+  // Generate suffixes: a, b, c, ..., z, aa, ab, etc.
+  let suffix = '';
+  let counter = 0;
+  
+  while (true) {
+    if (counter < 26) {
+      // Single letter: a-z
+      suffix = String.fromCharCode(97 + counter); // 97 is 'a'
+    } else {
+      // Multiple letters: aa, ab, ac, ..., ba, bb, etc.
+      const firstChar = Math.floor((counter - 26) / 26);
+      const secondChar = (counter - 26) % 26;
+      suffix = String.fromCharCode(97 + firstChar) + String.fromCharCode(97 + secondChar);
+    }
+    
+    const candidateFilename = `${name}-${suffix}${extension}`;
+    
+    if (!existingFilenames.includes(candidateFilename)) {
+      return candidateFilename;
+    }
+    
+    counter++;
+    
+    // Safety check to prevent infinite loops (should never happen in practice)
+    if (counter > 1000) {
+      return `${name}-${Date.now()}${extension}`;
+    }
+  }
+};
+
+/**
  * Create a new tab with default values
  */
 export const createDefaultTab = (
@@ -157,14 +203,16 @@ export const markTabAsSaved = (tab: Tab): Tab => ({
 });
 
 /**
- * Duplicate a tab with new ID and "untitled" filename
+ * Duplicate a tab with new ID and unique "untitled" filename
  */
-export const duplicateTab = (tab: Tab): Tab => {
+export const duplicateTab = (tab: Tab, existingTabs: Tab[]): Tab => {
   const now = Date.now();
+  const uniqueFilename = generateUniqueFilename('untitled.md', existingTabs);
+  
   return {
     ...tab,
     id: generateTabId(),
-    filename: 'untitled.md',
+    filename: uniqueFilename,
     fileHandle: null,
     fileSource: createDefaultFileSource(),
     hasUnsavedChanges: true, // Duplicated tab is always considered unsaved

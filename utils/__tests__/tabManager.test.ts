@@ -1,6 +1,6 @@
 import { TabManager } from '../tabManager';
 import { Tab, TabManagerState } from '../../types';
-import { createDefaultTab, createTabFromData } from '../tabUtils';
+import { createDefaultTab, createTabFromData, generateUniqueFilename } from '../tabUtils';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -82,8 +82,23 @@ describe('TabManager', () => {
       
       const newTab = tabManager.getTab(newTabId);
       expect(newTab).toBeTruthy();
-      expect(newTab!.filename).toBe('untitled.md');
+      expect(newTab!.filename).toBe('untitled-a.md'); // Second tab should be untitled-a.md
       expect(newTab!.content).toBe('# Hello, Markdown!\n\nStart typing here...');
+    });
+
+    test('creates multiple tabs with unique untitled filenames', () => {
+      // First tab is already 'untitled.md' from initialization
+      const tab1Id = tabManager.createTab();
+      const tab2Id = tabManager.createTab();
+      const tab3Id = tabManager.createTab();
+      
+      const tab1 = tabManager.getTab(tab1Id);
+      const tab2 = tabManager.getTab(tab2Id);
+      const tab3 = tabManager.getTab(tab3Id);
+      
+      expect(tab1!.filename).toBe('untitled-a.md');
+      expect(tab2!.filename).toBe('untitled-b.md');
+      expect(tab3!.filename).toBe('untitled-c.md');
     });
 
     test('creates new tab with custom content', () => {
@@ -96,6 +111,50 @@ describe('TabManager', () => {
       expect(newTab).toBeTruthy();
       expect(newTab!.filename).toBe(customFilename);
       expect(newTab!.content).toBe(customContent);
+    });
+  });
+
+  describe('unique filename generation', () => {
+    test('returns base filename when no conflicts exist', () => {
+      const existingTabs: Tab[] = [];
+      const result = generateUniqueFilename('untitled.md', existingTabs);
+      expect(result).toBe('untitled.md');
+    });
+
+    test('generates -a suffix when base filename exists', () => {
+      const existingTabs = [
+        createDefaultTab('content', 'untitled.md')
+      ];
+      const result = generateUniqueFilename('untitled.md', existingTabs);
+      expect(result).toBe('untitled-a.md');
+    });
+
+    test('generates sequential suffixes for multiple conflicts', () => {
+      const existingTabs = [
+        createDefaultTab('content', 'untitled.md'),
+        createDefaultTab('content', 'untitled-a.md'),
+        createDefaultTab('content', 'untitled-b.md')
+      ];
+      const result = generateUniqueFilename('untitled.md', existingTabs);
+      expect(result).toBe('untitled-c.md');
+    });
+
+    test('works with files without extensions', () => {
+      const existingTabs = [
+        createDefaultTab('content', 'untitled'),
+        createDefaultTab('content', 'untitled-a')
+      ];
+      const result = generateUniqueFilename('untitled', existingTabs);
+      expect(result).toBe('untitled-b');
+    });
+
+    test('handles gaps in sequence', () => {
+      const existingTabs = [
+        createDefaultTab('content', 'untitled.md'),
+        createDefaultTab('content', 'untitled-c.md')
+      ];
+      const result = generateUniqueFilename('untitled.md', existingTabs);
+      expect(result).toBe('untitled-a.md'); // Should use first available
     });
   });
 
@@ -161,7 +220,7 @@ describe('TabManager', () => {
   });
 
   describe('tab duplication', () => {
-    test('duplicates existing tab', () => {
+    test('duplicates existing tab with unique filename', () => {
       const originalId = tabManager.createTab('Original content', 'original.md');
       const initialCount = tabManager.getState().tabs.length;
       
@@ -175,7 +234,7 @@ describe('TabManager', () => {
       
       expect(duplicate).toBeTruthy();
       expect(duplicate!.content).toBe(original!.content);
-      expect(duplicate!.filename).toBe('untitled.md'); // Duplicates get untitled filename
+      expect(duplicate!.filename).toBe('untitled-a.md'); // Duplicates get unique untitled filename
       expect(duplicate!.hasUnsavedChanges).toBe(true); // Duplicates are always unsaved
     });
 

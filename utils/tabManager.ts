@@ -8,7 +8,8 @@ import {
   addToTabHistory,
   updateTabEditorState,
   markTabAsSaved,
-  hasUnsavedChanges
+  hasUnsavedChanges,
+  generateUniqueFilename
 } from './tabUtils';
 
 const STORAGE_KEY = 'markdown-editor-tabs';
@@ -110,14 +111,24 @@ export class TabManager {
    * Create a new tab
    */
   createTab(content?: string, filename?: string, fileHandle?: FileSystemFileHandle, fileSource?: FileSource): string {
+    let finalFilename = filename;
+    
+    // If no filename is provided, generate a unique "untitled.md" filename
+    if (!finalFilename) {
+      finalFilename = generateUniqueFilename('untitled.md', this.state.tabs);
+    }
+    
     const newTab = content || filename || fileHandle || fileSource 
       ? createTabFromData(
           content || '# Hello, Markdown!\n\nStart typing here...',
-          filename || 'untitled.md',
+          finalFilename,
           fileHandle || null,
           fileSource || { type: 'local' }
         )
-      : createDefaultTab();
+      : createDefaultTab(
+          '# Hello, Markdown!\n\nStart typing here...',
+          finalFilename
+        );
 
     const newState: TabManagerState = {
       ...this.state,
@@ -150,7 +161,8 @@ export class TabManager {
 
     // If we're closing the last tab, create a new default tab
     if (newTabs.length === 0) {
-      const defaultTab = createDefaultTab();
+      const uniqueFilename = generateUniqueFilename('untitled.md', []);
+      const defaultTab = createDefaultTab('# Hello, Markdown!\n\nStart typing here...', uniqueFilename);
       newTabs = [defaultTab];
       newActiveTabId = defaultTab.id;
     } else if (tabId === this.state.activeTabId) {
@@ -181,7 +193,8 @@ export class TabManager {
 
     // If we're closing the last tab, create a new default tab
     if (newTabs.length === 0) {
-      const defaultTab = createDefaultTab();
+      const uniqueFilename = generateUniqueFilename('untitled.md', []);
+      const defaultTab = createDefaultTab('# Hello, Markdown!\n\nStart typing here...', uniqueFilename);
       newTabs = [defaultTab];
       newActiveTabId = defaultTab.id;
     } else if (tabId === this.state.activeTabId) {
@@ -223,7 +236,7 @@ export class TabManager {
     const tab = this.state.tabs.find(t => t.id === tabId);
     if (!tab) return null;
 
-    const duplicatedTab = duplicateTabUtil(tab);
+    const duplicatedTab = duplicateTabUtil(tab, this.state.tabs);
     
     const newState: TabManagerState = {
       ...this.state,
@@ -289,7 +302,8 @@ export class TabManager {
       return false; // Should be confirmed by UI layer
     }
 
-    const defaultTab = createDefaultTab();
+    const uniqueFilename = generateUniqueFilename('untitled.md', []);
+    const defaultTab = createDefaultTab('# Hello, Markdown!\n\nStart typing here...', uniqueFilename);
     const newState: TabManagerState = {
       tabs: [defaultTab],
       activeTabId: defaultTab.id,
@@ -304,7 +318,8 @@ export class TabManager {
    * Force close all tabs
    */
   forceCloseAllTabs(): boolean {
-    const defaultTab = createDefaultTab();
+    const uniqueFilename = generateUniqueFilename('untitled.md', []);
+    const defaultTab = createDefaultTab('# Hello, Markdown!\n\nStart typing here...', uniqueFilename);
     const newState: TabManagerState = {
       tabs: [defaultTab],
       activeTabId: defaultTab.id,
