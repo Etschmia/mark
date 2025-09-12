@@ -11,4 +11,58 @@ export default defineConfig({
       '@': path.resolve(__dirname, '.'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // CodeMirror core
+          'codemirror-core': [
+            '@codemirror/view',
+            '@codemirror/state',
+            '@codemirror/commands',
+            '@codemirror/autocomplete',
+            '@codemirror/search'
+          ],
+          // CodeMirror languages (loaded on demand)
+          'codemirror-languages': [
+            '@codemirror/lang-markdown',
+            '@codemirror/lang-javascript',
+            '@codemirror/lang-sql',
+            '@codemirror/lang-python',
+            '@codemirror/lang-php',
+            '@codemirror/lang-xml'
+          ],
+          // CodeMirror themes
+          'codemirror-themes': [
+            '@codemirror/theme-one-dark'
+          ],
+          // Markdown processing
+          'markdown-processing': [
+            'marked',
+            'dompurify'
+          ],
+          // Syntax highlighting
+          'syntax-highlighting': [
+            'highlight.js'
+          ],
+          // Export functionality (heavy libraries)
+          'export-libs': [
+            'jspdf',
+            'html2canvas'
+          ],
+          // GitHub integration
+          'github-integration': [
+            '@octokit/rest',
+            'js-base64'
+          ],
+          // React vendor
+          'react-vendor': [
+            'react',
+            'react-dom'
+          ]
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000 // Increase warning limit since we're code-splitting
+  }
 });

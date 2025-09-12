@@ -3,12 +3,6 @@ import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react
 import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
-import { javascript } from '@codemirror/lang-javascript';
-import { sql } from '@codemirror/lang-sql';
-import { python } from '@codemirror/lang-python';
-import { php } from '@codemirror/lang-php';
-import { xml } from '@codemirror/lang-xml';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { indentWithTab } from '@codemirror/commands';
 import { searchKeymap, openSearchPanel } from '@codemirror/search';
 import { EditorSettings } from './SettingsModal';
@@ -33,6 +27,80 @@ import {
   foldKeymap 
 } from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
+
+// Dynamic imports for language modules and themes
+type LanguageModule = {
+  javascript?: any;
+  sql?: any;
+  python?: any;
+  php?: any;
+  xml?: any;
+};
+
+type ThemeModule = {
+  oneDark?: any;
+};
+
+// Cache for dynamically loaded modules
+const languageCache: LanguageModule = {};
+const themeCache: ThemeModule = {};
+
+// Dynamic language loader
+const loadLanguage = async (language: string) => {
+  if (languageCache[language as keyof LanguageModule]) {
+    return languageCache[language as keyof LanguageModule];
+  }
+
+  try {
+    let module;
+    switch (language) {
+      case 'javascript':
+        module = await import('@codemirror/lang-javascript');
+        languageCache.javascript = module.javascript;
+        return module.javascript;
+      case 'sql':
+        module = await import('@codemirror/lang-sql');
+        languageCache.sql = module.sql;
+        return module.sql;
+      case 'python':
+        module = await import('@codemirror/lang-python');
+        languageCache.python = module.python;
+        return module.python;
+      case 'php':
+        module = await import('@codemirror/lang-php');
+        languageCache.php = module.php;
+        return module.php;
+      case 'xml':
+        module = await import('@codemirror/lang-xml');
+        languageCache.xml = module.xml;
+        return module.xml;
+      default:
+        return null;
+    }
+  } catch (error) {
+    console.error(`Failed to load language module: ${language}`, error);
+    return null;
+  }
+};
+
+// Dynamic theme loader
+const loadTheme = async (theme: string) => {
+  if (themeCache[theme as keyof ThemeModule]) {
+    return themeCache[theme as keyof ThemeModule];
+  }
+
+  try {
+    if (theme === 'oneDark') {
+      const module = await import('@codemirror/theme-one-dark');
+      themeCache.oneDark = module.oneDark;
+      return module.oneDark;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Failed to load theme module: ${theme}`, error);
+    return null;
+  }
+};
 
 // Create a basic setup that doesn't include line numbers by default
 const createBaseSetup = (includeLineNumbers: boolean) => [
@@ -264,18 +332,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     }
   }), []);
 
-  useEffect(() => {
-    if (!editorRef.current) return;
-
+  // Create editor extensions with dynamic language loading
+  const createEditorExtensions = async (settings: EditorSettings) => {
     const extensions = [
       ...createBaseSetup(settings.showLineNumbers),
-      markdown(),
-      javascript(),
-      sql(),
-      python(),
-      php(),
-      xml(),
-      ...(settings.theme === 'dark' ? [oneDark] : []),
+      markdown(), // Markdown is always loaded since it's the primary language
       keymap.of([indentWithTab, ...customSearchKeymap, ...createFormattingKeymap(onFormat)]),
       // Enable native scrolling
       EditorView.scrollMargins.of(() => ({ top: 0, bottom: 0 })),
@@ -364,56 +425,101 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       })
     ];
 
-    const startState = EditorState.create({
-      doc: value,
-      extensions
-    });
+    // Load dark theme if needed
+    if (settings.theme === 'dark') {
+      const darkTheme = await loadTheme('oneDark');
+      if (darkTheme) {
+        extensions.push(darkTheme);
+      }
+    }
 
-    const view = new EditorView({
-      state: startState,
-      parent: editorRef.current
-    });
-
-    viewRef.current = view;
+    // Preload commonly used languages for better UX
+    // These will be cached for future use
+    const languagesToPreload = ['javascript', 'sql', 'python', 'php', 'xml'];
+    const preloadPromises = languagesToPreload.map(lang => loadLanguage(lang));
+    const loadedLanguages = await Promise.all(preloadPromises);
     
-    // Force scrollbar styles with MutationObserver to continuously enforce them
-    const forceScrollbarStyles = () => {
-      const scrollerElement = editorRef.current?.querySelector('.cm-scroller') as HTMLElement;
-      if (scrollerElement) {
-        scrollerElement.style.setProperty('overflow-y', 'auto', 'important');
-        scrollerElement.style.setProperty('overflow-x', 'auto', 'important');
-        scrollerElement.style.setProperty('overflow', 'auto', 'important');
-        scrollerElement.style.setProperty('scrollbar-width', 'auto', 'important');
-        scrollerElement.style.setProperty('scrollbar-color', settings.theme === 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff', 'important');
+    // Add loaded languages to extensions
+    loadedLanguages.forEach(lang => {
+      if (lang) {
+        extensions.push(lang());
+      }
+    });
+
+    return extensions;
+  };
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    let view: EditorView | null = null;
+    let isMounted = true;
+
+    const initializeEditor = async () => {
+      try {
+        const extensions = await createEditorExtensions(settings);
+        
+        if (!isMounted) return; // Component was unmounted while loading
+
+        const startState = EditorState.create({
+          doc: value,
+          extensions
+        });
+
+        view = new EditorView({
+          state: startState,
+          parent: editorRef.current!
+        });
+
+        viewRef.current = view;
+        
+        // Force scrollbar styles with MutationObserver to continuously enforce them
+        const forceScrollbarStyles = () => {
+          const scrollerElement = editorRef.current?.querySelector('.cm-scroller') as HTMLElement;
+          if (scrollerElement) {
+            scrollerElement.style.setProperty('overflow-y', 'auto', 'important');
+            scrollerElement.style.setProperty('overflow-x', 'auto', 'important');
+            scrollerElement.style.setProperty('overflow', 'auto', 'important');
+            scrollerElement.style.setProperty('scrollbar-width', 'auto', 'important');
+            scrollerElement.style.setProperty('scrollbar-color', settings.theme === 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff', 'important');
+          }
+        };
+        
+        // Apply styles immediately
+        setTimeout(forceScrollbarStyles, 50);
+        
+        // Set up MutationObserver to re-apply styles if CodeMirror changes them
+        const observer = new MutationObserver(() => {
+          forceScrollbarStyles();
+        });
+        
+        if (editorRef.current) {
+          observer.observe(editorRef.current, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+          });
+        }
+        
+        // Store observer for cleanup
+        (view as any)._scrollbarObserver = observer;
+      } catch (error) {
+        console.error('Failed to initialize editor:', error);
       }
     };
-    
-    // Apply styles immediately
-    setTimeout(forceScrollbarStyles, 50);
-    
-    // Set up MutationObserver to re-apply styles if CodeMirror changes them
-    const observer = new MutationObserver(() => {
-      forceScrollbarStyles();
-    });
-    
-    if (editorRef.current) {
-      observer.observe(editorRef.current, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['style', 'class']
-      });
-    }
-    
-    // Store observer for cleanup
-    (view as any)._scrollbarObserver = observer;
+
+    initializeEditor();
 
     return () => {
-      // Cleanup MutationObserver
-      if ((view as any)._scrollbarObserver) {
-        (view as any)._scrollbarObserver.disconnect();
+      isMounted = false;
+      if (view) {
+        // Cleanup MutationObserver
+        if ((view as any)._scrollbarObserver) {
+          (view as any)._scrollbarObserver.disconnect();
+        }
+        view.destroy();
       }
-      view.destroy();
     };
   }, [settings.theme, settings.fontSize, settings.showLineNumbers]); // Only re-render when specific settings change
 

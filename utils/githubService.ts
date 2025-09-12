@@ -1,5 +1,46 @@
-import { Octokit } from '@octokit/rest';
-import { decode as base64Decode, encode as base64Encode } from 'js-base64';
+// Dynamic imports for GitHub dependencies
+let Octokit: any = null;
+let base64Decode: any = null;
+let base64Encode: any = null;
+
+// Cache for loaded modules
+const moduleCache = {
+  octokit: null as any,
+  base64Decode: null as any,
+  base64Encode: null as any
+};
+
+// Dynamic loader for GitHub dependencies
+const loadGitHubDependencies = async () => {
+  if (moduleCache.octokit && moduleCache.base64Decode && moduleCache.base64Encode) {
+    return {
+      Octokit: moduleCache.octokit,
+      base64Decode: moduleCache.base64Decode,
+      base64Encode: moduleCache.base64Encode
+    };
+  }
+
+  try {
+    const [octokitModule, base64Module] = await Promise.all([
+      import('@octokit/rest'),
+      import('js-base64')
+    ]);
+
+    moduleCache.octokit = octokitModule.Octokit;
+    moduleCache.base64Decode = base64Module.decode;
+    moduleCache.base64Encode = base64Module.encode;
+
+    return {
+      Octokit: moduleCache.octokit,
+      base64Decode: moduleCache.base64Decode,
+      base64Encode: moduleCache.base64Encode
+    };
+  } catch (error) {
+    console.error('Failed to load GitHub dependencies:', error);
+    throw error;
+  }
+};
+
 import type {
   GitHubUser,
   GitHubRepository,
@@ -16,7 +57,7 @@ interface GitHubConfig {
 }
 
 class GitHubService {
-  private octokit: Octokit | null = null;
+  private octokit: any | null = null;
   private config: GitHubConfig;
 
   constructor() {
@@ -136,6 +177,8 @@ Note: This is required because this app runs entirely in your browser for securi
    */
   async authenticateWithToken(token: string): Promise<GitHubUser> {
     try {
+      const { Octokit } = await loadGitHubDependencies();
+      
       // Initialize Octokit with the token
       this.octokit = new Octokit({
         auth: token
@@ -166,6 +209,8 @@ Note: This is required because this app runs entirely in your browser for securi
    */
   async initializeWithToken(token: string): Promise<GitHubUser> {
     try {
+      const { Octokit } = await loadGitHubDependencies();
+      
       this.octokit = new Octokit({
         auth: token
       });
@@ -319,6 +364,7 @@ Note: This is required because this app runs entirely in your browser for securi
       }
 
       // Decode base64 content
+      const { base64Decode } = await loadGitHubDependencies();
       return base64Decode(file.content);
     } catch (error) {
       console.error('Failed to fetch file content:', error);
@@ -342,6 +388,7 @@ Note: This is required because this app runs entirely in your browser for securi
 
     try {
       // Encode content to base64
+      const { base64Encode } = await loadGitHubDependencies();
       const encodedContent = base64Encode(content);
 
       const { data } = await this.octokit.rest.repos.createOrUpdateFileContents({

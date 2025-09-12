@@ -1,7 +1,72 @@
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+// Dynamic imports for heavy dependencies
+let marked: any = null;
+let DOMPurify: any = null;
+let jsPDF: any = null;
+let html2canvas: any = null;
+
+// Cache for loaded modules
+const moduleCache = {
+  marked: null as any,
+  dompurify: null as any,
+  jspdf: null as any,
+  html2canvas: null as any
+};
+
+// Dynamic loader for export dependencies
+const loadExportDependencies = async () => {
+  if (moduleCache.marked && moduleCache.dompurify) {
+    return {
+      marked: moduleCache.marked,
+      DOMPurify: moduleCache.dompurify
+    };
+  }
+
+  try {
+    const [markedModule, purifyModule] = await Promise.all([
+      import('marked'),
+      import('dompurify')
+    ]);
+
+    moduleCache.marked = markedModule.marked;
+    moduleCache.dompurify = purifyModule.default;
+
+    return {
+      marked: moduleCache.marked,
+      DOMPurify: moduleCache.dompurify
+    };
+  } catch (error) {
+    console.error('Failed to load export dependencies:', error);
+    throw error;
+  }
+};
+
+// Dynamic loader for PDF dependencies
+const loadPDFDependencies = async () => {
+  if (moduleCache.jspdf && moduleCache.html2canvas) {
+    return {
+      jsPDF: moduleCache.jspdf,
+      html2canvas: moduleCache.html2canvas
+    };
+  }
+
+  try {
+    const [jspdfModule, html2canvasModule] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas')
+    ]);
+
+    moduleCache.jspdf = jspdfModule.default;
+    moduleCache.html2canvas = html2canvasModule.default;
+
+    return {
+      jsPDF: moduleCache.jspdf,
+      html2canvas: moduleCache.html2canvas
+    };
+  } catch (error) {
+    console.error('Failed to load PDF dependencies:', error);
+    throw error;
+  }
+};
 
 // Export formats
 export type ExportFormat = 'html' | 'pdf';
@@ -30,6 +95,7 @@ const ALLOWED_ATTR = [
  */
 async function markdownToHtml(markdown: string): Promise<string> {
   try {
+    const { marked, DOMPurify } = await loadExportDependencies();
     const rawHtml = await marked.parse(markdown);
     return DOMPurify.sanitize(rawHtml, {
       ALLOWED_TAGS,
@@ -207,6 +273,9 @@ export async function exportAsHtml(options: ExportOptions): Promise<void> {
  */
 export async function exportAsPdf(options: ExportOptions): Promise<void> {
   try {
+    // Load PDF dependencies dynamically
+    const { jsPDF, html2canvas } = await loadPDFDependencies();
+    
     const htmlContent = await markdownToHtml(options.content);
     
     // Create a temporary container for rendering
