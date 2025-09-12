@@ -277,6 +277,8 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       xml(),
       ...(settings.theme === 'dark' ? [oneDark] : []),
       keymap.of([indentWithTab, ...customSearchKeymap, ...createFormattingKeymap(onFormat)]),
+      // Enable native scrolling
+      EditorView.scrollMargins.of(() => ({ top: 0, bottom: 0 })),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           const newValue = update.state.doc.toString();
@@ -302,15 +304,16 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
           fontSize: `${settings.fontSize}px`
         },
         '.cm-editor': {
-          height: '100%',
-          overflow: 'hidden' // Let scroller handle overflow
+          height: '100%'
         },
         '.cm-scroller': {
           padding: '24px',
           fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-          overflow: 'auto',
           height: '100%',
-          maxHeight: '100%'
+          maxHeight: '100%',
+          overflow: 'auto !important',
+          overflowX: 'auto !important',
+          overflowY: 'auto !important'
         },
         '.cm-content': {
           padding: '0',
@@ -372,8 +375,44 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     });
 
     viewRef.current = view;
+    
+    // Force scrollbar styles with MutationObserver to continuously enforce them
+    const forceScrollbarStyles = () => {
+      const scrollerElement = editorRef.current?.querySelector('.cm-scroller') as HTMLElement;
+      if (scrollerElement) {
+        scrollerElement.style.setProperty('overflow-y', 'auto', 'important');
+        scrollerElement.style.setProperty('overflow-x', 'auto', 'important');
+        scrollerElement.style.setProperty('overflow', 'auto', 'important');
+        scrollerElement.style.setProperty('scrollbar-width', 'auto', 'important');
+        scrollerElement.style.setProperty('scrollbar-color', settings.theme === 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff', 'important');
+      }
+    };
+    
+    // Apply styles immediately
+    setTimeout(forceScrollbarStyles, 50);
+    
+    // Set up MutationObserver to re-apply styles if CodeMirror changes them
+    const observer = new MutationObserver(() => {
+      forceScrollbarStyles();
+    });
+    
+    if (editorRef.current) {
+      observer.observe(editorRef.current, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class']
+      });
+    }
+    
+    // Store observer for cleanup
+    (view as any)._scrollbarObserver = observer;
 
     return () => {
+      // Cleanup MutationObserver
+      if ((view as any)._scrollbarObserver) {
+        (view as any)._scrollbarObserver.disconnect();
+      }
       view.destroy();
     };
   }, [settings.theme, settings.fontSize, settings.showLineNumbers]); // Only re-render when specific settings change
@@ -382,10 +421,59 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   // This causes cursor jumps. Content updates should only happen during tab switches
   // which are handled by recreating the editor with new initial content.
 
+  // Force native scrollbars on CodeMirror with maximum specificity
+  const scrollbarStyles = `
+    .cm-editor .cm-scroller,
+    .cm-scroller,
+    div.cm-editor .cm-scroller {
+      overflow: auto !important;
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+      scrollbar-width: auto !important;
+      scrollbar-color: ${settings.theme === 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff'} !important;
+    }
+    
+    .cm-editor .cm-scroller::-webkit-scrollbar,
+    .cm-scroller::-webkit-scrollbar,
+    div.cm-editor .cm-scroller::-webkit-scrollbar {
+      width: 14px !important;
+      height: 14px !important;
+      display: block !important;
+    }
+    
+    .cm-editor .cm-scroller::-webkit-scrollbar-track,
+    .cm-scroller::-webkit-scrollbar-track,
+    div.cm-editor .cm-scroller::-webkit-scrollbar-track {
+      background: ${settings.theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+      border-radius: 7px !important;
+    }
+    
+    .cm-editor .cm-scroller::-webkit-scrollbar-thumb,
+    .cm-scroller::-webkit-scrollbar-thumb,
+    div.cm-editor .cm-scroller::-webkit-scrollbar-thumb {
+      background: ${settings.theme === 'dark' ? '#64748b' : '#9ca3af'} !important;
+      border-radius: 7px !important;
+      border: 2px solid ${settings.theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+    }
+    
+    .cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover,
+    .cm-scroller::-webkit-scrollbar-thumb:hover,
+    div.cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
+      background: ${settings.theme === 'dark' ? '#94a3b8' : '#6b7280'} !important;
+    }
+    
+    .cm-editor .cm-scroller::-webkit-scrollbar-corner,
+    .cm-scroller::-webkit-scrollbar-corner,
+    div.cm-editor .cm-scroller::-webkit-scrollbar-corner {
+      background: ${settings.theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+    }
+  `;
+
   return (
     <div className={`rounded-lg h-full flex flex-col overflow-hidden ${
       settings.theme === 'dark' ? 'bg-slate-800' : 'bg-white border border-gray-200'
     }`}>
+      <style>{scrollbarStyles}</style>
       <div ref={editorRef} className="w-full h-full min-h-0" />
     </div>
   );

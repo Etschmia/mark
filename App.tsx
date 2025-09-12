@@ -635,6 +635,12 @@ const App: React.FC = () => {
       await pwaManager.forceUpdate();
     };
     
+    // Add global function to show update banner for debugging
+    (window as any).showUpdateBanner = () => {
+      console.log('🔄 Showing update banner...');
+      pwaManager.showUpdateBanner();
+    };
+    
     // Add cache info function for debugging
     (window as any).getCacheInfo = async () => {
       if ('caches' in window) {
@@ -1665,7 +1671,7 @@ const App: React.FC = () => {
         ref={mainRef}
         className="flex-grow grid grid-cols-1 md:grid-cols-[50%_auto_1fr] gap-2 p-4 overflow-hidden"
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col min-h-0">
           {/* TabBar - conditionally rendered when multiple tabs exist */}
           <TabBar
             tabs={tabManagerState.tabs}

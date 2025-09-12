@@ -39,6 +39,10 @@ class PWAManager {
   }
 
   private async registerServiceWorker(): Promise<void> {
+    // TEMPORARILY DISABLE SERVICE WORKER FOR DEVELOPMENT
+    console.log('[PWA] Service Worker registration DISABLED for development');
+    return;
+    
     if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js', {
@@ -222,20 +226,20 @@ class PWAManager {
     banner.className = `
       fixed top-0 left-0 right-0 z-[9999] 
       bg-blue-600 text-white 
-      p-3 text-center text-sm
+      p-4 text-center text-sm
       transform -translate-y-full transition-transform duration-300
       shadow-lg
     `;
     banner.innerHTML = `
-      <div class="flex items-center justify-center gap-4">
-        <span>🚀 Neue Version verfügbar!</span>
-        <button id="pwa-update-button" class="px-3 py-1 bg-blue-800 rounded text-xs hover:bg-blue-700 transition-colors">
+      <div class="flex items-center justify-center gap-4 flex-wrap">
+        <span class="font-medium">🚀 Neue Version verfügbar!</span>
+        <button id="pwa-update-button" class="px-4 py-2 bg-blue-800 rounded text-sm hover:bg-blue-700 transition-colors font-medium">
           Jetzt aktualisieren
         </button>
-        <button id="pwa-force-update-button" class="px-3 py-1 bg-red-600 rounded text-xs hover:bg-red-700 transition-colors">
+        <button id="pwa-force-update-button" class="px-4 py-2 bg-red-600 rounded text-sm hover:bg-red-700 transition-colors font-medium">
           Force Update
         </button>
-        <button id="pwa-dismiss-update" class="px-3 py-1 bg-gray-600 rounded text-xs hover:bg-gray-700 transition-colors">
+        <button id="pwa-dismiss-update" class="px-4 py-2 bg-gray-600 rounded text-sm hover:bg-gray-700 transition-colors font-medium">
           Später
         </button>
       </div>
@@ -246,23 +250,37 @@ class PWAManager {
       banner.style.transform = 'translateY(0)';
     }, 100);
 
+    // Auto-dismiss after 30 seconds instead of immediately
+    const autoDismissTimer = setTimeout(() => {
+      if (document.body.contains(banner)) {
+        banner.style.transform = 'translateY(-100%)';
+        setTimeout(() => banner.remove(), 300);
+      }
+    }, 30000); // 30 seconds
+
     // Handle normal update button
     banner.querySelector('#pwa-update-button')?.addEventListener('click', () => {
+      clearTimeout(autoDismissTimer);
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
       }
-      banner.remove();
+      banner.style.transform = 'translateY(-100%)';
+      setTimeout(() => banner.remove(), 300);
     });
 
     // Handle force update button
     banner.querySelector('#pwa-force-update-button')?.addEventListener('click', async () => {
-      banner.remove();
+      clearTimeout(autoDismissTimer);
+      banner.style.transform = 'translateY(-100%)';
+      setTimeout(() => banner.remove(), 300);
       await this.forceUpdate();
     });
 
     // Handle dismiss button
     banner.querySelector('#pwa-dismiss-update')?.addEventListener('click', () => {
-      banner.remove();
+      clearTimeout(autoDismissTimer);
+      banner.style.transform = 'translateY(-100%)';
+      setTimeout(() => banner.remove(), 300);
     });
 
     return banner;
@@ -282,6 +300,11 @@ class PWAManager {
   public onOfflineStatusChange(callback: (offline: boolean) => void): void {
     window.addEventListener('online', () => callback(false));
     window.addEventListener('offline', () => callback(true));
+  }
+
+  // Manual method to show update banner for development/debugging
+  public showUpdateBanner(): void {
+    this.showUpdateAvailable();
   }
 }
 
