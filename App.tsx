@@ -10,6 +10,7 @@ import { HelpModal } from './components/HelpModal';
 import { CheatSheetModal } from './components/CheatSheetModal';
 import { SettingsModal } from './components/SettingsModal';
 import { AboutModal } from './components/AboutModal';
+import { UpdateInfoModal } from './components/UpdateInfoModal';
 import { pwaManager } from './utils/pwaManager';
 import { githubService } from './utils/githubService';
 import { GitHubModal } from './components/GitHubModal';
@@ -17,6 +18,7 @@ import { SaveOptionsModal } from './components/SaveOptionsModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { TabManager } from './utils/tabManager';
 import { TabContextMenu } from './components/TabContextMenu';
+import { checkAndInstallUpdate, checkUpdateCompletion } from './utils/updateManager';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -124,6 +126,11 @@ const App: React.FC = () => {
   const [isCheatSheetModalOpen, setIsCheatSheetModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  
+  // Update modal states
+  const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
+  const [updateInfoStatus, setUpdateInfoStatus] = useState<'success' | 'fail' | 'unchanged'>('unchanged');
+  const [updateBuildInfo, setUpdateBuildInfo] = useState<any>(null);
   
   // Tab context menu state
   const [isTabContextMenuOpen, setIsTabContextMenuOpen] = useState(false);
@@ -327,6 +334,23 @@ const App: React.FC = () => {
 
   const forceCloseTab = useCallback((tabId: string) => {
     return tabManagerRef.current.forceCloseTab(tabId);
+  }, []);
+
+  // Update functionality
+  const handleUpdate = useCallback(async () => {
+    try {
+      const result = await checkAndInstallUpdate();
+      
+      setUpdateInfoStatus(result.status);
+      setUpdateBuildInfo(result.buildInfo || null);
+      setIsUpdateInfoModalOpen(true);
+      
+    } catch (error) {
+      console.error('Update check failed:', error);
+      setUpdateInfoStatus('fail');
+      setUpdateBuildInfo(null);
+      setIsUpdateInfoModalOpen(true);
+    }
   }, []);
 
   const switchToTab = useCallback((tabId: string) => {
@@ -579,6 +603,21 @@ const App: React.FC = () => {
 
   // Initialize PWA functionality
   useEffect(() => {
+    // Check for completed updates
+    const updateCheck = checkUpdateCompletion();
+    if (updateCheck.wasUpdated) {
+      // Show success modal after a brief delay to ensure app is fully loaded
+      setTimeout(() => {
+        setUpdateInfoStatus('success');
+        // Try to get fresh build info
+        fetch('/build-info.json')
+          .then(response => response.json())
+          .then(buildInfo => setUpdateBuildInfo(buildInfo))
+          .catch(() => setUpdateBuildInfo(null))
+          .finally(() => setIsUpdateInfoModalOpen(true));
+      }, 1000);
+    }
+
     // Handle offline status changes
     pwaManager.onOfflineStatusChange((offline) => {
       setIsOffline(offline);
@@ -1657,6 +1696,8 @@ const App: React.FC = () => {
           setIsSettingsModalOpen={setIsSettingsModalOpen}
           isAboutModalOpen={isAboutModalOpen}
           setIsAboutModalOpen={setIsAboutModalOpen}
+          // Update functionality
+          onUpdate={handleUpdate}
           // GitHub integration props
           githubState={githubState}
           onGitHubConnect={handleGitHubConnect}
@@ -1733,6 +1774,13 @@ const App: React.FC = () => {
       <AboutModal 
         isOpen={isAboutModalOpen}
         onClose={() => setIsAboutModalOpen(false)}
+      />
+      
+      <UpdateInfoModal 
+        isOpen={isUpdateInfoModalOpen}
+        onClose={() => setIsUpdateInfoModalOpen(false)}
+        status={updateInfoStatus}
+        buildInfo={updateBuildInfo}
       />
 
       {/* GitHub Integration Modals */}

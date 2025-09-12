@@ -6,8 +6,10 @@ import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
 import { SettingsModal, EditorSettings } from './SettingsModal';
 import { AboutModal } from './AboutModal';
+import { UpdateInfoModal } from './UpdateInfoModal';
 import { GitHubButton } from './GitHubButton';
 import { pwaManager } from '../utils/pwaManager';
+import { checkAndInstallUpdate } from '../utils/updateManager';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
@@ -36,6 +38,8 @@ interface ToolbarProps {
   setIsSettingsModalOpen: (open: boolean) => void;
   isAboutModalOpen: boolean;
   setIsAboutModalOpen: (open: boolean) => void;
+  // Update modal props
+  onUpdate: () => void;
   // GitHub integration props
   githubState: GitHubState;
   onGitHubConnect: () => void;
@@ -90,6 +94,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   setIsSettingsModalOpen,
   isAboutModalOpen,
   setIsAboutModalOpen,
+  // Update modal props
+  onUpdate,
   // GitHub props
   githubState,
   onGitHubConnect,
@@ -103,6 +109,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isHelpDropdownOpen, setIsHelpDropdownOpen] = useState(false);
   const [canInstallPWA, setCanInstallPWA] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const codeDropdownRef = useRef<HTMLDivElement>(null);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
   const helpDropdownRef = useRef<HTMLDivElement>(null);
@@ -183,6 +190,21 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     } catch (error) {
       console.error('Install failed:', error);
       alert(`Installation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+    setIsHelpDropdownOpen(false);
+    
+    try {
+      await onUpdate();
+    } catch (error) {
+      console.error('Update failed:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -342,6 +364,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
                 ⚙️ Einstellungen
+              </button>
+              <button
+                onClick={handleUpdate}
+                disabled={isUpdating}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUpdating ? '🔄 Updating...' : '🔄 Update'}
               </button>
               <div className="border-t border-slate-600 my-1"></div>
               <button
