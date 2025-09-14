@@ -1762,28 +1762,20 @@ const App: React.FC = () => {
               </button>,
               <span>{`Ln ${cursorPosition.line}, Col ${cursorPosition.column}`}</span>,
               // Add CodeMirror theme selector to status bar
-              <select
-                value={codemirrorTheme}
-                onChange={(e) => setCodemirrorTheme(e.target.value)}
-                className="bg-slate-700 text-white text-xs rounded p-1"
-              >
-                <option value="" disabled>CodeMirror Theme</option>
-                <option value="basicDark">Basic Dark</option>
-                <option value="basicLight">Basic Light</option>
-                <option value="dracula">Dracula</option>
-                <option value="githubDark">GitHub Dark</option>
-                <option value="githubLight">GitHub Light</option>
-                <option value="material">Material</option>
-                <option value="monokai">Monokai</option>
-                <option value="neo">Neo</option>
-                <option value="nord">Nord</option>
-                <option value="tokyoNight">Tokyo Night</option>
-                <option value="tokyoNightDay">Tokyo Night Day</option>
-                <option value="tokyoNightStorm">Tokyo Night Storm</option>
-                <option value="vscodeDark">VSCode Dark</option>
-                <option value="xcodeDark">XCode Dark</option>
-                <option value="xcodeLight">XCode Light</option>
-              </select>
+              <div className="flex items-center gap-1">
+                <label className="text-xs text-slate-400">Theme:</label>
+                <select
+                  value={codemirrorTheme}
+                  onChange={(e) => setCodemirrorTheme(e.target.value)}
+                  className="bg-slate-700 text-white text-xs rounded p-1 max-w-[120px]"
+                >
+                  {codemirrorThemeOptions.map(theme => (
+                    <option key={theme} value={theme}>
+                      {theme.charAt(0).toUpperCase() + theme.slice(1).replace(/([A-Z])/g, ' $1')}
+                    </option>
+                  ))}
+                </select>
+              </div>
             ]} />
           </div>
         </div>
