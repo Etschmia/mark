@@ -38,67 +38,41 @@ This document provides comprehensive technical details about the project archite
   - `@codemirror/lang-php@6.0.2` - PHP support
   - `@codemirror/lang-xml@6.1.0` - XML/HTML support
 
-### Markdown Processing
-**marked@16.2.1** - Fast, standards-compliant Markdown parser
-- Custom renderer for code block highlighting
-- GitHub Flavored Markdown (GFM) support
-- Break support for line breaks
-- Asynchronous parsing for performance
+- **Themes Support:**
+  - `@uiw/codemirror-themes-all@4.25.1` - Collection of 30+ editor themes
+  - Dynamic theme switching with real-time preview
+  - Theme selector in editor status bar
 
-**DOMPurify@3.2.6** - XSS protection
-- Sanitizes all HTML output
-- Configurable allowed tags and attributes
-- Prevents XSS vulnerabilities in markdown content
+### Markdown Processing
+**marked.js** - Fast Markdown parser
+- **Version:** 16.2.1
+- **Features:** GitHub Flavored Markdown support
+- **Security:** DOMPurify sanitization for XSS prevention
 
 ### Syntax Highlighting
-**highlight.js@11.11.1** - Code block syntax highlighting
-- **Supported Languages:** JavaScript, SQL, Python, PHP, XML, HTML, CSS, JSON, YAML, TypeScript, Bash, Markdown
-- **Theme:** Atom One Dark for consistency
-- **Integration:** Custom marked renderer for seamless highlighting
+**highlight.js** - Code syntax highlighting
+- **Version:** 11.11.1
+- **Languages:** 12+ programming languages
+- **Integration:** Preview rendering only (CodeMirror handles editor highlighting)
 
-### Export Capabilities
-**jsPDF@3.0.2** - Client-side PDF generation
-- A4 page format with proper margins
-- Multi-page document support
-- Professional typography and spacing
+### Export Functionality
+**jsPDF** - Client-side PDF generation
+- **Version:** 3.0.2
+- **Features:** High-quality PDF output
 
-**html2canvas@1.4.1** - HTML to canvas rendering
-- High-quality document rendering
-- Styled content preservation
-- Font and layout accuracy
+**html2canvas** - HTML to canvas rendering
+- **Version:** 1.4.1
+- **Features:** Visual fidelity for HTML exports
 
-## 📁 Component Architecture
+### GitHub Integration
+**@octokit/rest** - GitHub API client
+- **Version:** 22.0.0
+- **Features:** Repository browsing, file operations
 
-### `App.tsx` - Application Container
-**Responsibilities:**
-- Central state management (markdown content, filename, history)
-- File operations coordination (new, open, save, export)
-- Format command routing to editor
-- Undo/redo history management
-- Panel resizing logic
-- LocalStorage persistence
+**@octokit/auth-oauth-device** - OAuth device flow
+- **Features:** Secure authentication without server
 
-**Key State:**
-```typescript
-const [markdown, setMarkdown] = useState<string>(persistedState.markdown);
-const [fileName, setFileName] = useState<string>(persistedState.fileName);
-const [settings, setSettings] = useState<EditorSettings>(persistedState.settings);
-const [history, setHistory] = useState<string[]>([persistedState.markdown]);
-const [historyIndex, setHistoryIndex] = useState(0);
-const [isResizing, setIsResizing] = useState(false);
-```
-
-**Settings Management:**
-- Comprehensive settings state with theme system
-- LocalStorage persistence for all settings
-- Theme-aware UI rendering throughout app
-- Configurable debounce time for history
-- Auto-save toggle functionality
-
-**File System Integration:**
-- Modern File System Access API for supported browsers
-- Legacy download/upload fallback for older browsers
-- Automatic file handle management for save operations
+## 🎯 Core Components
 
 ### `components/Editor.tsx` - CodeMirror Integration
 **Implementation Details:**
@@ -109,6 +83,7 @@ const [isResizing, setIsResizing] = useState(false);
 - **Theme-aware rendering** (light/dark mode)
 - **Configurable font size** from settings
 - **Optional line numbers** toggle
+- **30+ CodeMirror themes** with dynamic loading
 - Custom theme integration
 
 **Theme System:**
@@ -117,6 +92,7 @@ const [isResizing, setIsResizing] = useState(false);
 - Theme-aware search panel styling
 - Conditional extension loading (oneDark for dark mode)
 - Settings-driven configuration
+- **30+ themes** from @uiw/codemirror-themes collection
 
 **Key Features:**
 ```typescript
@@ -137,6 +113,14 @@ interface EditorRef {
 - Search panel shortcuts
 
 ### `components/Preview.tsx` - Markdown Rendering
+**Implementation Details:**
+- Asynchronous markdown parsing with marked.js
+- XSS prevention with DOMPurify
+- Syntax highlighting with highlight.js
+- Multiple preview themes
+- Live rendering with debounced updates
+- Scroll synchronization with editor
+
 **Processing Pipeline:**
 1. Markdown → marked.js → Raw HTML
 2. Raw HTML → DOMPurify → Sanitized HTML
@@ -184,7 +168,7 @@ interface EditorRef {
 
 ### `components/SettingsModal.tsx` - User Preferences
 **Implementation Details:**
-- Complete theme switching (light/dark mode)
+- Complete theme switching (light/dark mode for entire UI)
 - Font size adjustment (10-24px)
 - Debounce time configuration (100-2000ms)
 - Auto-save toggle
@@ -208,6 +192,19 @@ interface EditorSettings {
 - Immediate application of changes
 - Default fallback values
 - Error handling for storage failures
+
+### `components/StatusBar.tsx` - Status Information
+**Implementation Details:**
+- Line/column position display
+- Line numbers toggle
+- **CodeMirror theme selector**
+- Responsive design for all screen sizes
+
+**Features:**
+- Real-time cursor position updates
+- Theme-aware styling
+- **30+ CodeMirror themes** with dropdown selector
+- Consistent with overall application theme
 
 ### `components/CheatSheetModal.tsx` - Quick Reference
 **Content Organization:**
@@ -247,22 +244,37 @@ interface EditorSettings {
 
 ### Performance Optimizations
 **Rendering:**
-- React.memo for component optimization
-- Debounced markdown processing
-- Efficient CodeMirror updates
+- Virtualized lists for tab management
+- Memoized components
+- Efficient re-rendering
+- Code splitting with dynamic imports
 
-**Memory Management:**
-- Proper cleanup in useEffect
-- Event listener removal
-- CodeMirror instance destruction
+**Bundle Size:**
+- Vite build optimization
+- Manual chunk splitting
+- Dynamic imports for heavy dependencies
+- Tree shaking
 
-### Security Considerations
-**XSS Prevention:**
-- DOMPurify sanitization of all HTML
+### CodeMirror Themes Implementation
+**Dynamic Loading:**
+- Individual theme packages for efficient loading
+- Vite manualChunks configuration for bundle optimization
+- Cache mechanism for loaded themes
+
+**Theme Integration:**
+- Extension-based theme system
+- Real-time theme switching
+- Status bar selector for easy access
+- 30+ professionally designed themes
+
+## 🛡️ Security Considerations
+
+### XSS Prevention
+- DOMPurify sanitization of all HTML output
 - Configurable allowed tags/attributes
 - Safe handling of user-generated content
 
-**Content Security:**
+### Content Security
 - No external script loading
 - Local processing only
 - No data transmission
@@ -322,56 +334,9 @@ interface EditorSettings {
 5. State updated with new content/filename
 6. LocalStorage synchronized
 
-## 🛠️ Extension Points
-
-### Adding New Formats
-1. Add format type to `types.ts`
-2. Implement handler in `App.tsx`
-3. Add toolbar button in `Toolbar.tsx`
-4. Add keyboard shortcut in `Editor.tsx`
-5. Update help documentation
-
-### Adding Export Formats
-1. Implement export function in `utils/exportUtils.ts`
-2. Add option to export dropdown
-3. Handle format selection in toolbar
-
-### Theme System Extension
-1. Add theme styles to `preview-themes.ts`
-2. Update theme selector in toolbar
-3. Test with all content types
-
-## 📊 Performance Metrics
-
-**Bundle Size (Production):**
-- Main bundle: ~2.6MB (gzipped: ~837KB)
-- Includes all CodeMirror languages and highlight.js
-- Optimized for modern browsers
-
-**Runtime Performance:**
-- Fast startup with Vite
-- Responsive editing with CodeMirror
-- Efficient markdown processing
-- Smooth preview updates
-
-## 🔍 Development Guidelines
-
-### Code Organization
-- Components in `components/` directory
-- Utilities in `utils/` directory
-- Types in `types.ts`
-- Clear separation of concerns
-
-### Naming Conventions
-- PascalCase for components
-- camelCase for functions and variables
-- kebab-case for file names (except components)
-- Descriptive, self-documenting names
-
-### Error Handling
-- Try-catch for all async operations
-- Graceful degradation for missing features
-- User-friendly error messages
-- Console warnings for development
-
-This documentation should be updated whenever significant architectural changes or new features are added to the project.
+### Theme Changes
+1. User selects theme from status bar dropdown
+2. `App.tsx` updates `codemirrorTheme` state
+3. `Editor.tsx` receives new theme via props
+4. CodeMirror extensions recreated with new theme
+5. Editor re-renders with new theme applied

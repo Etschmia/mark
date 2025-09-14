@@ -1,47 +1,29 @@
 # Markdown Editor Pro
 
-A powerful, lightweight, browser-based Markdown editor designed for simplicity, privacy, and productivity. Features real-time syntax highlighting, live preview, comprehensive keyboard shortcuts, advanced export capabilities, and seamless GitHub integration.
+A powerful, lightweight, browser-based Markdown editor designed for simplicity, privacy, and productivity.
 
-## ✨ Key Features
+[![License](https://img.shields.io/github/license/tobiasbrendler/markdown-editor-pro)](https://github.com/tobiasbrendler/markdown-editor-pro/blob/main/LICENSE)
+[![Version](https://img.shields.io/github/package-json/v/tobiasbrendler/markdown-editor-pro)](https://github.com/tobiasbrendler/markdown-editor-pro)
 
-### 🎯 **Core Editing**
-- **CodeMirror 6 Integration** - Professional-grade editor with real-time Markdown syntax highlighting
+## 🌟 Features
+
+### 📝 **Core Editing**
+- **Real-time Syntax Highlighting** - Professional CodeMirror 6 integration with Markdown support
 - **Live Preview** - Instant HTML rendering with synchronized scrolling
-- **Split-View Interface** - Resizable panels for optimal workflow
-- **Dark Theme** - Eye-friendly design for extended writing sessions
+- **Complete Formatting Toolbar** - Visual buttons for all Markdown elements
+- **Multi-Tab Interface** - Work with multiple documents simultaneously
+- **Search and Replace** - Powerful find/replace with regex support
 
-### 🐙 **GitHub Integration** (NEW!)
-- **Seamless GitHub Connection** - Connect with GitHub via secure OAuth Device Flow
-- **Repository Browser** - Browse all your repositories with search and filtering
-- **Direct File Loading** - Load Markdown files directly from GitHub repositories
-- **Enhanced Save Options** - Save locally or commit directly to GitHub with custom commit messages
-- **Branch Support** - Work with files across different branches
-- **Persistent Authentication** - Stay connected across browser sessions
-- **Offline Awareness** - Clear indicators when GitHub features are unavailable
+### ⌨️ **Keyboard Productivity**
+- **30+ Keyboard Shortcuts** - Full shortcut support for all formatting operations
+- **Tab Management** - Efficient keyboard-based tab switching and management
+- **Undo/Redo System** - Comprehensive history with configurable debounce time
 
-### 🗏️ **Productivity Features**
-- **Multi-Tab Interface** - Work with multiple documents simultaneously with full state preservation
-- **Complete Keyboard Shortcuts** - Full shortcut support for all formatting and tab management (30+ shortcuts)
-- **Tab Navigation Shortcuts** - Efficient keyboard-based tab switching and management
-- **Search and Replace** - Powerful find/replace with regex support and highlighting
-- **Undo/Redo System** - Comprehensive history management with configurable debounce time
-- **Auto-Save to LocalStorage** - Never lose your work with persistent content and settings
-- **Line Numbers** - Optional display with toggle in settings
-
-### 📤 **Export Capabilities**
-- **Multiple Export Formats** - Save as Markdown, HTML, or PDF
-- **Styled HTML Export** - Complete standalone HTML documents
-- **PDF Generation** - Professional PDF output with proper formatting
-
-### 🛠️ **Advanced Tools**
-- **Complete Theme System** - Light/dark mode for entire interface with immediate switching
-- **Comprehensive Settings Modal** - Customize font size (10-24px), theme, debounce time (100-2000ms), line numbers, and auto-save
-- **Progressive Web App (PWA)** - Install as native app with offline functionality and custom icons
-- **Interactive Help System** - Keyboard shortcuts reference and Markdown cheat sheet in dropdown
-- **Code Syntax Highlighting** - Support for 12+ programming languages in preview
-- **File System Integration** - Modern File System Access API with legacy fallback
-- **Persistent Storage** - All settings, content, and filename automatically saved to localStorage
-- **Offline Support** - Continue working without internet connection with automatic sync
+### 📁 **File Operations**
+- **Modern File System Integration** - Native file save/open with File System Access API
+- **Legacy Browser Support** - Download/upload fallback for older browsers
+- **Auto-Save to LocalStorage** - Never lose your work with persistent storage
+- **GitHub Integration** - Direct file loading and saving to GitHub repositories
 
 ### 🎨 **User Experience**
 - **Complete Theme System** - Full light/dark mode for entire interface with persistent settings
@@ -52,6 +34,7 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 - **Intuitive Toolbar** - Visual buttons for all formatting options
 - **Multiple Preview Themes** - Customizable preview styling with persistent selection
 - **Offline Indicator** - Clear status when working without internet connection
+- **CodeMirror Themes** - 30+ editor themes for personalized coding experience
 
 ## 🚀 Quick Start
 
@@ -101,64 +84,11 @@ npm run build
 - `Ctrl/Cmd + Shift + Tab` - Previous tab
 - `Ctrl/Cmd + 1-9` - Switch to tab by number
 
-### File Operations
-- `Ctrl/Cmd + N` - New document
-- `Ctrl/Cmd + S` - Save
-- `Ctrl/Cmd + Shift + S` - Save as
-- `Ctrl/Cmd + Shift + O` - Open file
+## 📤 Export Capabilities
 
-## 🏗️ Technology Stack
-
-### Core Technologies
-- **React 19.1.1** - Modern UI framework with latest features
-- **TypeScript 5.8.2** - Type-safe development
-- **Vite 7.0.6** - Lightning-fast build tool and dev server
-
-### GitHub Integration
-- **@octokit/rest** - Official GitHub REST API client
-- **@octokit/auth-oauth-device** - Secure OAuth Device Flow authentication
-- **js-base64** - Base64 encoding for GitHub file operations
-
-### Editor & Parsing
-- **CodeMirror 6** - Professional code editor with syntax highlighting
-- **@codemirror/search** - Advanced search and replace functionality
-- **marked 16.2.1** - Fast, standards-compliant Markdown parser
-- **DOMPurify 3.2.6** - XSS protection for HTML sanitization
-
-### Syntax Highlighting
-- **highlight.js 11.11.1** - Syntax highlighting for code blocks
-- **Languages supported**: JavaScript, Python, SQL, PHP, XML, HTML, CSS, JSON, YAML, TypeScript, Bash, Markdown
-
-### Export & Utilities
-- **jsPDF** - Client-side PDF generation
-- **html2canvas** - HTML to canvas rendering for PDF export
-- **File System Access API** - Modern file operations (with legacy fallback)
-
-## 📁 Project Structure
-
-```
-markdown-editor-pro/
-├── components/
-│   ├── icons/
-│   │   └── Icons.tsx           # SVG icon components
-│   ├── Editor.tsx              # CodeMirror-based editor
-│   ├── Preview.tsx             # Live markdown preview
-│   ├── Toolbar.tsx             # Main toolbar with all controls
-│   ├── HelpModal.tsx           # Comprehensive help system
-│   ├── CheatSheetModal.tsx     # Markdown syntax reference
-│   ├── GitHubButton.tsx        # GitHub connection button
-│   ├── GitHubModal.tsx         # Repository and file browser
-│   ├── SaveOptionsModal.tsx    # Local vs GitHub save options
-│   └── preview-themes.ts       # Preview styling themes
-├── utils/
-│   ├── exportUtils.ts          # HTML/PDF export functionality
-│   └── githubService.ts        # GitHub API integration
-├── App.tsx                     # Main application component
-├── index.tsx                   # Application entry point
-├── types.ts                    # TypeScript type definitions
-├── vite.config.ts              # Vite configuration
-└── package.json                # Dependencies and scripts
-```
+- **Markdown** - Native .md file saving
+- **HTML** - Complete standalone HTML documents with styling
+- **PDF** - Professional PDF output with proper formatting
 
 ## 🎯 Core Components
 
@@ -167,6 +97,7 @@ markdown-editor-pro/
 - Custom keyboard shortcuts for all formatting operations
 - Search and replace functionality
 - Real-time content synchronization
+- 30+ CodeMirror themes for personalized experience
 
 ### `Preview.tsx`
 - Live HTML rendering with marked.js
@@ -179,80 +110,55 @@ markdown-editor-pro/
 - File operations (New, Open, Save, Export)
 - GitHub integration button
 - Help system dropdown
-- Theme selection
 
-### `GitHubButton.tsx`
-- GitHub connection status display
-- OAuth authentication management
-- Repository browsing trigger
-- User profile information
+## 🛠️ Technical Stack
 
-### `GitHubModal.tsx`
-- Repository search and filtering
-- File system navigation
-- Markdown file selection
-- Branch and path management
+- **Frontend:** React 19.1.1, TypeScript 5.8.2, Vite 7.0.6
+- **Editor:** CodeMirror 6 with 30+ themes
+- **Markdown Processing:** marked 16.2.1, DOMPurify 3.2.6
+- **Syntax Highlighting:** highlight.js 11.11.1 (12+ languages)
+- **Export:** jsPDF 3.0.2, html2canvas 1.4.1
+- **GitHub Integration:** @octokit/rest 22.0.0
+- **Styling:** Tailwind CSS utility classes
+- **PWA:** Workbox, Web Manifest
 
-### `SaveOptionsModal.tsx`
-- Local vs GitHub save choice
-- Commit message composition
-- Change detection display
-- Permission validation
+## 📱 Progressive Web App
 
-### `HelpModal.tsx`
-- Complete keyboard shortcuts reference
-- Toolbar functionality explanations
-- GitHub integration guide
-- Organized by categories
-- Always up-to-date with current features
-
-### `CheatSheetModal.tsx`
-- Quick Markdown syntax reference
-- Copy-paste ready examples
-- 8 organized categories
-- Visual syntax examples
-
-## 🔧 Development
-
-### Scripts
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run preview  # Preview production build
-```
-
-### Dependencies Management
-All external libraries are managed via NPM (not CDN) for better version control and offline development.
-
-### Browser Support
-- **Modern browsers** with File System Access API support
-- **Legacy fallback** for older browsers using download/upload patterns
-- **Responsive design** works on desktop and mobile
-
-## 🌐 Demo & Deployment
-
-**Live Demo:** [https://mark-alpha-five.vercel.app/](https://mark-alpha-five.vercel.app/)
-
-**GitHub Repository:** [https://github.com/Etschmia/mark](https://github.com/Etschmia/mark)
-
-### Deployment Options
-- **Vercel** (current)
-- **Netlify**
-- **GitHub Pages**
-- Any static hosting service
+Install as a native application with:
+- Offline functionality
+- App shortcuts
+- System notifications
+- Home screen installation
 
 ## 🔐 Privacy & Security
 
-- **No registration required** - Complete privacy
-- **Local storage only** - Data never leaves your browser
-- **No cloud dependencies** - Works completely offline
-- **XSS protection** - All HTML output sanitized
-- **Modern security practices** - Content Security Policy compliant
+- **Zero Data Collection** - No tracking, no analytics, no cloud storage
+- **Client-Side Only** - All processing happens in your browser
+- **No Registration Required** - Immediate access without account creation
+- **XSS Protection** - DOMPurify sanitization of all HTML output
+- **Secure GitHub OAuth** - Device flow authentication with token storage
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a pull request
 
 ## 📄 License
 
-This project emphasizes privacy and accessibility by eliminating the need for user registration or cloud storage, making it ideal for users who value data privacy and offline functionality.
+Distributed under the MIT License. See `LICENSE` for more information.
 
----
+## 🙏 Acknowledgments
 
-*Built with ❤️ for writers, developers, and documentation enthusiasts.*
+- [CodeMirror](https://codemirror.net/) - Powerful code editor component
+- [React](https://reactjs.org/) - JavaScript library for building user interfaces
+- [Vite](https://vitejs.dev/) - Next generation frontend tooling
+- [marked](https://marked.js.org/) - Markdown parser and compiler
+- [DOMPurify](https://github.com/cure53/DOMPurify) - DOM-only, super-fast, uber-tolerant XSS sanitizer
+- [highlight.js](https://highlightjs.org/) - Syntax highlighting for the web
+- [jsPDF](https://github.com/parallax/jsPDF) - Client-side JavaScript PDF generation
+- [html2canvas](https://html2canvas.hertzen.com/) - Screenshots with JavaScript
+- [Octokit](https://github.com/octokit/octokit.js) - GitHub API client
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework

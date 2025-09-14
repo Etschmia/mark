@@ -34,7 +34,37 @@ export default defineConfig({
           ],
           // CodeMirror themes
           'codemirror-themes': [
-            '@codemirror/theme-one-dark'
+            '@codemirror/theme-one-dark',
+            '@uiw/codemirror-theme-abcdef',
+            '@uiw/codemirror-theme-abyss',
+            '@uiw/codemirror-theme-androidstudio',
+            '@uiw/codemirror-theme-atomone',
+            '@uiw/codemirror-theme-aura',
+            '@uiw/codemirror-theme-basic',
+            '@uiw/codemirror-theme-bbedit',
+            '@uiw/codemirror-theme-dracula',
+            '@uiw/codemirror-theme-duotone',
+            '@uiw/codemirror-theme-eclipse',
+            '@uiw/codemirror-theme-github',
+            '@uiw/codemirror-theme-gruvbox-dark',
+            '@uiw/codemirror-theme-kimbie',
+            '@uiw/codemirror-theme-material',
+            '@uiw/codemirror-theme-monokai',
+            '@uiw/codemirror-theme-monokai-dimmed',
+            '@uiw/codemirror-theme-noctis-lilac',
+            '@uiw/codemirror-theme-nord',
+            '@uiw/codemirror-theme-okaidia',
+            '@uiw/codemirror-theme-quietlight',
+            '@uiw/codemirror-theme-red',
+            '@uiw/codemirror-theme-solarized',
+            '@uiw/codemirror-theme-sublime',
+            '@uiw/codemirror-theme-tokyo-night',
+            '@uiw/codemirror-theme-tokyo-night-day',
+            '@uiw/codemirror-theme-tokyo-night-storm',
+            '@uiw/codemirror-theme-tomorrow-night-blue',
+            '@uiw/codemirror-theme-vscode',
+            '@uiw/codemirror-theme-white',
+            '@uiw/codemirror-theme-xcode'
           ],
           // Markdown processing
           'markdown-processing': [
@@ -63,6 +93,6 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 1000 // Increase warning limit since we're code-splitting
+    chunkSizeWarningLimit: 1000
   }
 });

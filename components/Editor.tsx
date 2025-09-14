@@ -7,6 +7,38 @@ import { indentWithTab } from '@codemirror/commands';
 import { searchKeymap, openSearchPanel } from '@codemirror/search';
 import { EditorSettings } from './SettingsModal';
 
+// Import CodeMirror themes from the correct packages
+import { abcdef } from '@uiw/codemirror-theme-abcdef';
+import { abyss } from '@uiw/codemirror-theme-abyss';
+import { androidstudio } from '@uiw/codemirror-theme-androidstudio';
+import { atomone } from '@uiw/codemirror-theme-atomone';
+import { aura } from '@uiw/codemirror-theme-aura';
+import { basicDark, basicLight } from '@uiw/codemirror-theme-basic';
+import { bbedit } from '@uiw/codemirror-theme-bbedit';
+import { dracula } from '@uiw/codemirror-theme-dracula';
+import { duotoneDark, duotoneLight } from '@uiw/codemirror-theme-duotone';
+import { eclipse } from '@uiw/codemirror-theme-eclipse';
+import { githubDark, githubLight } from '@uiw/codemirror-theme-github';
+import { gruvboxDark, gruvboxLight } from '@uiw/codemirror-theme-gruvbox-dark';
+import { kimbie } from '@uiw/codemirror-theme-kimbie';
+import { material } from '@uiw/codemirror-theme-material';
+import { monokai } from '@uiw/codemirror-theme-monokai';
+import { monokaiDimmed } from '@uiw/codemirror-theme-monokai-dimmed';
+import { noctisLilac } from '@uiw/codemirror-theme-noctis-lilac';
+import { nord } from '@uiw/codemirror-theme-nord';
+import { okaidia } from '@uiw/codemirror-theme-okaidia';
+import { quietlight } from '@uiw/codemirror-theme-quietlight';
+import { red } from '@uiw/codemirror-theme-red';
+import { solarizedDark, solarizedLight } from '@uiw/codemirror-theme-solarized';
+import { sublime } from '@uiw/codemirror-theme-sublime';
+import { tokyoNight } from '@uiw/codemirror-theme-tokyo-night';
+import { tokyoNightDay } from '@uiw/codemirror-theme-tokyo-night-day';
+import { tokyoNightStorm } from '@uiw/codemirror-theme-tokyo-night-storm';
+import { tomorrowNightBlue } from '@uiw/codemirror-theme-tomorrow-night-blue';
+import { vscodeDark } from '@uiw/codemirror-theme-vscode';
+import { whiteDark, whiteLight } from '@uiw/codemirror-theme-white';
+import { xcodeDark, xcodeLight } from '@uiw/codemirror-theme-xcode';
+
 // Import basic setup components
 import { 
   closeBrackets, 
@@ -277,6 +309,7 @@ interface EditorProps {
   onScroll?: (event: Event) => void;
   onFormat?: (formatType: string, options?: any) => void;
   settings: EditorSettings;
+  codemirrorTheme?: string; // Add this new prop
 }
 
 export interface EditorRef {
@@ -288,7 +321,7 @@ export interface EditorRef {
   openSearchPanel: () => void;
 }
 
-export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat, settings }, ref) => {
+export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat, settings, codemirrorTheme = 'basicDark' }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
@@ -331,6 +364,47 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       openSearchPanel(view);
     }
   }), []);
+
+  // Add CodeMirror theme mapping
+  const codemirrorThemes: { [key: string]: any } = {
+    'abcdef': abcdef,
+    'abyss': abyss,
+    'androidstudio': androidstudio,
+    'atomone': atomone,
+    'aura': aura,
+    'basicDark': basicDark,
+    'basicLight': basicLight,
+    'bbedit': bbedit,
+    'dracula': dracula,
+    'duotoneDark': duotoneDark,
+    'duotoneLight': duotoneLight,
+    'eclipse': eclipse,
+    'githubDark': githubDark,
+    'githubLight': githubLight,
+    'gruvboxDark': gruvboxDark,
+    'gruvboxLight': gruvboxLight,
+    'kimbie': kimbie,
+    'material': material,
+    'monokai': monokai,
+    'monokaiDimmed': monokaiDimmed,
+    'noctisLilac': noctisLilac,
+    'nord': nord,
+    'okaidia': okaidia,
+    'quietlight': quietlight,
+    'red': red,
+    'solarizedDark': solarizedDark,
+    'solarizedLight': solarizedLight,
+    'sublime': sublime,
+    'tokyoNight': tokyoNight,
+    'tokyoNightDay': tokyoNightDay,
+    'tokyoNightStorm': tokyoNightStorm,
+    'tomorrowNightBlue': tomorrowNightBlue,
+    'vscodeDark': vscodeDark,
+    'whiteDark': whiteDark,
+    'whiteLight': whiteLight,
+    'xcodeDark': xcodeDark,
+    'xcodeLight': xcodeLight,
+  };
 
   // Create editor extensions with dynamic language loading
   const createEditorExtensions = async (settings: EditorSettings) => {
@@ -433,6 +507,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       }
     }
 
+    // Add CodeMirror theme if specified
+    if (codemirrorTheme && codemirrorThemes[codemirrorTheme]) {
+      extensions.push(codemirrorThemes[codemirrorTheme]);
+    }
+
     // Preload commonly used languages for better UX
     // These will be cached for future use
     const languagesToPreload = ['javascript', 'sql', 'python', 'php', 'xml'];
@@ -521,7 +600,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         view.destroy();
       }
     };
-  }, [settings.theme, settings.fontSize, settings.showLineNumbers]); // Only re-render when specific settings change
+  }, [settings.theme, settings.fontSize, settings.showLineNumbers, codemirrorTheme]); // Add codemirrorTheme to dependencies
 
   // DO NOT update editor content from value prop during normal typing!
   // This causes cursor jumps. Content updates should only happen during tab switches

@@ -16,6 +16,7 @@
 - ✅ #14: Markdown cheat sheet in help dropdown
 - ✅ #16: NPM dependency management
 - ✅ **NEW: GitHub Integration** - Complete GitHub connectivity with OAuth, repository browsing, file loading, and enhanced save options
+- ✅ **NEW: CodeMirror Themes** - 30+ editor themes with selector in status bar
 
 **Architecture:** React 19.1.1 + TypeScript 5.8.2 + Vite 7.0.6 + CodeMirror 6 + GitHub API Integration
 
@@ -26,6 +27,7 @@
 - **Custom keyboard shortcuts** for all 25+ formatting operations
 - **Search/replace** via @codemirror/search
 - **Multi-language support** for code blocks
+- **30+ CodeMirror Themes** with selector in status bar
 
 ### File Management
 - **File System Access API** (modern browsers) + legacy fallback
@@ -33,48 +35,37 @@
 - **Export capabilities**: Markdown, HTML, PDF
 - **GitHub Integration**: OAuth authentication, repository browsing, direct file operations
 
-### GitHub Integration Architecture
-- **OAuth Device Flow** for secure authentication
-- **@octokit/rest** for GitHub API operations
-- **Persistent token storage** with validation
-- **Enhanced save workflow** with commit message support
-- **Repository browsing** with search and filtering
-- **Markdown file detection** and loading
-- **Branch and path navigation** support
+## 🚀 Recent Enhancements
 
-### Help System
-- **Dropdown approach**: Help button → 2 options
-  - 📖 Complete help with shortcuts
-  - 📝 Markdown cheat sheet
-- **Always current** with features
+### CodeMirror Themes Feature
+- **30+ Themes**: Added support for popular CodeMirror themes from @uiw/codemirror-themes
+- **Theme Selector**: Dropdown in editor status bar for real-time theme switching
+- **Bundle Optimization**: Vite manualChunks configuration for efficient code splitting
+- **Dynamic Loading**: Themes loaded on-demand to reduce initial bundle size
 
-### UI/UX Patterns
-- **Complete theme system** with light/dark mode for entire application
-- **Comprehensive settings modal** with font size (10-24px), debounce time (100-2000ms), theme controls, line numbers toggle, auto-save preferences
-- **Persistent settings** via localStorage with automatic restoration
-- **Compact layout** with gap-2 spacing
-- **Resizable panels** for editor/preview
-- **Responsive design** for all screens
-- **Modal system** rendered at app level for proper z-index (z-[9999])
+## 📁 Project Structure
 
-## 📁 Critical Files
-
-### Core Components
-- `App.tsx` - Central state, file ops, format routing, settings management, GitHub integration
-- `components/Editor.tsx` - CodeMirror integration + shortcuts + theme support
-- `components/Toolbar.tsx` - All UI controls + dropdowns + GitHub button
-- `components/HelpModal.tsx` - Complete help system
-- `components/CheatSheetModal.tsx` - Quick reference
-- `components/SettingsModal.tsx` - Theme and preference controls
-- `components/GitHubButton.tsx` - GitHub connection and status display
-- `components/GitHubModal.tsx` - Repository and file browser
-- `components/SaveOptionsModal.tsx` - Local vs GitHub save options
-
-### Utilities
-- `utils/exportUtils.ts` - HTML/PDF export logic
-- `utils/githubService.ts` - GitHub API integration and authentication
-- `components/preview-themes.ts` - Preview styling
-- `types.ts` - TypeScript definitions including GitHub types
+### Core Modules:
+- **components/**: UI components including:
+  - Editor.tsx (CodeMirror 6 integration with theme support)
+  - Preview.tsx (Live markdown preview)
+  - Toolbar.tsx (Main toolbar with controls)
+  - Modal components (Help, CheatSheet, GitHub integration)
+- **utils/**: Utility functions including:
+  - exportUtils.ts (HTML/PDF export)
+  - githubService.ts (GitHub API integration)
+  - pwaManager.ts (Progressive Web App functionality)
+  - tabManager.ts (Multi-tab management)
+- **public/**: Static assets including:
+  - manifest.json (PWA configuration)
+  - sw.js (Service worker)
+- **scripts/**: Build scripts including:
+  - generateBuildInfo.mjs
+  - updateServiceWorkerVersion.mjs
+- **types.ts**: TypeScript type definitions
+- **App.tsx**: Main application component
+- **index.tsx**: Application entry point
+- **vite.config.ts**: Vite configuration with manualChunks optimization
 
 ## 🔧 Dependencies Strategy
 
@@ -84,6 +75,7 @@
 - marked 16.2.1, DOMPurify 3.2.6, highlight.js 11.11.1
 - jsPDF + html2canvas for PDF export
 - @octokit/rest, @octokit/auth-oauth-device, js-base64 for GitHub integration
+- @uiw/codemirror-themes for 30+ editor themes
 
 **Pattern:** All via NPM (no CDN), ES modules, strict versioning
 
@@ -111,73 +103,55 @@
 1. Add to `types.ts` FormatType
 2. Handler in `App.tsx` handleFormat
 3. Button in `Toolbar.tsx`
-4. Shortcut in `Editor.tsx`
-5. Update help docs
 
-### Adding Export Format
-1. Function in `exportUtils.ts`
-2. Option in toolbar dropdown
-3. Handler in toolbar
+### Adding New Theme
+1. Install theme package from @uiw/codemirror-themes
+2. Import in `Editor.tsx`
+3. Add to `codemirrorThemes` mapping
+4. Add to theme selector in `App.tsx`
+5. Update Vite config manualChunks
 
-### Adding Help Content
-1. Update `HelpModal.tsx` categories
-2. Update `CheatSheetModal.tsx` if syntax-related
-3. Auto-syncs with UI
+## 📚 Documentation
 
-## 🎯 User Preferences (Memorized)
+### Core Documentation Files:
+- **README.md** - Project overview, features, quick start
+- **GEMINI.md** - Technical documentation, architecture, implementation details
+- **IDEEN.md** - Original feature ideas and implementation status
+- **TASK-6-IMPLEMENTATION-SUMMARY.md** - Search and replace implementation
+- **DYNAMIC-IMPORTS-IMPLEMENTATION.md** - Bundle optimization strategy
+- **BUGFIX-SUMMARY.md** - Key bug fixes and solutions
+- **KEYBOARD-SHORTCUTS-DOCUMENTATION-UPDATE.md** - Keyboard shortcuts reference
+- **QODER-MEMO.md** - This file - Quick reference for AI assistants
 
-- **Strikethrough icon**: Capital 'A' with line through it
-- **Layout spacing**: Compact with gap-2 around separator
-- **Help system**: Dropdown approach (not separate buttons)
-- **Dependencies**: NPM over CDN always
-- **Documentation**: Keep README.md + GEMINI.md current
+### Help System:
+- **HelpModal.tsx** - Complete keyboard shortcuts reference
+- **CheatSheetModal.tsx** - Markdown syntax quick reference
 
-## 📋 Remaining IDEEN.md Items
+## 🧪 Testing
 
-**Not yet implemented:**
-- #4: Auto-closing characters
-- #5: Word/character counter
-- #7: Synchronized scrolling (disabled for CodeMirror compatibility)
-- #9: Extended Markdown (Mermaid, KaTeX)
-- #12: Tab management
-- #15: Progressive Web App
-- #17: State management library
-- #18: Unit testing
+### Unit Tests:
+- **components/__tests__/** - Component tests
+- **utils/__tests__/** - Utility function tests
 
-## 🔍 Common Tasks
+### Manual Testing:
+- **test-*.html/js/md** - Test files for specific features
+- Browser testing across Chrome, Firefox, Safari
 
-### Development
-```bash
-npm run dev    # Start dev server
-npm run build  # Production build
-```
+## 🎯 Future Development Ideas
 
-### Debugging
-- Check `get_problems` for TypeScript errors
-- Use browser dev tools for runtime issues
-- File operations may need permission handling
+### High Priority:
+1. Enhanced GitHub integration with branch management
+2. Collaborative editing features
+3. Plugin system for custom extensions
+4. Advanced markdown features (Mermaid diagrams, KaTeX math)
 
-### Testing
-- Manual testing with created .md files
-- Test keyboard shortcuts thoroughly
-- Verify export functions
-- Check help system accuracy
+### Medium Priority:
+1. Mobile optimization
+2. Additional export formats
+3. Template system
+4. Snippet library
 
-## ⚠️ Known Considerations
-
-- **Vite version conflict** in package.json (prod vs dev)
-- **Browser compatibility** varies for File System Access API
-- **Bundle size** large (~2.6MB) due to CodeMirror + highlight.js
-- **Scroll sync** disabled pending CodeMirror integration
-
-## 🎯 Next Likely Requests
-
-Based on pattern, user may want:
-- More IDEEN.md implementations
-- UI/UX refinements
-- Performance optimizations
-- Additional export formats
-- Mobile experience improvements
-
----
-*Updated: After implementing complete GitHub integration with OAuth authentication, repository browsing, file operations, and enhanced save workflow*
+### Low Priority:
+1. Custom theme creation
+2. Advanced search features
+3. Integration with other cloud services

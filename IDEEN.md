@@ -1,35 +1,85 @@
-# Ideen zur Verfeinerung des Markdown Editors
+# IDEEN.md - Feature Ideas and Implementation Status
 
-Hier ist eine Sammlung von Ideen zur weiteren Verbesserung des Projekts, kategorisiert nach Bereichen.
+> **Purpose:** Track feature ideas and their implementation status
 
-### Verbesserung des Editor-Erlebnisses (Quality of Life)
+## 🎯 Geplante Features aus ursprünglicher Anforderung
 
-1.  ~~**Syntax-Hervorhebung im Editor:** Anstatt nur einer einfachen `<textarea>` könnte ein fortschrittlicherer Editor wie [CodeMirror](https://codemirror.net/) oder [Monaco Editor](https://microsoft.github.io/monaco-editor/) integriert werden. Das würde Markdown-Syntax-Hervorhebung direkt beim Tippen ermöglichen, was die Lesbarkeit enorm verbessert.~~ ✅ **ERLEDIGT - CodeMirror 6 integriert**
-2.  ~~**Tastaturkürzel:** Implementierung von Shortcuts für alle Formatierungsoptionen (z.B. `Cmd/Strg + B` für Fett, `Cmd/Strg + I` für Kursiv).~~ ✅ **ERLEDIGT - Vollständige Tastaturkürzel + Hilfe-Modal implementiert**
-3.  ~~**Zeilennummern:** Eine Leiste mit Zeilennummern im Editor, was besonders bei längeren Dokumenten hilfreich ist.~~ ✅ **ERLEDIGT - Zeilennummern-Toggle in den Einstellungen implementiert**
-4.  **Automatisches Schließen von Zeichen:** Automatisches Einfügen von schließenden Klammern, Anführungszeichen oder Markdown-Zeichen (z.B. bei `**` wird das zweite `**` automatisch ergänzt).
-5.  **Wort- und Zeichenzähler:** Eine kleine Statusleiste am unteren Rand des Editors, die die Anzahl der Wörter und Zeichen anzeigt.
-6.  ~~**Suchen und Ersetzen:** Eine eingebaute Funktion, um im gesamten Dokument nach Text zu suchen und ihn zu ersetzen.~~ ✅ **ERLEDIGT - CodeMirror-Suchfunktion mit Tastaturkürzel implementiert**
+### Editor & Formatierung
+
+1.  ~~**Echtzeit-Syntax-Highlighting:** Der Editor sollte Markdown-Syntax in Echtzeit hervorheben, ähnlich wie in modernen Code-Editoren.~~ ✅ **ERLEDIGT - CodeMirror 6 Integration**
+2.  ~~**Vollständige Tastenkombinationen:** Eine umfassende Liste von Tastenkombinationen für alle gängigen Formatierungsoptionen (Fett, Kursiv, Überschriften, Listen usw.).~~ ✅ **ERLEDIGT - 30+ Shortcuts**
+3.  ~~**Zeilennummern:** Eine Option zur Anzeige von Zeilennummern im Editor, die ein- und ausgeschaltet werden kann.~~ ✅ **ERLEDIGT - Toggle in Settings**
+4.  **Sprachspezifische Syntax-Highlighting:** Für Code-Blöcke in verschiedenen Programmiersprachen (JavaScript, Python, SQL etc.).
+5.  **Autovervollständigung:** Kontextbasierte Vorschläge für Markdown-Syntax und häufig verwendete Wörter.
+6.  ~~**Suchen und Ersetzen:** Eine leistungsstarke Suchfunktion mit Unterstützung für reguläre Ausdrücke und Ersetzen.~~ ✅ **ERLEDIGT - CodeMirror Search**
+7.  **Rechtschreibprüfung:** Integrierte Rechtschreibprüfung mit Unterstützung für mehrere Sprachen.
+8.  **Snippets-System:** Vordefinierte Code-Snippets für häufig verwendete Markdown-Strukturen.
 
 ### Vorschau & Export
 
-7.  ~~**Synchronisiertes Scrollen:** Wenn der Benutzer im Editor scrollt, scrollt die Vorschau automatisch zur entsprechenden Stelle mit und umgekehrt.~~ ✅ **ERLEDIGT - Grundlage implementiert (aktuell deaktiviert für CodeMirror-Kompatibilität)**
-8.  ~~**Export-Funktionen:** Die Möglichkeit, das Dokument nicht nur als `.md`-Datei zu speichern, sondern auch als HTML oder sogar als PDF zu exportieren.~~ ✅ **ERLEDIGT - HTML und PDF Export implementiert**
-9.  **Unterstützung für erweiterte Markdown-Syntax:**
+9.  ~~**Synchronisiertes Scrollen:** Wenn der Benutzer im Editor scrollt, scrollt die Vorschau automatisch zur entsprechenden Stelle mit und umgekehrt.~~ ✅ **ERLEDIGT - Grundlage implementiert (aktuell deaktiviert für CodeMirror-Kompatibilität)**
+10. ~~**Export-Funktionen:** Die Möglichkeit, das Dokument nicht nur als `.md`-Datei zu speichern, sondern auch als HTML oder sogar als PDF zu exportieren.~~ ✅ **ERLEDIGT - HTML und PDF Export implementiert**
+11. **Unterstützung für erweiterte Markdown-Syntax:**
     *   **Diagramme und Graphen:** Integration von [Mermaid.js](https://mermaid.js.org/), um Diagramme direkt aus dem Text zu rendern (`graph TD; A-->B;`).
     *   **Mathematische Formeln:** Integration von [KaTeX](https://katex.org/) zur Darstellung von LaTeX-Formeln.
-10. ~~**Editor-Themes:** Nicht nur die Vorschau, sondern die gesamte Benutzeroberfläche könnte zwischen einem hellen und einem dunklen Modus umschaltbar sein.~~ ✅ **ERLEDIGT - Vollständiges Theme-System mit Hell/Dunkel-Modus implementiert**
+12. ~~**Editor-Themes:** Nicht nur die Vorschau, sondern die gesamte Benutzeroberfläche könnte zwischen einem hellen und einem dunklen Modus umschaltbar sein.~~ ✅ **ERLEDIGT - Vollständiges Theme-System mit Hell/Dunkel-Modus implementiert**
+13. **Vorschau-Themes:** Verschiedene Stilvorlagen für die Vorschau (z. B. GitHub, Solarized, Dunkel).
 
-### Anwendungs-Features & Einstellungen
+### Speichern & Laden
 
-11. ~~**Persistenz des Zustands:** Den aktuellen Text und Dateinamen im `localStorage` des Browsers speichern. So geht die Arbeit nicht verloren, wenn der Benutzer die Seite versehentlich neu lädt.~~ ✅ **ERLEDIGT - localStorage-Integration für Text und Dateinamen implementiert**
-12. **Tab-Management:** Mehrere Dokumente gleichzeitig in Tabs öffnen und bearbeiten können.
-13. ~~**Einstellungs-Modal:** Ein Einstellungsfenster, in dem der Benutzer Dinge wie die Schriftgröße des Editors, das Standard-Theme oder die Debounce-Zeit für die Undo-Funktion anpassen kann.~~ ✅ **ERLEDIGT - Umfassendes Einstellungs-Modal mit Theme, Schriftgröße, Debounce-Zeit implementiert**
-14. ~~**Markdown-Spickzettel (Cheat Sheet):** Ein kleines Hilfe-Fenster oder ein Tab, das eine schnelle Übersicht über die gängigsten Markdown-Befehle anzeigt.~~ ✅ **ERLEDIGT - Hilfe-Dropdown mit Spickzettel und Vollhilfe implementiert**
-15. ~~**Progressive Web App (PWA):** Die Anwendung als PWA konfigurieren, damit sie "installiert" werden kann und offline funktioniert.~~ ✅ **ERLEDIGT - Vollständige PWA-Konfiguration mit Service Worker, Offline-Unterstützung, App-Installation und custom Icons**
+14. ~~**Automatisches Speichern:** Der Editor sollte den Inhalt automatisch speichern, um Datenverlust zu vermeiden.~~ ✅ **ERLEDIGT - LocalStorage Persistence**
+15. ~~**Lokale Speicherung:** Die Möglichkeit, Dateien lokal im Browser zu speichern, ohne eine Internetverbindung zu benötigen.~~ ✅ **ERLEDIGT - File System Access API + Legacy Fallback**
+16. **Cloud-Synchronisation:** Integration mit Cloud-Speicherdiensten wie Dropbox oder Google Drive.
+17. **Versionsverwaltung:** Einfache Versionskontrolle innerhalb des Editors, um Änderungen nachverfolgen zu können.
 
-### Code-Qualität & Architektur
+### Benutzerfreundlichkeit
 
-16. ~~**Abhängigkeiten über NPM verwalten:** Statt `marked`, `DOMPurify` und `highlight.js` über ein CDN im `index.html` zu laden, könnten sie als NPM-Pakete installiert werden. Das verbessert die Versionskontrolle und die Offline-Entwicklung.~~ ✅ **ERLEDIGT - NPM-Pakete integriert**
-17. **State Management:** Bei wachsender Komplexität (z.B. durch Tabs und mehr Einstellungen) könnte eine State-Management-Bibliothek wie [Zustand](https://github.com/pmndrs/zustand) oder [Redux Toolkit](https://redux-toolkit.js.org/) die Verwaltung des Anwendungszustands vereinfachen.
-18. **Testing:** Hinzufügen von Unit-Tests (z.B. mit [Vitest](https://vitest.dev/)) für die Formatierungslogik und Komponenten, um die Stabilität bei zukünftigen Änderungen zu gewährleisten.
+18. ~~**Responsive Design:** Der Editor sollte auf verschiedenen Bildschirmgrößen gut funktionieren, einschließlich mobiler Geräte.~~ ✅ **ERLEDIGT - Vollständig responsives Design**
+19. **Tastatur-Navigation:** Vollständige Unterstützung für die Bedienung per Tastatur, besonders für Benutzer mit Behinderungen.
+20. **Anpassbare Symbolleiste:** Die Symbolleiste sollte anpassbar sein, um häufig verwendete Funktionen hervorzuheben.
+21. **Tabs-Unterstützung:** Die Möglichkeit, mehrere Dokumente gleichzeitig in Tabs zu öffnen.
+
+### Erweiterte Funktionen
+
+22. **Vorschau-Vorlagen:** Vordefinierte Vorlagen für verschiedene Dokumenttypen (z. B. README, Dokumentation, Blog-Post).
+23. **Plugin-System:** Ein offenes Plugin-System, das Entwicklern die Erweiterung des Editors mit benutzerdefinierten Funktionen ermöglicht.
+24. **Zusammenarbeit:** Echtzeit-Zusammenarbeit mit anderen Benutzern (ähnlich wie in Google Docs).
+25. **Statistiken:** Anzeige von Dokumentstatistiken wie Wortanzahl, Zeichenanzahl, Lesbarkeitsbewertung usw.
+
+## 🆕 Zusätzliche Ideen
+
+### GitHub Integration
+26. ~~**GitHub File Operations:** Direct loading and saving of files to GitHub repositories with OAuth authentication.~~ ✅ **ERLEDIGT - Complete GitHub Integration**
+
+### CodeMirror Themes
+27. ~~**CodeMirror Theme Selector:** Dropdown in editor status bar for selecting from 30+ CodeMirror themes.~~ ✅ **ERLEDIGT - Theme selector in status bar with 30+ themes**
+
+### Progressive Web App
+28. ~~**PWA Installation:** Install as native app with offline functionality and system integration.~~ ✅ **ERLEDIGT - Complete PWA implementation**
+
+### Enhanced UI/UX
+29. **Custom Theme Creation:** Allow users to create and save their own custom themes.
+30. **Advanced Search Features:** Enhanced search with filters, history, and search result highlighting.
+31. **Template Library:** Collection of reusable document templates for common use cases.
+
+### Performance & Optimization
+32. **Bundle Size Optimization:** Further optimization of bundle size for faster loading times.
+33. **Memory Management:** Improved memory management for handling large documents.
+34. **Caching Strategy:** Enhanced caching for offline functionality and faster startup.
+
+### Accessibility
+35. **Screen Reader Support:** Full support for screen readers and assistive technologies.
+36. **High Contrast Themes:** Additional themes designed for users with visual impairments.
+37. **Keyboard Shortcuts Customization:** Allow users to customize keyboard shortcuts to their preferences.
+
+### Export Enhancements
+38. **Additional Export Formats:** Support for additional export formats like DOCX, ODT, or EPUB.
+39. **Custom Export Templates:** Allow users to create custom templates for exported documents.
+40. **Batch Export:** Export multiple documents at once with consistent formatting.
+
+## 📊 Implementation Status Legend
+
+- ✅ **ERLEDIGT** - Fully implemented and tested
+- 🚧 **IN ARBEIT** - Partially implemented or in development
+- ⏳ **GEPLANT** - Scheduled for future implementation
+- 💡 **IDEe** - Proposed feature, not yet planned

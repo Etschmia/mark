@@ -40,6 +40,17 @@ declare global {
   }
 }
 
+// Add CodeMirror theme options
+const codemirrorThemeOptions = [
+  'abcdef', 'abyss', 'androidstudio', 'atomone', 'aura', 'basicDark', 'basicLight', 
+  'bbedit', 'dracula', 'duotoneDark', 'duotoneLight', 'eclipse', 'githubDark', 
+  'githubLight', 'gruvboxDark', 'gruvboxLight', 'kimbie', 'material', 'monokai', 
+  'monokaiDimmed', 'noctisLilac', 'nord', 'okaidia', 'quietlight', 'red', 
+  'solarizedDark', 'solarizedLight', 'sublime', 'tokyoNight', 'tokyoNightDay', 
+  'tokyoNightStorm', 'tomorrowNightBlue', 'vscodeDark', 'whiteDark', 'whiteLight', 
+  'xcodeDark', 'xcodeLight'
+];
+
 const App: React.FC = () => {
   // Initialize TabManager
   const tabManagerRef = useRef<TabManager>(new TabManager());
@@ -95,6 +106,8 @@ const App: React.FC = () => {
   const [previewTheme, setPreviewTheme] = useState<string>(persistedSettings.previewTheme);
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
 
+  // Add state for CodeMirror theme
+  const [codemirrorTheme, setCodemirrorTheme] = useState<string>('basicDark');
   // Handle settings changes
   const handleSettingsChange = useCallback((newSettings: EditorSettings) => {
     setSettings(newSettings);
@@ -1741,12 +1754,35 @@ const App: React.FC = () => {
               onFormat={handleFormat}
               settings={settings}
               ref={editorRef}
+              codemirrorTheme={codemirrorTheme} // Pass the CodeMirror theme
             />
             <StatusBar items={[
               <button onClick={toggleLineNumbers} className="text-xs">
                 {settings.showLineNumbers ? 'Hide' : 'Show'} Line Numbers
               </button>,
-              <span>{`Ln ${cursorPosition.line}, Col ${cursorPosition.column}`}</span>
+              <span>{`Ln ${cursorPosition.line}, Col ${cursorPosition.column}`}</span>,
+              // Add CodeMirror theme selector to status bar
+              <select
+                value={codemirrorTheme}
+                onChange={(e) => setCodemirrorTheme(e.target.value)}
+                className="bg-slate-700 text-white text-xs rounded p-1"
+              >
+                <option value="" disabled>CodeMirror Theme</option>
+                <option value="basicDark">Basic Dark</option>
+                <option value="basicLight">Basic Light</option>
+                <option value="dracula">Dracula</option>
+                <option value="githubDark">GitHub Dark</option>
+                <option value="githubLight">GitHub Light</option>
+                <option value="material">Material</option>
+                <option value="monokai">Monokai</option>
+                <option value="nord">Nord</option>
+                <option value="tokyoNight">Tokyo Night</option>
+                <option value="tokyoNightDay">Tokyo Night Day</option>
+                <option value="tokyoNightStorm">Tokyo Night Storm</option>
+                <option value="vscodeDark">VSCode Dark</option>
+                <option value="xcodeDark">XCode Dark</option>
+                <option value="xcodeLight">XCode Light</option>
+              </select>
             ]} />
           </div>
         </div>
