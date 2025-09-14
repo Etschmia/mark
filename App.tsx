@@ -1798,15 +1798,18 @@ const App: React.FC = () => {
               ref={previewRef}
             />
             <StatusBar items={[
-              <select
-                value={previewTheme}
-                onChange={(e) => setPreviewTheme(e.target.value)}
-                className="bg-slate-700 text-white text-xs rounded p-1"
-              >
-                {Object.keys(themes).map(name => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-              </select>,
+              <div className="flex items-center gap-1">
+                <label className="text-xs text-slate-400">Theme:</label>
+                <select
+                  value={previewTheme}
+                  onChange={(e) => setPreviewTheme(e.target.value)}
+                  className="bg-slate-700 text-white text-xs rounded p-1"
+                >
+                  {Object.keys(themes).map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+              </div>,
               <span>{`${markdown.length} Chars`}</span>
             ]} />
           </div>
