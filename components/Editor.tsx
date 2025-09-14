@@ -305,7 +305,7 @@ const createFormattingKeymap = (onFormat?: (formatType: string, options?: any) =
 
 interface EditorProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, cursor?: { line: number, column: number }) => void;
   onScroll?: (event: Event) => void;
   onFormat?: (formatType: string, options?: any) => void;
   settings: EditorSettings;
@@ -415,11 +415,19 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       // Enable native scrolling
       EditorView.scrollMargins.of(() => ({ top: 0, bottom: 0 })),
       EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
+        // Check if document changed or selection changed
+        if (update.docChanged || update.selectionSet) {
           const newValue = update.state.doc.toString();
           const selection = update.state.selection.main;
+          
+          // Calculate line and column from cursor position
+          const pos = selection.from;
+          const line = update.state.doc.lineAt(pos);
+          const column = pos - line.from + 1; // 1-based indexing
+          const lineNum = line.number;
+          
           // console.log('🔵 EDITOR CHANGE - Cursor at:', selection.from, 'Content length:', newValue.length);
-          onChange(newValue);
+          onChange(newValue, { line: lineNum, column: column });
         }
       }),
       EditorView.domEventHandlers({
