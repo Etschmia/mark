@@ -214,6 +214,7 @@ export interface Tab {
   hasUnsavedChanges: boolean;
   createdAt: number;
   lastModified: number;
+  isLoading?: boolean; // For tab operations like saving, loading, etc.
 }
 
 export interface TabManagerState {
@@ -240,6 +241,7 @@ export interface TabBarProps {
   onTabCreate: () => void;
   onTabContextMenu: (tabId: string, event: React.MouseEvent<HTMLElement>) => void;
   theme: 'light' | 'dark';
+  isCreatingTab?: boolean; // Loading state for tab creation
 }
 
 export interface TabContextMenuProps {

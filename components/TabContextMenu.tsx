@@ -1,6 +1,20 @@
 import React, { useEffect, useRef } from 'react';
 import type { TabContextMenuProps } from '../types';
 
+// Context menu animation styles
+const contextMenuStyles = `
+  @keyframes contextMenuEnter {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+`;
+
 export const TabContextMenu: React.FC<TabContextMenuProps> = ({
   isOpen,
   position,
@@ -111,21 +125,25 @@ export const TabContextMenu: React.FC<TabContextMenuProps> = ({
   }
 
   return (
-    <div
-      ref={menuRef}
-      className="fixed bg-white dark:bg-slate-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 min-w-[200px]"
-      style={{
-        left: adjustedPosition.x,
-        top: adjustedPosition.y,
-      }}
-      role="menu"
-      aria-orientation="vertical"
-      aria-labelledby="tab-context-menu"
-    >
+    <>
+      <style>{contextMenuStyles}</style>
+      <div
+        ref={menuRef}
+        className="fixed bg-white dark:bg-slate-700 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 z-50 min-w-[200px] backdrop-blur-sm"
+        style={{
+          left: adjustedPosition.x,
+          top: adjustedPosition.y,
+          animation: 'contextMenuEnter 0.15s ease-out',
+          transformOrigin: 'top left'
+        }}
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="tab-context-menu"
+      >
       <div className="py-1">
         <button
           onClick={() => handleMenuItemClick(() => onDuplicateTab(tabId))}
-          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600 flex items-center gap-2 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600"
+          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600 flex items-center gap-2 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition-colors duration-150 ease-in-out rounded-sm mx-1 first:mt-1"
           role="menuitem"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +156,7 @@ export const TabContextMenu: React.FC<TabContextMenuProps> = ({
 
         <button
           onClick={() => handleMenuItemClick(() => onCloseTab(tabId))}
-          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600 flex items-center gap-2 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600"
+          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600 flex items-center gap-2 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition-colors duration-150 ease-in-out rounded-sm mx-1"
           role="menuitem"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +167,7 @@ export const TabContextMenu: React.FC<TabContextMenuProps> = ({
 
         <button
           onClick={() => handleMenuItemClick(() => onCloseOtherTabs(tabId))}
-          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600 flex items-center gap-2 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600"
+          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600 flex items-center gap-2 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition-colors duration-150 ease-in-out rounded-sm mx-1"
           role="menuitem"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,7 +178,7 @@ export const TabContextMenu: React.FC<TabContextMenuProps> = ({
 
         <button
           onClick={() => handleMenuItemClick(() => onCloseAllTabs())}
-          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 focus:outline-none focus:bg-red-50 dark:focus:bg-red-900/20"
+          className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 focus:outline-none focus:bg-red-50 dark:focus:bg-red-900/20 transition-colors duration-150 ease-in-out rounded-sm mx-1 mb-1"
           role="menuitem"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,5 +188,6 @@ export const TabContextMenu: React.FC<TabContextMenuProps> = ({
         </button>
       </div>
     </div>
+    </>
   );
 };

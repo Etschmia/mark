@@ -2,10 +2,28 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Tab } from './Tab';
 import { TabBarProps } from '../types';
 
-// CSS to hide scrollbars
+// CSS to hide scrollbars and add custom animations
 const scrollbarHideStyle = `
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  
+  .tab-enter {
+    animation: slideIn 0.2s ease-out;
+  }
+  
+  .tab-bar-enter {
+    animation: fadeIn 0.3s ease-out;
   }
 `;
 
@@ -16,7 +34,8 @@ export const TabBar: React.FC<TabBarProps> = ({
   onTabClose,
   onTabCreate,
   onTabContextMenu,
-  theme
+  theme,
+  isCreatingTab = false
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -160,19 +179,21 @@ export const TabBar: React.FC<TabBarProps> = ({
     setFocusedTabIndex(-1);
   };
 
-  // Theme-aware styling
+  // Enhanced theme-aware styling with improved visual hierarchy
   const themeClasses = theme === 'dark' 
     ? {
-        container: 'bg-slate-900 border-slate-700',
-        scrollButton: 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700',
-        scrollButtonDisabled: 'bg-slate-800 text-slate-600 cursor-not-allowed border-slate-700',
-        newTabButton: 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700'
+        container: 'bg-slate-900 border-slate-700 shadow-sm',
+        scrollButton: 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700 hover:shadow-md transition-all duration-200 ease-in-out',
+        scrollButtonDisabled: 'bg-slate-800 text-slate-600 cursor-not-allowed border-slate-700 opacity-50',
+        newTabButton: 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700 hover:shadow-md transition-all duration-200 ease-in-out hover:scale-105 active:scale-95',
+        focusRing: 'focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50'
       }
     : {
-        container: 'bg-gray-50 border-gray-200',
-        scrollButton: 'bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 border-gray-200',
-        scrollButtonDisabled: 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200',
-        newTabButton: 'bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 border-gray-200'
+        container: 'bg-gray-50 border-gray-200 shadow-sm',
+        scrollButton: 'bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 border-gray-200 hover:shadow-md transition-all duration-200 ease-in-out',
+        scrollButtonDisabled: 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200 opacity-50',
+        newTabButton: 'bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 border-gray-200 hover:shadow-md transition-all duration-200 ease-in-out hover:scale-105 active:scale-95',
+        focusRing: 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50'
       };
 
   // Don't render if no tabs (should not happen, but safety check)
@@ -189,7 +210,7 @@ export const TabBar: React.FC<TabBarProps> = ({
     <>
       <style>{scrollbarHideStyle}</style>
       <div 
-        className={`flex items-center border-b ${themeClasses.container}`}
+        className={`flex items-center border-b ${themeClasses.container} ${themeClasses.focusRing} tab-bar-enter`}
         role="tablist"
         aria-label="Document tabs"
         onKeyDown={handleKeyDown}
@@ -198,9 +219,9 @@ export const TabBar: React.FC<TabBarProps> = ({
       >
       {/* Left scroll button */}
       <button
-        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-r transition-colors duration-150 ${
+        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-r ${
           canScrollLeft ? themeClasses.scrollButton : themeClasses.scrollButtonDisabled
-        }`}
+        } ${themeClasses.focusRing}`}
         onClick={scrollLeft}
         disabled={!canScrollLeft}
         title="Scroll tabs left"
@@ -237,8 +258,10 @@ export const TabBar: React.FC<TabBarProps> = ({
           {tabs.map((tab, index) => (
             <div
               key={tab.id}
-              className={`flex-shrink-0 ${
-                focusedTabIndex === index ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+              className={`flex-shrink-0 transition-all duration-200 ease-in-out tab-enter ${
+                focusedTabIndex === index 
+                  ? `ring-2 ${theme === 'dark' ? 'ring-cyan-500' : 'ring-blue-500'} ring-opacity-50 ring-offset-2 ${theme === 'dark' ? 'ring-offset-slate-900' : 'ring-offset-gray-50'}` 
+                  : ''
               }`}
             >
               <Tab
@@ -259,9 +282,9 @@ export const TabBar: React.FC<TabBarProps> = ({
 
       {/* Right scroll button */}
       <button
-        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-l transition-colors duration-150 ${
+        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-l ${
           canScrollRight ? themeClasses.scrollButton : themeClasses.scrollButtonDisabled
-        }`}
+        } ${themeClasses.focusRing}`}
         onClick={scrollRight}
         disabled={!canScrollRight}
         title="Scroll tabs right"
@@ -287,27 +310,39 @@ export const TabBar: React.FC<TabBarProps> = ({
 
       {/* New tab button */}
       <button
-        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-l transition-colors duration-150 ${themeClasses.newTabButton}`}
+        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-l ${themeClasses.newTabButton} ${themeClasses.focusRing} ${isCreatingTab ? 'opacity-75 cursor-wait' : ''}`}
         onClick={onTabCreate}
-        title="New tab (Ctrl/Cmd + T)"
-        aria-label="Create new tab"
+        disabled={isCreatingTab}
+        title={isCreatingTab ? "Creating new tab..." : "New tab (Ctrl/Cmd + T)"}
+        aria-label={isCreatingTab ? "Creating new tab" : "Create new tab"}
         tabIndex={-1}
       >
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 2V10M2 6H10"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {isCreatingTab ? (
+          <div 
+            className={`w-3 h-3 rounded-full border-2 border-transparent animate-spin ${
+              theme === 'dark' 
+                ? 'border-t-cyan-400 border-r-cyan-400' 
+                : 'border-t-blue-500 border-r-blue-500'
+            }`}
           />
-        </svg>
+        ) : (
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="transition-transform duration-200 ease-in-out group-hover:scale-110"
+          >
+            <path
+              d="M6 2V10M2 6H10"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </button>
       </div>
     </>
