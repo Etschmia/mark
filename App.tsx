@@ -19,6 +19,7 @@ import { ConfirmationModal } from './components/ConfirmationModal';
 import { TabManager } from './utils/tabManager';
 import { TabContextMenu } from './components/TabContextMenu';
 import { checkAndInstallUpdate, checkUpdateCompletion } from './utils/updateManager';
+import { StatusBar } from './components/StatusBar';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -92,6 +93,7 @@ const App: React.FC = () => {
   const fileHandleRef = useRef<FileSystemFileHandle | null>(activeTab?.fileHandle || null);
 
   const [previewTheme, setPreviewTheme] = useState<string>(persistedSettings.previewTheme);
+  const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
 
   // Handle settings changes
   const handleSettingsChange = useCallback((newSettings: EditorSettings) => {
@@ -1105,8 +1107,11 @@ const App: React.FC = () => {
     }
   };
 
-  const handleMarkdownChange = (newMarkdown: string) => {
+  const handleMarkdownChange = (newMarkdown: string, cursor?: { line: number, column: number }) => {
     // console.log('🟡 APP handleMarkdownChange - Tab:', tabManagerState.activeTabId, 'Length:', newMarkdown.length);
+    if (cursor) {
+      setCursorPosition(cursor);
+    }
     
     // Update active tab content immediately
     const activeTab = tabManagerRef.current.getActiveTab();
@@ -1125,6 +1130,10 @@ const App: React.FC = () => {
       // Add to history after debounce
       addHistoryEntry(newMarkdown);
     }, settings.debounceTime); // Use settings debounce time
+  };
+
+  const toggleLineNumbers = () => {
+    handleSettingsChange({ ...settings, showLineNumbers: !settings.showLineNumbers });
   };
 
   // Handle editor scroll events to preserve scroll position
@@ -1437,7 +1446,8 @@ const App: React.FC = () => {
         
         // If a language is specified, always create a fenced code block
         if (lang) {
-            applyFormatting(`\`\`\`${lang}\n`, '\n\`\`\`');
+            applyFormatting(`\
+`, '\n');
         } else { // "Default Code": use logic for inline vs block
             if (selectedText.includes('\n') || !selectedText) {
                 applyFormatting('```\n', '\n```');
@@ -1640,8 +1650,7 @@ const App: React.FC = () => {
   // --- End Scroll Sync Logic ---
 
   return (
-    <div className={`flex flex-col h-screen font-sans ${
-      settings.theme === 'dark' 
+    <div className={`flex flex-col h-screen font-sans ${settings.theme === 'dark' 
         ? 'bg-slate-900 text-white' 
         : 'bg-gray-50 text-gray-900'
     }`}>
@@ -1668,8 +1677,7 @@ const App: React.FC = () => {
         </div>
       )}
       
-      <header className={`flex-shrink-0 shadow-md z-10 ${
-        settings.theme === 'dark'
+      <header className={`flex-shrink-0 shadow-md z-10 ${settings.theme === 'dark'
           ? 'bg-slate-800 border-b border-slate-700'
           : 'bg-white border-b border-gray-200'
       }`}>
@@ -1724,15 +1732,23 @@ const App: React.FC = () => {
             theme={settings.theme}
           />
           
-          <Editor 
-            key={tabManagerState.activeTabId}
-            value={getEditorValue()} 
-            onChange={handleMarkdownChange}
-            onScroll={(event) => handleScroll('editor', event)}
-            onFormat={handleFormat}
-            settings={settings}
-            ref={editorRef}
-          />
+          <div className="flex flex-col min-h-0 flex-grow">
+            <Editor 
+              key={tabManagerState.activeTabId}
+              value={getEditorValue()} 
+              onChange={handleMarkdownChange}
+              onScroll={(event) => handleScroll('editor', event)}
+              onFormat={handleFormat}
+              settings={settings}
+              ref={editorRef}
+            />
+            <StatusBar items={[
+              <button onClick={toggleLineNumbers} className="text-xs">
+                {settings.showLineNumbers ? 'Hide' : 'Show'} Line Numbers
+              </button>,
+              <span>{`Ln ${cursorPosition.line}, Col ${cursorPosition.column}`}</span>
+            ]} />
+          </div>
         </div>
         
         <div
@@ -1744,12 +1760,28 @@ const App: React.FC = () => {
           <div className="w-0.5 h-12 bg-slate-700 rounded-full group-hover:bg-cyan-500 transition-colors duration-150" />
         </div>
 
-        <Preview 
-          markdown={markdown} 
-          theme={previewTheme} 
-          onScroll={(event) => handleScroll('preview', event.nativeEvent)}
-          ref={previewRef}
-        />
+        <div className="flex flex-col min-h-0">
+          <div className="flex flex-col min-h-0 flex-grow">
+            <Preview 
+              markdown={markdown} 
+              theme={previewTheme} 
+              onScroll={(event) => handleScroll('preview', event.nativeEvent)}
+              ref={previewRef}
+            />
+            <StatusBar items={[
+              <select
+                value={previewTheme}
+                onChange={(e) => setPreviewTheme(e.target.value)}
+                className="bg-slate-700 text-white text-xs rounded p-1"
+              >
+                {Object.keys(themes).map(name => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>,
+              <span>{`${markdown.length} Chars`}</span>
+            ]} />
+          </div>
+        </div>
       </main>
       
       {/* Modals rendered at app level for proper z-index */}
@@ -1824,7 +1856,7 @@ const App: React.FC = () => {
         }
         message={
           tabConfirmationData?.type === 'close'
-            ? `The tab "${tabConfirmationData.tabName}" has unsaved changes. Are you sure you want to close it? Your changes will be lost.`
+            ? `The tab \"${tabConfirmationData.tabName}\" has unsaved changes. Are you sure you want to close it? Your changes will be lost.`
             : tabConfirmationData?.type === 'closeOthers'
             ? `${tabConfirmationData.tabName} with unsaved changes will be closed. Are you sure you want to continue? Your changes will be lost.`
             : `${tabConfirmationData?.tabName} with unsaved changes will be closed. Are you sure you want to continue? Your changes will be lost.`
