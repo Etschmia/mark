@@ -1775,6 +1775,7 @@ const App: React.FC = () => {
                 <option value="githubLight">GitHub Light</option>
                 <option value="material">Material</option>
                 <option value="monokai">Monokai</option>
+                <option value="neo">Neo</option>
                 <option value="nord">Nord</option>
                 <option value="tokyoNight">Tokyo Night</option>
                 <option value="tokyoNightDay">Tokyo Night Day</option>
