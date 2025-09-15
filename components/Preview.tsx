@@ -84,6 +84,48 @@ interface PreviewProps {
   onScroll: (event: React.UIEvent<HTMLDivElement>) => void;
 }
 
+// Add scrollbar styling to match the editor with maximum specificity
+const getScrollbarStyles = (theme: string) => `
+  .preview-scrollbar,
+  div.preview-scrollbar {
+    overflow: auto !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    scrollbar-width: auto !important;
+    scrollbar-color: ${theme !== 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff'} !important;
+  }
+  
+  .preview-scrollbar::-webkit-scrollbar,
+  div.preview-scrollbar::-webkit-scrollbar {
+    width: 14px !important;
+    height: 14px !important;
+    display: block !important;
+  }
+  
+  .preview-scrollbar::-webkit-scrollbar-track,
+  div.preview-scrollbar::-webkit-scrollbar-track {
+    background: ${theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+    border-radius: 7px !important;
+  }
+  
+  .preview-scrollbar::-webkit-scrollbar-thumb,
+  div.preview-scrollbar::-webkit-scrollbar-thumb {
+    background: ${theme === 'dark' ? '#64748b' : '#9ca3af'} !important;
+    border-radius: 7px !important;
+    border: 2px solid ${theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+  }
+  
+  .preview-scrollbar::-webkit-scrollbar-thumb:hover,
+  div.preview-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: ${theme === 'dark' ? '#94a3b8' : '#6b7280'} !important;
+  }
+  
+  .preview-scrollbar::-webkit-scrollbar-corner,
+  div.preview-scrollbar::-webkit-scrollbar-corner {
+    background: ${theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+  }
+`;
+
 // Configuration for DOMPurify to allow specific tags and attributes
 // needed for markdown rendering and syntax highlighting.
 const ALLOWED_TAGS = [
@@ -181,7 +223,7 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     return (
       <div
         ref={ref}
-        className="rounded-t-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300 flex items-center justify-center"
+        className="preview-scrollbar rounded-t-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300 flex items-center justify-center"
       >
         <div className="text-slate-500">Loading preview...</div>
       </div>
@@ -192,9 +234,10 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     <div
       ref={ref}
       onScroll={onScroll}
-      className="rounded-t-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
+      className="preview-scrollbar rounded-t-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
     >
       <style>{currentThemeStyles}</style>
+      <style>{getScrollbarStyles(theme)}</style>
       <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
     </div>
   );
