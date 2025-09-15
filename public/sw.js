@@ -1,5 +1,5 @@
 // Dynamic cache name with timestamp to force updates
-const CACHE_VERSION = 1757883732540; // This will be replaced by build process
+const CACHE_VERSION = 1757953800241; // This will be replaced by build process
 const CACHE_NAME = `markdown-editor-pro-v${CACHE_VERSION}`;
 const urlsToCache = [
   '/',

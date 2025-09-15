@@ -181,7 +181,7 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     return (
       <div
         ref={ref}
-        className="rounded-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300 flex items-center justify-center"
+        className="rounded-t-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300 flex items-center justify-center"
       >
         <div className="text-slate-500">Loading preview...</div>
       </div>
@@ -192,7 +192,7 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     <div
       ref={ref}
       onScroll={onScroll}
-      className="rounded-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
+      className="rounded-t-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
     >
       <style>{currentThemeStyles}</style>
       <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
