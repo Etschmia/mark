@@ -303,29 +303,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         >
           Save
         </button>
-        
-        {/* Theme Dropdown */}
-        <div className="relative">
-          <select
-            value={selectedTheme}
-            onChange={(e) => onThemeChange(e.target.value)}
-            className="pl-3 pr-8 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 appearance-none"
-            aria-label="Preview Theme"
-          >
-            <option disabled value="" className="text-slate-400">
-              Theme
-            </option>
-            {themes.map(theme => (
-              <option key={theme} value={theme}>
-                {theme}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
-            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-          </div>
-        </div>
-        
+                
         {/* Help Dropdown */}
         <div className="relative" ref={helpDropdownRef}>
           <button 
