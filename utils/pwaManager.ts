@@ -39,10 +39,6 @@ class PWAManager {
   }
 
   private async registerServiceWorker(): Promise<void> {
-    // TEMPORARILY DISABLE SERVICE WORKER FOR DEVELOPMENT
-    console.log('[PWA] Service Worker registration DISABLED for development');
-    return;
-    
     if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js', {

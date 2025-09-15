@@ -118,3 +118,9 @@ export const InstallIcon: React.FC = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
   </IconWrapper>
 );
+
+export const UpdateIcon: React.FC = () => (
+  <IconWrapper>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 11.667 0l3.181-3.183m-4.991-2.691V5.006h-4.992v4.992h4.992Z" />
+  </IconWrapper>
+);
