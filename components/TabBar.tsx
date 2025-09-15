@@ -210,7 +210,7 @@ export const TabBar: React.FC<TabBarProps> = ({
     <>
       <style>{scrollbarHideStyle}</style>
       <div 
-        className={`flex items-center border-b ${themeClasses.container} ${themeClasses.focusRing} tab-bar-enter`}
+        className={`flex items-center ${themeClasses.container} ${themeClasses.focusRing} tab-bar-enter`}
         role="tablist"
         aria-label="Document tabs"
         onKeyDown={handleKeyDown}
@@ -219,7 +219,7 @@ export const TabBar: React.FC<TabBarProps> = ({
       >
       {/* Left scroll button */}
       <button
-        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-r ${
+        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-r rounded-full ${
           canScrollLeft ? themeClasses.scrollButton : themeClasses.scrollButtonDisabled
         } ${themeClasses.focusRing}`}
         onClick={scrollLeft}
@@ -282,7 +282,7 @@ export const TabBar: React.FC<TabBarProps> = ({
 
       {/* Right scroll button */}
       <button
-        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-l ${
+        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-l rounded-full ${
           canScrollRight ? themeClasses.scrollButton : themeClasses.scrollButtonDisabled
         } ${themeClasses.focusRing}`}
         onClick={scrollRight}
@@ -310,7 +310,7 @@ export const TabBar: React.FC<TabBarProps> = ({
 
       {/* New tab button */}
       <button
-        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-l ${themeClasses.newTabButton} ${themeClasses.focusRing} ${isCreatingTab ? 'opacity-75 cursor-wait' : ''}`}
+        className={`flex-shrink-0 w-8 h-8 flex items-center justify-center border-l rounded-full ${themeClasses.newTabButton} ${themeClasses.focusRing} ${isCreatingTab ? 'opacity-75 cursor-wait' : ''}`}
         onClick={onTabCreate}
         disabled={isCreatingTab}
         title={isCreatingTab ? "Creating new tab..." : "New tab (Ctrl/Cmd + T)"}
