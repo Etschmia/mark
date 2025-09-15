@@ -160,16 +160,6 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Cache Status */}
-                        <div className="bg-slate-700 rounded-lg p-4">
-                            <h4 className="text-lg font-semibold text-white mb-3">Cache Status</h4>
-                            <p className="text-slate-300 text-sm leading-relaxed">
-                                If the build date above doesn't match your expectations, you might be viewing a cached version.
-                                Try refreshing the page with <kbd className="px-1 py-0.5 bg-slate-600 rounded text-xs">Ctrl+F5</kbd> or
-                                <kbd className="px-1 py-0.5 bg-slate-600 rounded text-xs ml-1">Cmd+Shift+R</kbd> to force reload.
-                            </p>
-                        </div>
                     </div>
                 </div>
 
