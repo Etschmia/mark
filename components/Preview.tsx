@@ -92,6 +92,7 @@ const getScrollbarStyles = (theme: string) => `
     overflow-x: auto !important;
     overflow-y: auto !important;
     scrollbar-width: auto !important;
+    border-radius: 7px !important;
     scrollbar-color: ${theme !== 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff'} !important;
   }
   
@@ -99,6 +100,7 @@ const getScrollbarStyles = (theme: string) => `
   div.preview-scrollbar::-webkit-scrollbar {
     width: 14px !important;
     height: 14px !important;
+    border-radius: 7px !important;
     display: block !important;
   }
   
@@ -118,11 +120,13 @@ const getScrollbarStyles = (theme: string) => `
   .preview-scrollbar::-webkit-scrollbar-thumb:hover,
   div.preview-scrollbar::-webkit-scrollbar-thumb:hover {
     background: ${theme === 'dark' ? '#94a3b8' : '#6b7280'} !important;
+    border-radius: 7px !important;
   }
   
   .preview-scrollbar::-webkit-scrollbar-corner,
   div.preview-scrollbar::-webkit-scrollbar-corner {
     background: ${theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+    border-radius: 7px !important;
   }
 `;
 
@@ -234,7 +238,7 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     <div
       ref={ref}
       onScroll={onScroll}
-      className="preview-scrollbar rounded-t-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
+      className="preview-scrollbar rounded-lg h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
     >
       <style>{currentThemeStyles}</style>
       <style>{getScrollbarStyles(theme)}</style>
