@@ -17,6 +17,7 @@
 - ✅ #16: NPM dependency management
 - ✅ **NEW: GitHub Integration** - Complete GitHub connectivity with OAuth, repository browsing, file loading, and enhanced save options
 - ✅ **NEW: CodeMirror Themes** - 30+ editor themes with selector in status bar
+- ✅ **NEW: Toolbar Restructuring** - Moved GitHub and Install buttons to help dropdown menu
 
 **Architecture:** React 19.1.1 + TypeScript 5.8.2 + Vite 7.0.6 + CodeMirror 6 + GitHub API Integration
 
@@ -36,6 +37,11 @@
 - **GitHub Integration**: OAuth authentication, repository browsing, direct file operations
 
 ## 🚀 Recent Enhancements
+
+### Toolbar Restructuring
+- **Help Button Renamed**: Changed from "?" to "Extras" for better clarity
+- **Menu Consolidation**: Moved "Connect with GitHub" and "Install App" buttons into the help dropdown menu
+- **Improved Organization**: Buttons now appear between "Update" and "Über diese App" in the dropdown
 
 ### CodeMirror Themes Feature
 - **30+ Themes**: Added support for popular CodeMirror themes from @uiw/codemirror-themes

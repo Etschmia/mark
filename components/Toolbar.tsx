@@ -311,7 +311,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             title="Hilfe & Referenz"
             className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500"
           >
-            <HelpIcon />
+            Extras
           </button>
           {isHelpDropdownOpen && (
             <div className="absolute left-0 z-20 mt-2 w-48 origin-top-left rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
@@ -350,6 +350,32 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               >
                 {isUpdating ? '🔄 Updating...' : '🔄 Update'}
               </button>
+              {/* GitHub Button in Dropdown */}
+              <button
+                onClick={() => {
+                  if (githubState.auth.isConnected) {
+                    onGitHubDisconnect();
+                  } else {
+                    onGitHubConnect();
+                  }
+                  setIsHelpDropdownOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+              >
+                {githubState.auth.isConnected ? '🔌 Disconnect GitHub' : '🔗 Connect with GitHub'}
+              </button>
+              {/* Install Button in Dropdown */}
+              {canInstallPWA && (
+                <button
+                  onClick={() => {
+                    handleInstallApp();
+                    setIsHelpDropdownOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                >
+                  💾 Install App
+                </button>
+              )}
               <div className="border-t border-slate-600 my-1"></div>
               <button
                 onClick={() => {
@@ -364,8 +390,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </div>
         
-        {/* GitHub Button */}
-        <GitHubButton 
+        {/* GitHub Button - Removed from toolbar */}
+        {/* <GitHubButton 
           connectionStatus={githubState.auth.isConnected ? 'connected' : 'disconnected'}
           user={githubState.auth.user || undefined}
           onConnect={onGitHubConnect}
@@ -373,10 +399,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           onBrowseRepos={onBrowseRepositories}
           isLoading={githubState.isLoadingRepos}
           error={githubState.error || undefined}
-        />
+        /> */}
 
-                {/* Install Button */}
-        {canInstallPWA && (
+        {/* Install Button - Removed from toolbar */}
+        {/* {canInstallPWA && (
           <button 
             onClick={handleInstallApp} 
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-green-500"
@@ -385,7 +411,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <InstallIcon />
             Install App
           </button>
-        )}
+        )} */}
       </div>
     </div>
   );
