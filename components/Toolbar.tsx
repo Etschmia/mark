@@ -230,7 +230,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <CodeIcon />
           </ToolButton>
           {isCodeDropdownOpen && (
-            <div className="absolute left-0 z-20 mt-2 w-40 origin-top-left rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+            <div className="absolute right-0 z-20 mt-2 w-40 origin-top-right rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
               {codeLanguages.map(lang => (
                 <button
                   key={lang.name}
@@ -256,7 +256,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <ExportIcon />
           </ToolButton>
           {isExportDropdownOpen && (
-            <div className="absolute left-0 z-20 mt-2 w-32 origin-top-left rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+            <div className="absolute right-0 z-20 mt-2 w-32 origin-top-right rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
               <button
                 onClick={() => handleExport('html')}
                 className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
@@ -314,7 +314,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             Extras
           </button>
           {isHelpDropdownOpen && (
-            <div className="absolute left-0 z-20 mt-2 w-48 origin-top-left rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+            <div className="absolute right-0 z-20 mt-2 w-48 origin-top-right rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
               <button
                 onClick={() => {
                   setIsHelpModalOpen(true);
