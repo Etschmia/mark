@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType, GitHubState, FileSource } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
@@ -329,9 +329,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   setIsCheatSheetModalOpen(true);
                   setIsHelpDropdownOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
-                📝 Markdown-Spickzettel
+                <MarkdownIcon />
+                <span>Markdown-Spickzettel</span>
               </button>
               <div className="border-t border-slate-600 my-1"></div>
               <button
@@ -372,7 +373,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 }}
                 className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
-                {githubState.auth.isConnected ? '🔌 Disconnect GitHub' : '🔗 Connect with GitHub'}
+                {githubState.auth.isConnected ? '🔌 Disconnect GitHub' : '🔗 Connect GitHub'}
               </button>
               {/* Install Button in Dropdown */}
               {canInstallPWA && (
@@ -393,9 +394,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   setIsAboutModalOpen(true);
                   setIsHelpDropdownOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
-                ℹ️ Über diese App
+                <InfoIcon />
+                <span>Über diese App</span>
               </button>
             </div>
           )}

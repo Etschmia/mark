@@ -124,3 +124,15 @@ export const UpdateIcon: React.FC = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 11.667 0l3.181-3.183m-4.991-2.691V5.006h-4.992v4.992h4.992Z" />
   </IconWrapper>
 );
+
+export const MarkdownIcon: React.FC = () => (
+  <IconWrapper>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.75h16.5m-16.5 0V6.375c0-.621.504-1.125 1.125-1.125h14.25c.621 0 1.125.504 1.125 1.125v3.375m-16.5 0c.375 3.375 2.25 6 4.125 6s3.75-2.625 4.125-6m-8.25 0h8.25m6.375 6l-4.125-6m4.125 6l-4.125-6M12 21v-6.375" />
+  </IconWrapper>
+);
+
+export const InfoIcon: React.FC = () => (
+  <IconWrapper>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+  </IconWrapper>
+);
