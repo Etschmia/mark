@@ -8,7 +8,7 @@ import { searchKeymap, openSearchPanel } from '@codemirror/search';
 import { EditorSettings } from './SettingsModal';
 
 // Import CodeMirror theme creation function
-import { createTheme } from '@uiw/codemirror-themes-all';
+import { createTheme } from '@uiw/codemirror-themes';
 
 // Import individual theme functions
 import { 
