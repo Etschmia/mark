@@ -40,7 +40,7 @@ declare global {
   }
 }
 
-import { allThemes } from '@uiw/codemirror-themes-all';
+import * as allThemes from '@uiw/codemirror-themes-all';
 
 // Helper to format theme names for display
 const formatThemeName = (name: string) => {
