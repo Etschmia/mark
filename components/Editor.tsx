@@ -7,8 +7,62 @@ import { indentWithTab } from '@codemirror/commands';
 import { searchKeymap, openSearchPanel } from '@codemirror/search';
 import { EditorSettings } from './SettingsModal';
 
-// Import all CodeMirror themes from a single package
-import * as allThemes from '@uiw/codemirror-themes-all';
+// Import CodeMirror theme creation function
+import { createTheme } from '@uiw/codemirror-themes-all';
+
+// Import individual theme functions
+import { 
+  basicDark,
+  aura,
+  dracula,
+  githubDark,
+  githubLight,
+  materialDark,
+  materialLight,
+  monokai,
+  nord,
+  okaidia,
+  solarizedDark,
+  solarizedLight,
+  tokyoNight,
+  vscodeDark,
+  vscodeLight
+} from '@uiw/codemirror-themes-all';
+
+// Theme mapping with proper extension functions
+const themeMap: Record<string, any> = {
+  basicDark: basicDark,
+  aura: aura,
+  dracula: dracula,
+  githubDark: githubDark,
+  githubLight: githubLight,
+  materialDark: materialDark,
+  materialLight: materialLight,
+  monokai: monokai,
+  nord: nord,
+  okaidia: okaidia,
+  solarizedDark: solarizedDark,
+  solarizedLight: solarizedLight,
+  tokyoNight: tokyoNight,
+  vscodeDark: vscodeDark,
+  vscodeLight: vscodeLight
+};
+
+// Helper function to safely get theme extensions
+const getThemeExtension = (themeName: string) => {
+  try {
+    const theme = themeMap[themeName];
+    if (!theme) {
+      console.warn(`Theme '${themeName}' not found in themeMap, available themes:`, Object.keys(themeMap));
+      return themeMap.basicDark;
+    }
+    
+    return theme;
+  } catch (error) {
+    console.error(`Error accessing theme '${themeName}':`, error);
+    return themeMap.basicDark;
+  }
+};
 
 // Import basic setup components
 import { 
@@ -81,8 +135,7 @@ const loadLanguage = async (language: string) => {
   }
 };
 
-// Define a compartment for the theme (dynamically switchable)
-const themeCompartment = new Compartment();
+// Theme compartment will be created per editor instance to avoid conflicts
 
 // Create a basic setup that doesn't include line numbers by default
 const createBaseSetup = (includeLineNumbers: boolean) => [
@@ -274,6 +327,15 @@ export interface EditorRef {
 export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat, settings, codemirrorTheme = 'basicDark' }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  
+  // Create theme compartment per editor instance to avoid conflicts
+  const themeCompartment = useRef(new Compartment()).current;
+  
+  // Debug: Log available themes on first render
+  useEffect(() => {
+    console.log('Available CodeMirror themes:', Object.keys(themeMap));
+    console.log('Current theme:', codemirrorTheme);
+  }, []);
 
   useImperativeHandle(ref, () => ({
     focus: () => viewRef.current?.focus(),
@@ -442,7 +504,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     const initializeEditor = async () => {
       try {
         const baseExtensions = await createEditorExtensions(settings);
-        const initialTheme = allThemes[codemirrorTheme as keyof typeof allThemes] || allThemes.basicDark;
+        
+        // Safely get the initial theme with fallback
+        const initialTheme = getThemeExtension(codemirrorTheme);
         
         if (!isMounted) return; // Component was unmounted while loading
 
@@ -509,18 +573,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         view.destroy();
       }
     };
-  }, [settings.theme, settings.fontSize, settings.showLineNumbers]); // Re-create editor only on settings change
-
-  // Effect for dynamically changing the theme
-  useEffect(() => {
-    const view = viewRef.current;
-    if (!view) return;
-
-    const newTheme = allThemes[codemirrorTheme as keyof typeof allThemes] || allThemes.basicDark;
-    view.dispatch({
-      effects: themeCompartment.reconfigure(newTheme)
-    });
-  }, [codemirrorTheme]);
+  }, [settings.theme, settings.fontSize, settings.showLineNumbers, codemirrorTheme]); // Re-create editor on theme change too
 
   // DO NOT update editor content from value prop during normal typing!
   // This causes cursor jumps. Content updates should only happen during tab switches

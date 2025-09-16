@@ -40,7 +40,43 @@ declare global {
   }
 }
 
-import * as allThemes from '@uiw/codemirror-themes-all';
+// Import individual theme functions (same as Editor.tsx)
+import { 
+  basicDark,
+  aura,
+  dracula,
+  githubDark,
+  githubLight,
+  materialDark,
+  materialLight,
+  monokai,
+  nord,
+  okaidia,
+  solarizedDark,
+  solarizedLight,
+  tokyoNight,
+  vscodeDark,
+  vscodeLight
+} from '@uiw/codemirror-themes-all';
+
+// Theme mapping (same as Editor.tsx)
+const themeMap: Record<string, any> = {
+  basicDark: basicDark,
+  aura: aura,
+  dracula: dracula,
+  githubDark: githubDark,
+  githubLight: githubLight,
+  materialDark: materialDark,
+  materialLight: materialLight,
+  monokai: monokai,
+  nord: nord,
+  okaidia: okaidia,
+  solarizedDark: solarizedDark,
+  solarizedLight: solarizedLight,
+  tokyoNight: tokyoNight,
+  vscodeDark: vscodeDark,
+  vscodeLight: vscodeLight
+};
 
 // Helper to format theme names for display
 const formatThemeName = (name: string) => {
@@ -1767,7 +1803,7 @@ const App: React.FC = () => {
                   onChange={(e) => setCodemirrorTheme(e.target.value)}
                   className="bg-slate-700 text-white text-xs rounded p-1 max-w-[120px]"
                 >
-                  {Object.keys(allThemes).map(themeKey => (
+                  {Object.keys(themeMap).map(themeKey => (
                     <option key={themeKey} value={themeKey}>
                       {formatThemeName(themeKey)}
                     </option>
