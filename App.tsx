@@ -40,16 +40,14 @@ declare global {
   }
 }
 
-// Add CodeMirror theme options
-const codemirrorThemeOptions = [
-  'abcdef', 'abyss', 'androidstudio', 'atomone', 'aura', 'basicDark', 'basicLight', 
-  'bbedit', 'dracula', 'duotoneDark', 'duotoneLight', 'eclipse', 'githubDark', 
-  'githubLight', 'gruvboxDark', 'gruvboxLight', 'kimbie', 'material', 'monokai', 
-  'monokaiDimmed', 'noctisLilac', 'nord', 'okaidia', 'quietlight', 'red', 
-  'solarizedDark', 'solarizedLight', 'sublime', 'tokyoNight', 'tokyoNightDay', 
-  'tokyoNightStorm', 'tomorrowNightBlue', 'vscodeDark', 'whiteDark', 'whiteLight', 
-  'xcodeDark', 'xcodeLight'
-];
+import { allThemes } from '@uiw/codemirror-themes-all';
+
+// Helper to format theme names for display
+const formatThemeName = (name: string) => {
+  return name
+    .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+    .replace(/^./, (str) => str.toUpperCase()); // Capitalize first letter
+};
 
 const App: React.FC = () => {
   // Initialize TabManager
@@ -1769,9 +1767,9 @@ const App: React.FC = () => {
                   onChange={(e) => setCodemirrorTheme(e.target.value)}
                   className="bg-slate-700 text-white text-xs rounded p-1 max-w-[120px]"
                 >
-                  {codemirrorThemeOptions.map(theme => (
-                    <option key={theme} value={theme}>
-                      {theme.charAt(0).toUpperCase() + theme.slice(1).replace(/([A-Z])/g, ' $1')}
+                  {Object.keys(allThemes).map(themeKey => (
+                    <option key={themeKey} value={themeKey}>
+                      {formatThemeName(themeKey)}
                     </option>
                   ))}
                 </select>
