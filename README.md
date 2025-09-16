@@ -2,8 +2,8 @@
 
 A powerful, lightweight, browser-based Markdown editor designed for simplicity, privacy, and productivity.
 
-[![License](https://img.shields.io/github/license/tobiasbrendler/markdown-editor-pro)](https://github.com/tobiasbrendler/markdown-editor-pro/blob/main/LICENSE)
-[![Version](https://img.shields.io/github/package-json/v/tobiasbrendler/markdown-editor-pro)](https://github.com/tobiasbrendler/markdown-editor-pro)
+[![License](https://img.shields.io/github/license/Etschmia/mark)](https://github.com/Etschmia/mark/blob/main/LICENSE)
+[![Version](https://img.shields.io/github/package-json/v/Etschmia/mark)](https://github.com/Etschmia/mark)
 
 ## 🌟 Features
 
