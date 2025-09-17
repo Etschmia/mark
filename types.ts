@@ -20,7 +20,8 @@ export type FormatType =
   | 'new'
   | 'save'
   | 'saveAs'
-  | 'open';
+  | 'open'
+  | 'lint';
 
 // GitHub Integration Types
 export interface GitHubUser {

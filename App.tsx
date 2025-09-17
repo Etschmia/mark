@@ -20,6 +20,8 @@ import { TabManager } from './utils/tabManager';
 import { TabContextMenu } from './components/TabContextMenu';
 import { checkAndInstallUpdate, checkUpdateCompletion } from './utils/updateManager';
 import { StatusBar } from './components/StatusBar';
+import { LinterPanel } from './components/LinterPanel';
+import { lintMarkdown, LintResult, LintError, applyAutoFix } from './utils/markdownLinter';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -226,6 +228,12 @@ const App: React.FC = () => {
   
   // PWA state
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  
+  // Linter state
+  const [lintResult, setLintResult] = useState<LintResult>({ errors: [], errorCount: 0, warningCount: 0 });
+  const [isLinterPanelVisible, setIsLinterPanelVisible] = useState(false);
+  const [isLinterActive, setIsLinterActive] = useState(false);
+  const lintDebounceRef = useRef<number | null>(null);
 
   // Tab Manager subscription and initialization
   useEffect(() => {
@@ -242,6 +250,8 @@ const App: React.FC = () => {
       setFileSource(initialActiveTab.fileSource);
       setOriginalContent(initialActiveTab.originalContent);
       fileHandleRef.current = initialActiveTab.fileHandle;
+      
+      // Initial linting - removed, only on demand now
     }
     
     const unsubscribe = tabManagerRef.current.subscribe((newState) => {
@@ -289,6 +299,12 @@ const App: React.FC = () => {
       setFileSource(activeTab.fileSource);
       setOriginalContent(activeTab.originalContent);
       fileHandleRef.current = activeTab.fileHandle;
+      
+      // Run linter if active
+      if (isLinterActive) {
+        const result = lintMarkdown(activeTab.content);
+        setLintResult(result);
+      }
       
       // Restore editor state after a short delay to ensure editor is ready
       setTimeout(() => {
@@ -1169,6 +1185,18 @@ const App: React.FC = () => {
     // Update markdown state for preview and other components
     setMarkdown(newMarkdown);
 
+    // Debounced linting - only if linter is active
+    if (isLinterActive) {
+      if (lintDebounceRef.current) {
+        clearTimeout(lintDebounceRef.current);
+      }
+
+      lintDebounceRef.current = window.setTimeout(() => {
+        const result = lintMarkdown(newMarkdown);
+        setLintResult(result);
+      }, 1000); // Lint after 1 second of inactivity
+    }
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -1181,6 +1209,73 @@ const App: React.FC = () => {
 
   const toggleLineNumbers = () => {
     handleSettingsChange({ ...settings, showLineNumbers: !settings.showLineNumbers });
+  };
+
+  // Linter functions
+  const handleLinterToggle = () => {
+    setIsLinterPanelVisible(!isLinterPanelVisible);
+  };
+
+  const handleLinterErrorClick = (lineNumber: number) => {
+    if (editorRef.current) {
+      // Calculate the position of the line
+      const content = editorRef.current.getValue();
+      const lines = content.split('\n');
+      let position = 0;
+      
+      for (let i = 0; i < lineNumber - 1 && i < lines.length; i++) {
+        position += lines[i].length + 1; // +1 for newline character
+      }
+      
+      // Set cursor to the beginning of the line
+      editorRef.current.setSelection(position, position);
+      editorRef.current.focus();
+    }
+  };
+
+  const handleAutoFix = (error: LintError) => {
+    if (editorRef.current) {
+      const currentContent = editorRef.current.getValue();
+      const fixedContent = applyAutoFix(currentContent, error);
+      
+      if (fixedContent !== currentContent) {
+        // Update the editor content
+        const activeTab = tabManagerRef.current.getActiveTab();
+        if (activeTab) {
+          tabManagerRef.current.updateTabContent(activeTab.id, fixedContent);
+          setMarkdown(fixedContent);
+          
+          // Re-lint after fix
+          const result = lintMarkdown(fixedContent);
+          setLintResult(result);
+          
+          // Add to history
+          addHistoryEntry(fixedContent);
+        }
+      }
+    }
+  };
+
+  const runLinter = () => {
+    if (isLinterActive) {
+      // Deactivate linter
+      setIsLinterActive(false);
+      setIsLinterPanelVisible(false);
+      setLintResult({ errors: [], errorCount: 0, warningCount: 0 });
+      
+      // Clear any pending lint operations
+      if (lintDebounceRef.current) {
+        clearTimeout(lintDebounceRef.current);
+        lintDebounceRef.current = null;
+      }
+    } else {
+      // Activate linter
+      setIsLinterActive(true);
+      const content = editorRef.current?.getValue() || '';
+      const result = lintMarkdown(content);
+      setLintResult(result);
+      setIsLinterPanelVisible(true);
+    }
   };
 
   // Handle editor scroll events to preserve scroll position
@@ -1486,6 +1581,11 @@ const App: React.FC = () => {
       return;
     }
 
+    if (formatType === 'lint') {
+      runLinter();
+      return;
+    }
+
     if (formatType === 'code') {
         const lang = options?.language;
         const selection = editor.getSelection();
@@ -1761,6 +1861,8 @@ const App: React.FC = () => {
           fileSource={fileSource}
           // Save state props
           hasUnsavedChanges={hasUnsavedChangesForToolbar()}
+          // Linter props
+          isLinterActive={isLinterActive}
         />
       </header>
       <main
@@ -1789,6 +1891,14 @@ const App: React.FC = () => {
               settings={settings}
               ref={editorRef}
               codemirrorTheme={codemirrorTheme} // Pass the CodeMirror theme
+            />
+            <LinterPanel
+              errors={lintResult.errors}
+              isVisible={isLinterPanelVisible}
+              onToggle={handleLinterToggle}
+              onErrorClick={handleLinterErrorClick}
+              onAutoFix={handleAutoFix}
+              theme={settings.theme}
             />
             <StatusBar items={[
               <button onClick={toggleLineNumbers} className="text-xs">

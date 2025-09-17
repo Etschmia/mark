@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType, GitHubState, FileSource } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
@@ -48,14 +48,20 @@ interface ToolbarProps {
   fileSource: FileSource;
   // Save state props
   hasUnsavedChanges: boolean;
+  // Linter props
+  isLinterActive: boolean;
 }
 
-const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean }> = ({ onClick, children, title, disabled = false }) => (
+const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean; active?: boolean }> = ({ onClick, children, title, disabled = false, active = false }) => (
   <button
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className="p-2 rounded-md text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+    className={`p-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent ${
+      active 
+        ? 'text-white bg-cyan-600 hover:bg-cyan-700' 
+        : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+    }`}
   >
     {children}
   </button>
@@ -103,7 +109,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onBrowseRepositories,
   fileSource,
   // Save state props
-  hasUnsavedChanges
+  hasUnsavedChanges,
+  // Linter props
+  isLinterActive
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
@@ -249,6 +257,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <ToolButton onClick={() => onFormat('link')} title="Link einfügen"><LinkIcon /></ToolButton>
         <div className="w-px h-6 bg-slate-600 mx-2"></div>
         <ToolButton onClick={() => onFormat('search')} title="Suchen und Ersetzen"><SearchIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('lint')} title="Markdown Linter" active={isLinterActive}><LinterIcon /></ToolButton>
         <ToolButton onClick={onUndo} title="Rückgängig" disabled={!canUndo}><UndoIcon /></ToolButton>
         
         <div className="relative" ref={exportDropdownRef}>
