@@ -56,7 +56,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     { category: 'Text Formatting', items: [
       { icon: 'B', name: 'Bold', description: 'Makes selected text bold. Wraps text with **asterisks**.' },
       { icon: 'I', name: 'Italic', description: 'Makes selected text italic. Wraps text with *single asterisks*.' },
-      { icon: 'A̶', name: 'Strikethrough', description: 'Strikes through text. Wraps text with ~~tildes~~.' },
+      { icon: 'S̶', name: 'Strikethrough', description: 'Strikes through text. Wraps text with ~~tildes~~.' },
     ]},
     { category: 'Headers', items: [
       { icon: 'H1', name: 'Header 1', description: 'Creates the largest header. Adds # at the beginning of line.' },
