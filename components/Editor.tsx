@@ -10,59 +10,8 @@ import { EditorSettings } from './SettingsModal';
 // Import CodeMirror theme creation function
 import { createTheme } from '@uiw/codemirror-themes';
 
-// Import individual theme functions
-import { 
-  basicDark,
-  aura,
-  dracula,
-  githubDark,
-  githubLight,
-  materialDark,
-  materialLight,
-  monokai,
-  nord,
-  okaidia,
-  solarizedDark,
-  solarizedLight,
-  tokyoNight,
-  vscodeDark,
-  vscodeLight
-} from '@uiw/codemirror-themes-all';
-
-// Theme mapping with proper extension functions
-const themeMap: Record<string, any> = {
-  basicDark: basicDark,
-  aura: aura,
-  dracula: dracula,
-  githubDark: githubDark,
-  githubLight: githubLight,
-  materialDark: materialDark,
-  materialLight: materialLight,
-  monokai: monokai,
-  nord: nord,
-  okaidia: okaidia,
-  solarizedDark: solarizedDark,
-  solarizedLight: solarizedLight,
-  tokyoNight: tokyoNight,
-  vscodeDark: vscodeDark,
-  vscodeLight: vscodeLight
-};
-
-// Helper function to safely get theme extensions
-const getThemeExtension = (themeName: string) => {
-  try {
-    const theme = themeMap[themeName];
-    if (!theme) {
-      console.warn(`Theme '${themeName}' not found in themeMap, available themes:`, Object.keys(themeMap));
-      return themeMap.basicDark;
-    }
-    
-    return theme;
-  } catch (error) {
-    console.error(`Error accessing theme '${themeName}':`, error);
-    return themeMap.basicDark;
-  }
-};
+// Import central theme configuration
+import { themeMap, getThemeExtension } from '../utils/themes';
 
 // Import basic setup components
 import { 

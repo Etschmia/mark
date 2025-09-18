@@ -10,7 +10,8 @@ Diese Ideen zielen darauf ab, den Schreibprozess selbst intelligenter und flüss
     *   Viele statische Seitengeneratoren (wie Jekyll, Hugo, Next.js) verwenden YAML- oder TOML-Frontmatter am Anfang von Markdown-Dateien. Eine dedizierte Syntaxhervorhebung und vielleicht sogar eine einfache Validierung für diesen Block wären für Web-Entwickler und Blogger ein großes Plus.
 
 3.  **Integrierter Linter für Markdown:**
-    *   Ähnlich wie ein Linter für Code könnte ein Tool wie `markdownlint` integriert werden. Es würde auf stilistische Inkonsistenzen hinweisen (z.B. gemischte Aufzählungszeichen `*` vs. `-`, falsche Überschriften-Hierarchie) und so für saubere, konsistente Dokumente sorgen.
+    "@types/markdownlint": "^0.13.0",
+    *   Ähnlich wie ein Linter für Code könnte ein Tool wie `markdownlint` integriert werden. Es würde auf stilistische Inkonsistenzen hinweisen (z.B. gemischte Aufzählungszeichen `*` vs. `-`, falsche Überschriften-Hierarchie) und so für saubere, konsistente Dokumente sorgen. ✅ **ERLEDIGT - Linter implementiert**
 
 ### Kategorie 2: Erweiterte Vorschau- und Export-Möglichkeiten
 
