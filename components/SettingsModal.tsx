@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Modal } from './common/Modal';
 
 export interface EditorSettings {
   theme: 'light' | 'dark';

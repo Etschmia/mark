@@ -1,4 +1,5 @@
 import React from 'react';
+import { Modal } from './common/Modal';
 
 interface CheatSheetModalProps {
   isOpen: boolean;
@@ -51,44 +52,19 @@ export const CheatSheetModal: React.FC<CheatSheetModalProps> = ({ isOpen, onClos
     ]},
   ];
 
-  // Handle escape key to close modal
+  // Body overflow handling
   React.useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
     }
-    
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h2 className="text-2xl font-bold text-white">Markdown Cheat Sheet</h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-md text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-150"
-            aria-label="Close cheat sheet"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+    <Modal isOpen={isOpen} onClose={onClose} title="Markdown Cheat Sheet" maxWidth="5xl">
+      <div className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {markdownSyntax.map((category, idx) => (
               <div key={idx} className="space-y-4">
@@ -152,7 +128,6 @@ export const CheatSheetModal: React.FC<CheatSheetModalProps> = ({ isOpen, onClos
             Press <kbd className="px-1 py-0.5 bg-slate-600 rounded text-xs">Esc</kbd> to close • Use toolbar buttons or keyboard shortcuts for quick formatting
           </p>
         </div>
-      </div>
-    </div>
-  );
+      </Modal>
+    );
 };

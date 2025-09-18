@@ -274,3 +274,10 @@ export interface PersistedTabState {
   }[];
   activeTabId: string;
 }
+
+// Build Information Types
+export interface BuildInfo {
+  buildDate: string;
+  buildTimestamp: number;
+  version: string;
+}

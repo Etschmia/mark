@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { Modal } from './common/Modal';
+import { BuildInfo } from '../types';
 
 interface AboutModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-interface BuildInfo {
-    buildDate: string;
-    buildTimestamp: number;
-    version: string;
+interface ExtendedBuildInfo extends BuildInfo {
     viteVersion?: string;
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
-    const [buildInfo, setBuildInfo] = useState<BuildInfo | null>(null);
+    const [buildInfo, setBuildInfo] = useState<ExtendedBuildInfo | null>(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -33,24 +32,15 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
         }
     }, [isOpen]);
 
-    // Handle escape key to close modal
+    // Body overflow handling
     React.useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose();
-            }
-        };
-
         if (isOpen) {
-            document.addEventListener('keydown', handleEscape);
             document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = 'unset';
+            };
         }
-
-        return () => {
-            document.removeEventListener('keydown', handleEscape);
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen, onClose]);
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -74,24 +64,8 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-700">
-                    <h2 className="text-2xl font-bold text-white">About</h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-md text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-150"
-                        aria-label="Close about"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
+        <Modal isOpen={isOpen} onClose={onClose} title="About" maxWidth="md">
+            <div className="p-6">
                     <div className="space-y-6">
                         {/* App Info */}
                         <div className="text-center">
@@ -161,8 +135,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                             </div>
                         </div>
                     </div>
-                </div>
-
+                
                 {/* Footer */}
                 <div className="border-t border-slate-700 p-4 text-center">
                     <p className="text-slate-400 text-sm">
@@ -170,6 +143,6 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                     </p>
                 </div>
             </div>
-        </div>
+        </Modal>
     );
 };
