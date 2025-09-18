@@ -1,4 +1,4 @@
-import * as markdownlint from 'markdownlint';
+import { lint } from 'markdownlint/sync';
 
 export interface LintError {
   lineNumber: number;
@@ -74,7 +74,7 @@ const defaultConfig = {
 export function lintMarkdown(content: string, config = defaultConfig): LintResult {
   try {
     // Use the correct markdownlint API
-    const result = (markdownlint as any).sync({
+    const result = lint({
       strings: {
         'content': content
       },
