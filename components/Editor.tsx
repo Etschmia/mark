@@ -284,6 +284,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   useEffect(() => {
     console.log('Available CodeMirror themes:', Object.keys(themeMap));
     console.log('Current theme:', codemirrorTheme);
+    console.log('Okaidia theme object:', themeMap.okaidia);
   }, []);
 
   useImperativeHandle(ref, () => ({
@@ -385,37 +386,39 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         '.cm-focused': {
           outline: 'none'
         },
-        // Theme-aware search panel styling
-        '.cm-panel': {
-          backgroundColor: settings.theme === 'dark' ? '#374151' : '#f3f4f6',
-          border: `1px solid ${settings.theme === 'dark' ? '#4b5563' : '#d1d5db'}`,
-          borderRadius: '0.375rem'
-        },
-        '.cm-panel input': {
-          backgroundColor: settings.theme === 'dark' ? '#1f2937' : '#ffffff',
-          border: `1px solid ${settings.theme === 'dark' ? '#4b5563' : '#d1d5db'}`,
-          borderRadius: '0.25rem',
-          color: settings.theme === 'dark' ? '#f9fafb' : '#111827',
-          padding: '0.25rem 0.5rem'
-        },
-        '.cm-panel input:focus': {
-          outline: 'none',
-          borderColor: settings.theme === 'dark' ? '#06b6d4' : '#3b82f6'
-        },
-        '.cm-panel button': {
-          backgroundColor: settings.theme === 'dark' ? '#4b5563' : '#e5e7eb',
-          border: `1px solid ${settings.theme === 'dark' ? '#6b7280' : '#d1d5db'}`,
-          borderRadius: '0.25rem',
-          color: settings.theme === 'dark' ? '#f9fafb' : '#374151',
-          padding: '0.25rem 0.5rem',
-          margin: '0 0.125rem'
-        },
-        '.cm-panel button:hover': {
-          backgroundColor: settings.theme === 'dark' ? '#6b7280' : '#d1d5db'
-        },
-        '.cm-panel label': {
-          color: settings.theme === 'dark' ? '#d1d5db' : '#6b7280'
-        },
+        // Only style search panel if no CodeMirror theme is applied or for light themes
+        ...(codemirrorTheme === 'basicLight' || codemirrorTheme === 'githubLight' || codemirrorTheme === 'materialLight' || codemirrorTheme === 'solarizedLight' || codemirrorTheme === 'bbedit' ? {
+          '.cm-panel': {
+            backgroundColor: '#f3f4f6',
+            border: '1px solid #d1d5db',
+            borderRadius: '0.375rem'
+          },
+          '.cm-panel input': {
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d5db',
+            borderRadius: '0.25rem',
+            color: '#111827',
+            padding: '0.25rem 0.5rem'
+          },
+          '.cm-panel input:focus': {
+            outline: 'none',
+            borderColor: '#3b82f6'
+          },
+          '.cm-panel button': {
+            backgroundColor: '#e5e7eb',
+            border: '1px solid #d1d5db',
+            borderRadius: '0.25rem',
+            color: '#374151',
+            padding: '0.25rem 0.5rem',
+            margin: '0 0.125rem'
+          },
+          '.cm-panel button:hover': {
+            backgroundColor: '#d1d5db'
+          },
+          '.cm-panel label': {
+            color: '#6b7280'
+          }
+        } : {}),
         '.cm-searchMatch': {
           backgroundColor: '#fbbf24',
           color: '#000000'
@@ -463,7 +466,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
           doc: value,
           extensions: [
             ...baseExtensions,
-            themeCompartment.of(initialTheme)
+            themeCompartment.of(initialTheme.flat())
           ]
         });
 
@@ -522,7 +525,25 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         view.destroy();
       }
     };
-  }, [settings.theme, settings.fontSize, settings.showLineNumbers, codemirrorTheme]); // Re-create editor on theme change too
+  }, [settings.theme, settings.fontSize, settings.showLineNumbers]); // Don't recreate on codemirror theme change
+
+  // Separate effect for updating CodeMirror theme without recreating the editor
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+
+    try {
+      const newTheme = getThemeExtension(codemirrorTheme);
+      console.log('🎨 Updating CodeMirror theme to:', codemirrorTheme);
+      console.log('🎨 Theme extensions:', newTheme);
+      
+      view.dispatch({
+        effects: themeCompartment.reconfigure(newTheme.flat())
+      });
+    } catch (error) {
+      console.error('Failed to update CodeMirror theme:', error);
+    }
+  }, [codemirrorTheme]);
 
   // DO NOT update editor content from value prop during normal typing!
   // This causes cursor jumps. Content updates should only happen during tab switches

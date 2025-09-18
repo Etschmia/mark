@@ -1,7 +1,8 @@
 // Central theme configuration for CodeMirror
-import { 
+import {
   basicDark,
   aura,
+  bbedit,
   dracula,
   githubDark,
   githubLight,
@@ -21,6 +22,7 @@ import {
 export const themeMap: Record<string, any> = {
   basicDark: basicDark,
   aura: aura,
+  bbedit: bbedit,
   dracula: dracula,
   githubDark: githubDark,
   githubLight: githubLight,
@@ -44,8 +46,10 @@ export const getThemeExtension = (themeName: string) => {
       console.warn(`Theme '${themeName}' not found in themeMap, available themes:`, Object.keys(themeMap));
       return themeMap.basicDark;
     }
-    
-    return theme;
+
+    // Some themes return arrays of extensions, others return single extensions
+    // Flatten to ensure we always return a proper extension array
+    return Array.isArray(theme) ? theme : [theme];
   } catch (error) {
     console.error(`Error accessing theme '${themeName}':`, error);
     return themeMap.basicDark;
