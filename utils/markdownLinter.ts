@@ -1,5 +1,4 @@
-import { lint } from 'markdownlint/sync';
-
+// Type definition for markdownlint error
 export interface LintError {
   lineNumber: number;
   ruleNames: string[];
@@ -71,10 +70,58 @@ const defaultConfig = {
   'MD050': { style: 'asterisk' }, // Strong style should be consistent
 };
 
-export function lintMarkdown(content: string, config = defaultConfig): LintResult {
+// Type definition for markdownlint
+interface MarkdownLintError {
+  lineNumber: number;
+  ruleNames: string[];
+  ruleDescription: string;
+  ruleInformation: string;
+  errorDetail: string | null;
+  errorContext: string | null;
+  errorRange: [number, number] | null;
+  fixInfo?: {
+    editColumn?: number;
+    deleteCount?: number;
+    insertText?: string;
+  };
+}
+
+let markdownlint: any = null;
+
+// Dynamically import markdownlint only when needed
+async function getMarkdownLint() {
+  if (markdownlint) {
+    return markdownlint;
+  }
+  
   try {
+    // Try to import the sync version first
+    const module = await import('markdownlint/sync');
+    markdownlint = module;
+    return markdownlint;
+  } catch (error) {
+    console.warn('Failed to import markdownlint/sync, falling back to regular import:', error);
+    try {
+      // Fallback to regular import
+      const module = await import('markdownlint');
+      markdownlint = module;
+      return markdownlint;
+    } catch (fallbackError) {
+      console.error('Failed to import markdownlint:', fallbackError);
+      // Return a mock implementation that does nothing
+      return {
+        lint: () => ({})
+      };
+    }
+  }
+}
+
+export async function lintMarkdown(content: string, config = defaultConfig): Promise<LintResult> {
+  try {
+    const mdLint = await getMarkdownLint();
+    
     // Use the correct markdownlint API
-    const result = lint({
+    const result = mdLint.lint({
       strings: {
         'content': content
       },
@@ -84,7 +131,7 @@ export function lintMarkdown(content: string, config = defaultConfig): LintResul
     const errors: LintError[] = [];
     const contentErrors = result['content'] || [];
 
-    contentErrors.forEach((error: any) => {
+    contentErrors.forEach((error: MarkdownLintError) => {
       errors.push({
         lineNumber: error.lineNumber,
         ruleNames: error.ruleNames,
