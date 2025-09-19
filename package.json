@@ -1,7 +1,7 @@
 {
   "name": "markdown-editor-pro",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -27,6 +27,7 @@
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.38.2",
     "@octokit/rest": "^22.0.0",
+    "@tailwindcss/vite": "^4.1.13",
     "@types/html2canvas": "^0.5.35",
     "@uiw/codemirror-themes": "^4.25.1",
     "@uiw/codemirror-themes-all": "^4.25.1",
@@ -40,6 +41,7 @@
     "path": "^0.12.7",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "tailwindcss": "^4.1.13",
     "url": "^0.11.4",
     "vite": "^6.3.6"
   },
