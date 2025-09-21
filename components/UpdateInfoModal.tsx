@@ -33,7 +33,7 @@ export const UpdateInfoModal: React.FC<UpdateInfoModalProps> = ({
         if (!dateString || dateString === 'Unknown') return 'Unknown';
         try {
             const date = new Date(dateString);
-            const formatted = date.toLocaleString('de-DE', {
+            const formatted = date.toLocaleString('en-US', {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',
@@ -57,7 +57,7 @@ export const UpdateInfoModal: React.FC<UpdateInfoModalProps> = ({
                     color: 'text-green-400',
                     bgColor: 'bg-green-900/20',
                     borderColor: 'border-green-500/30',
-                    message: 'Die Anwendung wurde erfolgreich auf die neueste Version aktualisiert.'
+                    message: 'The application has been successfully updated to the latest version.'
                 };
             case 'fail':
                 return {
@@ -66,7 +66,7 @@ export const UpdateInfoModal: React.FC<UpdateInfoModalProps> = ({
                     color: 'text-red-400',
                     bgColor: 'bg-red-900/20',
                     borderColor: 'border-red-500/30',
-                    message: 'Der Server konnte nicht erreicht werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es später erneut.'
+                    message: 'The server could not be reached. Please check your internet connection and try again later.'
                 };
             case 'unchanged':
                 return {
@@ -75,7 +75,7 @@ export const UpdateInfoModal: React.FC<UpdateInfoModalProps> = ({
                     color: 'text-blue-400',
                     bgColor: 'bg-blue-900/20',
                     borderColor: 'border-blue-500/30',
-                    message: 'Sie verwenden bereits die aktuellste Version der Anwendung.'
+                    message: 'You are already using the latest version of the application.'
                 };
         }
     };
@@ -107,7 +107,7 @@ export const UpdateInfoModal: React.FC<UpdateInfoModalProps> = ({
                     {/* Build Information - only show for success */}
                     {status === 'success' && buildInfo && (
                         <div className="bg-slate-700 rounded-lg p-4">
-                            <h4 className="text-lg font-semibold text-white mb-3">Neue Build Information</h4>
+                            <h4 className="text-lg font-semibold text-white mb-3">New build information</h4>
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-slate-400">Version:</span>
@@ -135,7 +135,7 @@ export const UpdateInfoModal: React.FC<UpdateInfoModalProps> = ({
                     onClick={onClose}
                     className="px-6 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-md transition-colors duration-150"
                 >
-                    Schließen
+                    Close
                 </button>
             </div>
         </Modal>

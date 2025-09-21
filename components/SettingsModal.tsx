@@ -96,7 +96,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className={`flex items-center justify-between p-6 border-b ${
           localSettings.theme === 'dark' ? 'border-slate-700' : 'border-gray-200'
         }`}>
-          <h2 className="text-2xl font-bold">Einstellungen</h2>
+          <h2 className="text-2xl font-bold">Settings</h2>
           <button
             onClick={handleCancel}
             className={`p-2 rounded-md transition-colors duration-150 ${
@@ -120,12 +120,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <h3 className={`text-lg font-semibold ${
               localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
             }`}>
-              Erscheinungsbild
+              Appearance
             </h3>
             
             <div className="space-y-3">
               <label className="block">
-                <span className="text-sm font-medium mb-2 block">Editor-Theme</span>
+                <span className="text-sm font-medium mb-2 block">Editor theme</span>
                 <div className="flex gap-3">
                   <label className="flex items-center">
                     <input
@@ -136,7 +136,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onChange={(e) => setLocalSettings(prev => ({ ...prev, theme: e.target.value as 'light' | 'dark' }))}
                       className="mr-2"
                     />
-                    🌙 Dunkel
+                    🌙 Dark
                   </label>
                   <label className="flex items-center">
                     <input
@@ -147,13 +147,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onChange={(e) => setLocalSettings(prev => ({ ...prev, theme: e.target.value as 'light' | 'dark' }))}
                       className="mr-2"
                     />
-                    ☀️ Hell
+                    ☀️ Light
                   </label>
                 </div>
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium mb-2 block">Vorschau-Theme</span>
+                <span className="text-sm font-medium mb-2 block">Preview theme</span>
                 <select
                   value={localSettings.previewTheme}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, previewTheme: e.target.value }))}
@@ -182,7 +182,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="space-y-3">
               <label className="block">
                 <span className="text-sm font-medium mb-2 block">
-                  Schriftgröße: {localSettings.fontSize}px
+                  Font size: {localSettings.fontSize}px
                 </span>
                 <input
                   type="range"
@@ -205,7 +205,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, showLineNumbers: e.target.checked }))}
                   className="mr-2"
                 />
-                <span className="text-sm">Zeilennummern anzeigen</span>
+                <span className="text-sm">Show line numbers</span>
               </label>
             </div>
           </div>
@@ -215,13 +215,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <h3 className={`text-lg font-semibold ${
               localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
             }`}>
-              Verhalten
+              Behavior
             </h3>
             
             <div className="space-y-3">
               <label className="block">
                 <span className="text-sm font-medium mb-2 block">
-                  Undo-Debounce-Zeit: {localSettings.debounceTime}ms
+                  Undo debounce time: {localSettings.debounceTime}ms
                 </span>
                 <input
                   type="range"
@@ -245,7 +245,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, autoSave: e.target.checked }))}
                   className="mr-2"
                 />
-                <span className="text-sm">Automatisches Speichern in localStorage</span>
+                <span className="text-sm">Auto-save to localStorage</span>
               </label>
             </div>
           </div>
@@ -254,12 +254,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className={`p-4 rounded-lg ${
             localSettings.theme === 'dark' ? 'bg-slate-700' : 'bg-gray-100'
           }`}>
-            <h4 className="font-medium mb-2">💡 Hinweise</h4>
+            <h4 className="font-medium mb-2">💡 Tips</h4>
             <ul className="text-sm space-y-1 opacity-80">
-              <li>• Einstellungen werden automatisch gespeichert</li>
-              <li>• Theme-Änderungen werden sofort angewendet</li>
-              <li>• Debounce-Zeit bestimmt, wie oft Undo-Einträge erstellt werden</li>
-              <li>• Auto-Save verhindert Datenverlust beim Neuladen</li>
+              <li>• Settings are saved automatically</li>
+              <li>• Theme changes are applied immediately</li>
+              <li>• Debounce time controls how often undo entries are created</li>
+              <li>• Auto-save prevents data loss on reload</li>
             </ul>
           </div>
         </div>
@@ -276,7 +276,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 : 'border-gray-300 text-gray-700 hover:bg-gray-100'
             }`}
           >
-            Zurücksetzen
+            Reset
           </button>
           
           <div className="flex gap-2">
@@ -288,7 +288,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   : 'border-gray-300 text-gray-700 hover:bg-gray-100'
               }`}
             >
-              Abbrechen
+              Cancel
             </button>
             <button
               onClick={handleSave}
@@ -298,7 +298,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
             >
-              Speichern
+              Save
             </button>
           </div>
         </div>

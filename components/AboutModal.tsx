@@ -48,7 +48,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
         if (!dateString || dateString === 'Unknown') return 'Unknown';
         try {
             const date = new Date(dateString);
-            const formatted = date.toLocaleString('de-DE', {
+            const formatted = date.toLocaleString('en-US', {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',

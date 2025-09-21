@@ -220,18 +220,18 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     // flex-wrap sorgt für besseres Verhalten auf kleinen Bildschirmen
     <div className="flex items-center justify-between p-2 flex-wrap gap-y-2">
       <div className="flex items-center gap-1 flex-wrap">
-        <ToolButton onClick={() => onFormat('bold')} title="Fett"><BoldIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('italic')} title="Kursiv"><ItalicIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('strikethrough')} title="Durchgestrichen"><StrikethroughIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('bold')} title="Bold"><BoldIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('italic')} title="Italic"><ItalicIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('strikethrough')} title="Strikethrough"><StrikethroughIcon /></ToolButton>
         <div className="w-px h-6 bg-slate-600 mx-2"></div>
-        <ToolButton onClick={() => onFormat('h1')} title="Überschrift 1"><H1Icon /></ToolButton>
-        <ToolButton onClick={() => onFormat('h2')} title="Überschrift 2"><H2Icon /></ToolButton>
-        <ToolButton onClick={() => onFormat('h3')} title="Überschrift 3"><H3Icon /></ToolButton>
+        <ToolButton onClick={() => onFormat('h1')} title="Heading 1"><H1Icon /></ToolButton>
+        <ToolButton onClick={() => onFormat('h2')} title="Heading 2"><H2Icon /></ToolButton>
+        <ToolButton onClick={() => onFormat('h3')} title="Heading 3"><H3Icon /></ToolButton>
         <div className="w-px h-6 bg-slate-600 mx-2"></div>
-        <ToolButton onClick={() => onFormat('quote')} title="Zitat"><QuoteIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('ul')} title="Ungeordnete Liste"><ListUlIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('ol')} title="Geordnete Liste"><ListOlIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('checklist')} title="Checkliste"><ChecklistIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('quote')} title="Quote"><QuoteIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('ul')} title="Unordered list"><ListUlIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('ol')} title="Ordered list"><ListOlIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('checklist')} title="Checklist"><ChecklistIcon /></ToolButton>
         
         <div className="relative" ref={codeDropdownRef}>
           <ToolButton onClick={() => setIsCodeDropdownOpen(prev => !prev)} title="Code">
@@ -252,13 +252,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </div>
         
-        <ToolButton onClick={() => onFormat('table')} title="Tabelle einfügen"><TableIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('image')} title="Bild einfügen"><ImageIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('link')} title="Link einfügen"><LinkIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('table')} title="Insert table"><TableIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('image')} title="Insert image"><ImageIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('link')} title="Insert link"><LinkIcon /></ToolButton>
         <div className="w-px h-6 bg-slate-600 mx-2"></div>
-        <ToolButton onClick={() => onFormat('search')} title="Suchen und Ersetzen"><SearchIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('search')} title="Find and replace"><SearchIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('lint')} title="Markdown Linter" active={isLinterActive}><LinterIcon /></ToolButton>
-        <ToolButton onClick={onUndo} title="Rückgängig" disabled={!canUndo}><UndoIcon /></ToolButton>
+        <ToolButton onClick={onUndo} title="Undo" disabled={!canUndo}><UndoIcon /></ToolButton>
         
         <div className="relative" ref={exportDropdownRef}>
           <ToolButton onClick={() => setIsExportDropdownOpen(prev => !prev)} title="Export">
@@ -317,10 +317,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <div className="relative" ref={helpDropdownRef}>
           <button 
             onClick={() => setIsHelpDropdownOpen(prev => !prev)} 
-            title="Hilfe & Referenz"
+            title="Help & reference"
             className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500"
           >
-            Extras
+            Help
           </button>
           {isHelpDropdownOpen && (
             <div className="absolute right-0 z-20 mt-2 w-48 origin-top-right rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
@@ -331,7 +331,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 }}
                 className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
-                📖 Hilfe & Tastaturkürzel
+                📖 Help & shortcuts
               </button>
               <button
                 onClick={() => {
@@ -341,7 +341,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
                 <MarkdownIcon />
-                <span>Markdown-Spickzettel</span>
+                <span>Markdown cheat sheet</span>
               </button>
               <div className="border-t border-slate-600 my-1"></div>
               <button
@@ -351,7 +351,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 }}
                 className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
-                ⚙️ Einstellungen
+                ⚙️ Settings
               </button>
               <button
                 onClick={handleUpdate}
@@ -406,7 +406,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
               >
                 <InfoIcon />
-                <span>Über diese App</span>
+                <span>About this app</span>
               </button>
             </div>
           )}

@@ -144,7 +144,7 @@ export const useFormatting = ({
         break;
       }
       case 'image': {
-        const url = window.prompt('Geben Sie die Bild-URL ein:', 'https://');
+        const url = window.prompt('Enter image URL:', 'https://');
         if (url && url !== 'https://') {
           const selection = editor.getSelection();
           const altText = editor.getValue().substring(selection.start, selection.end) || 'alt text';
@@ -161,14 +161,14 @@ export const useFormatting = ({
         break;
       }
       case 'link': {
-        const url = window.prompt('Geben Sie die Ziel-URL ein:', 'https://');
+        const url = window.prompt('Enter target URL:', 'https://');
         if (url && url !== 'https://') {
           const selection = editor.getSelection();
           let selectedText = editor.getValue().substring(selection.start, selection.end);
           let isPlaceholder = false;
 
           if (!selectedText) {
-            selectedText = 'Link-Text';
+            selectedText = 'link text';
             isPlaceholder = true;
           }
 

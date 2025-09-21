@@ -228,15 +228,15 @@ class PWAManager {
     `;
     banner.innerHTML = `
       <div class="flex items-center justify-center gap-4 flex-wrap">
-        <span class="font-medium">🚀 Neue Version verfügbar!</span>
+        <span class="font-medium">🚀 New version available!</span>
         <button id="pwa-update-button" class="px-4 py-2 bg-blue-800 rounded text-sm hover:bg-blue-700 transition-colors font-medium">
-          Jetzt aktualisieren
+          Update now
         </button>
         <button id="pwa-force-update-button" class="px-4 py-2 bg-red-600 rounded text-sm hover:bg-red-700 transition-colors font-medium">
           Force Update
         </button>
         <button id="pwa-dismiss-update" class="px-4 py-2 bg-gray-600 rounded text-sm hover:bg-gray-700 transition-colors font-medium">
-          Später
+          Later
         </button>
       </div>
     `;
