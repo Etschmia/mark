@@ -150,7 +150,7 @@ Install as a native application with:
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the GPL License. See `LICENSE` for more information.
 
 ## 🙏 Acknowledgments
 
