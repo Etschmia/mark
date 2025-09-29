@@ -9,7 +9,8 @@ const moduleCache = {
   marked: null as any,
   dompurify: null as any,
   jspdf: null as any,
-  html2canvas: null as any
+  html2canvas: null as any,
+  docx: null as any
 };
 
 // Dynamic loader for export dependencies
@@ -68,8 +69,24 @@ const loadPDFDependencies = async () => {
   }
 };
 
+// Dynamic loader for DOCX dependencies
+const loadDocxDependencies = async () => {
+  if (moduleCache.docx) {
+    return moduleCache.docx;
+  }
+
+  try {
+    const docxModule = await import('docx');
+    moduleCache.docx = docxModule;
+    return docxModule;
+  } catch (error) {
+    console.error('Failed to load DOCX dependencies:', error);
+    throw error;
+  }
+};
+
 // Export formats
-export type ExportFormat = 'html' | 'pdf';
+export type ExportFormat = 'html' | 'pdf' | 'docx';
 
 // Export options interface
 export interface ExportOptions {
@@ -392,4 +409,349 @@ export async function exportAsPdf(options: ExportOptions): Promise<void> {
     console.error('Error exporting as PDF:', error);
     throw new Error('Failed to export as PDF');
   }
+}
+
+/**
+ * Export content as DOCX file
+ */
+export async function exportAsDocx(options: ExportOptions): Promise<void> {
+  try {
+    const docx = await loadDocxDependencies();
+    // @ts-ignore
+    const { Packer } = docx as any;
+
+    const doc = await markdownToDocx(options.content);
+
+    const buffer = await Packer.toBuffer(doc);
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
+    const url = URL.createObjectURL(blob);
+
+    const filename = options.filename.replace(/\.md$/, '.docx');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error exporting as DOCX:', error);
+    throw new Error('Failed to export as DOCX');
+  }
+}
+
+// Markdown to DOCX converter
+async function markdownToDocx(markdown: string): Promise<any> {
+  const { marked } = await loadExportDependencies();
+  // @ts-ignore
+  const docx = await loadDocxDependencies();
+  // @ts-ignore
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, ImageRun, ExternalHyperlink } = docx as any;
+
+  const tokens = marked.lexer(markdown);
+  const children = await buildDocxChildren(tokens, marked);
+
+  const doc = new Document({
+    numbering: {
+      numberingDefinitions: [
+        {
+          id: 0,
+          levels: [
+            {
+              level: 0,
+              format: 'decimal',
+              text: '%1.',
+              alignment: AlignmentType.LEFT,
+            },
+          ],
+        },
+      ],
+    },
+    sections: [{
+      properties: {
+        page: {
+          margin: {
+            top: 1440,
+            right: 1440,
+            bottom: 1440,
+            left: 1440,
+          },
+        },
+      },
+      children,
+    }],
+  });
+
+  return doc;
+}
+
+async function buildDocxChildren(tokens: any[], marked: any): Promise<any[]> {
+  const children = [];
+
+  for (const token of tokens) {
+    let element;
+
+    switch (token.type) {
+      case 'heading':
+        const headingSize = 48 - (token.depth * 4); // h1: 24pt (48 twips), h2: 20pt (40), etc.
+        const headingRun = new TextRun({
+          text: token.text,
+          bold: true,
+          size: headingSize,
+        });
+
+        element = new Paragraph({
+          children: [headingRun],
+          heading: HeadingLevel[`HEADING_${token.depth}` as any],
+          alignment: AlignmentType.LEFT,
+        });
+
+        if (token.depth === 1) {
+          element.border = {
+            bottom: {
+              style: 'single',
+              sz: 12,
+              color: 'auto',
+            },
+          };
+        }
+
+        children.push(element);
+        break;
+
+      case 'paragraph':
+        const inline = await buildInline(token.tokens || [{ type: 'text', text: token.text }], marked);
+        element = new Paragraph({
+          children: inline,
+          alignment: AlignmentType.LEFT,
+        });
+        children.push(element);
+        break;
+
+      case 'list':
+        const isOrdered = token.ordered;
+        for (const item of token.items) {
+          const itemInline = await buildInline(item.tokens || [{ type: 'text', text: item.text }], marked);
+          const listItem = new Paragraph({
+            children: itemInline,
+            bullet: isOrdered ? undefined : { level: 0 },
+            numbering: isOrdered ? {
+              reference: 'decimal',
+              level: 0,
+            } : undefined,
+          });
+          children.push(listItem);
+        }
+        break;
+
+      case 'blockquote':
+        const quoteChildren = await buildDocxChildren(token.tokens, marked);
+        for (const qChild of quoteChildren) {
+          const quotePara = new Paragraph({
+            children: Array.isArray(qChild.children) ? qChild.children : [qChild],
+            indentation: {
+              left: 720,
+            },
+            border: {
+              left: {
+                style: 'single',
+                sz: 80,
+                color: 'E5E7EB',
+              },
+            },
+          });
+          children.push(quotePara);
+        }
+        break;
+
+      case 'fence':
+      case 'code':
+        const codeText = token.text;
+        const codeRun = new TextRun({
+          text: codeText,
+          font: 'Courier New',
+          size: 24,
+        });
+        element = new Paragraph({
+          children: [codeRun],
+          alignment: AlignmentType.LEFT,
+          indentation: {
+            left: 720,
+            right: 720,
+          },
+          border: {
+            top: {
+              style: 'single',
+              sz: 12,
+              color: 'auto',
+            },
+            bottom: {
+              style: 'single',
+              sz: 12,
+              color: 'auto',
+            },
+            left: {
+              style: 'single',
+              sz: 12,
+              color: 'auto',
+            },
+            right: {
+              style: 'single',
+              sz: 12,
+              color: 'auto',
+            },
+          },
+        });
+        children.push(element);
+        break;
+
+      case 'table':
+        const headerRow = new TableRow({
+          children: token.header.map((header: string) => new TableCell({
+            children: [new Paragraph({
+              children: [new TextRun({
+                text: header,
+                bold: true,
+                size: 24,
+              })],
+            })],
+            width: {
+              size: 100 / token.header.length,
+              type: WidthType.PERCENTAGE,
+            },
+          })),
+          tableHeader: true,
+        });
+
+        const bodyRows = token.cells.map((row: string[]) => new TableRow({
+          children: row.map((cell: string) => new TableCell({
+            children: [new Paragraph({
+              children: [new TextRun({ text: cell })],
+            })],
+            width: {
+              size: 100 / token.header.length,
+              type: WidthType.PERCENTAGE,
+            },
+          })),
+        }));
+
+        const rows = [headerRow, ...bodyRows];
+        element = new Table({
+          rows,
+          width: {
+            size: 100,
+            type: WidthType.PERCENTAGE,
+          },
+        });
+        children.push(element);
+        break;
+
+      case 'image':
+        try {
+          const response = await fetch(token.href);
+          if (!response.ok) throw new Error('Failed to fetch image');
+          const buffer = await response.arrayBuffer();
+          const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+          const extension = token.href.split('.').pop()?.toLowerCase();
+          const imageType = extension === 'png' ? 'png' : (extension === 'jpg' || extension === 'jpeg') ? 'jpeg' : 'png';
+
+          const image = new ImageRun({
+            data: base64,
+            transformation: {
+              width: 2000, // ~100pt
+              height: 1500, // Fixed aspect approx
+            },
+          });
+
+          element = new Paragraph({
+            children: [image],
+            alignment: AlignmentType.CENTER,
+          });
+          children.push(element);
+        } catch (error) {
+          console.error('Failed to load image:', token.href, error);
+          children.push(new Paragraph({
+            text: `![${token.alt || 'Image'}](${token.href})`,
+          }));
+        }
+        break;
+
+      default:
+        if (token.tokens) {
+          const subChildren = await buildDocxChildren(token.tokens, marked);
+          children.push(...subChildren);
+        }
+        break;
+    }
+  }
+
+  return children;
+}
+
+async function buildInline(tokens: any[], marked: any): Promise<any[]> {
+  const inline = [];
+
+  for (const token of tokens) {
+    let run;
+
+    switch (token.type) {
+      case 'text':
+        run = new TextRun({ text: token.text });
+        break;
+
+      case 'codespan':
+        run = new TextRun({
+          text: token.text,
+          font: 'Courier New',
+          size: 20,
+          color: '000000',
+        });
+        break;
+
+      case 'strong':
+        run = new TextRun({
+          text: token.text,
+          bold: true,
+        });
+        break;
+
+      case 'em':
+        run = new TextRun({
+          text: token.text,
+          italics: true,
+        });
+        break;
+
+      case 'del':
+        run = new TextRun({
+          text: token.text,
+          strike: true,
+        });
+        break;
+
+      case 'link':
+        const linkRun = new TextRun({
+          text: token.text,
+          color: '2563EB',
+        });
+        const link = new ExternalHyperlink({
+          children: [linkRun],
+          link: token.href,
+        });
+        inline.push(link);
+        continue;
+
+      default:
+        run = new TextRun({ text: token.text || '' });
+        break;
+    }
+
+    if (run) {
+      inline.push(run);
+    }
+  }
+
+  return inline;
 }

@@ -87,6 +87,10 @@ npm run build
 - `Ctrl/Cmd + 1-9` - Switch to tab by number
 
 ## 📤 Export Capabilities
+- **Markdown** - Native .md file saving
+- **HTML** - Complete standalone HTML documents with styling
+- **PDF** - Professional PDF output with proper formatting
+- **DOCX** - Microsoft Word documents with full Markdown support (headings, paragraphs, lists, blockquotes, code blocks, tables, images via base64 embedding), matching HTML styling (fonts, margins, borders) – browser-only generation using 'docx' library
 
 - **Markdown** - Native .md file saving
 - **HTML** - Complete standalone HTML documents with styling

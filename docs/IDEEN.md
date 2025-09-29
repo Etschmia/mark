@@ -73,7 +73,7 @@
 37. **Keyboard Shortcuts Customization:** Allow users to customize keyboard shortcuts to their preferences.
 
 ### Export Enhancements
-38. **Additional Export Formats:** Support for additional export formats like DOCX, ODT, or EPUB.
+38. ~~**Additional Export Formats:** Support for additional export formats like DOCX, ODT, or EPUB.~~ ✅ **ERLEDIGT - DOCX Export implementiert** (vollständige Markdown-Unterstützung, browser-only mit 'docx' Library, Styling passend zu HTML-Export; ODT/EPUB geplant)
 39. **Custom Export Templates:** Allow users to create custom templates for exported documents.
 40. **Batch Export:** Export multiple documents at once with consistent formatting.
 
