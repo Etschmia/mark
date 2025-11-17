@@ -63,5 +63,11 @@ export default defineConfig({
       }
     },
     chunkSizeWarningLimit: 1000
+  },
+  preview: {
+    allowedHosts: [
+      'mark.martuni.de',
+      'editmd.vercel.app'
+    ]
   }
 });
