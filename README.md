@@ -26,6 +26,7 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 - **Legacy Browser Support** - Download/upload fallback for older browsers
 - **Auto-Save to LocalStorage** - Never lose your work with persistent storage
 - **GitHub Integration** - Direct file loading and saving to GitHub repositories
+- **YAML Frontmatter Support** - Edit document metadata (title, date, description, tags, author) with visual editor
 
 ### 🎨 **User Experience**
 - **Complete Theme System** - Full light/dark mode for entire interface with persistent settings
@@ -91,10 +92,6 @@ npm run build
 - **HTML** - Complete standalone HTML documents with styling
 - **PDF** - Professional PDF output with proper formatting
 - **DOCX** - Microsoft Word documents with full Markdown support (headings, paragraphs, lists, blockquotes, code blocks, tables, images via base64 embedding), matching HTML styling (fonts, margins, borders) – browser-only generation using 'docx' library
-
-- **Markdown** - Native .md file saving
-- **HTML** - Complete standalone HTML documents with styling
-- **PDF** - Professional PDF output with proper formatting
 
 ## 🎯 Core Components
 

@@ -1,13 +1,13 @@
-# GEMINI Technical Documentation: Markdown Editor Pro
+# AGENTS Technical Documentation: Markdown Editor Pro
 
-This document provides comprehensive technical details about the project architecture, core technologies, component implementations, and architectural decisions for developer reference.
+This document provides comprehensive technical details about the project architecture, core technologies, component implementations, and architectural decisions for AI agent reference.
 
 ## 🏗️ System Architecture
 
 ### Overall Architecture
 **Pattern:** Client-side Single Page Application (SPA)  
 **Framework:** React 19.1.1 with TypeScript 5.8.2  
-**Build System:** Vite 7.0.6  
+**Build System:** Vite 6.3.6  
 **State Management:** React hooks (useState, useRef, useCallback, useEffect)  
 **Styling:** Tailwind CSS utility classes  
 
@@ -48,6 +48,7 @@ This document provides comprehensive technical details about the project archite
 - **Version:** 16.2.1
 - **Features:** GitHub Flavored Markdown support
 - **Security:** DOMPurify sanitization for XSS prevention
+- **Frontmatter Support:** YAML frontmatter extraction and removal before parsing
 
 ### Syntax Highlighting
 **highlight.js** - Code syntax highlighting
@@ -64,6 +65,12 @@ This document provides comprehensive technical details about the project archite
 - **Version:** 1.4.1
 - **Features:** Visual fidelity for HTML exports
 
+**docx** - Microsoft Word document generation
+- **Version:** 8.5.0
+- **Features:** Full Markdown support (headings, paragraphs, lists, blockquotes, code blocks, tables, images via base64 embedding)
+- **Styling:** Matches HTML export styling (fonts, margins, borders)
+- **Implementation:** Browser-only generation using 'docx' library
+
 ### GitHub Integration
 **@octokit/rest** - GitHub API client
 - **Version:** 22.0.0
@@ -78,7 +85,7 @@ This document provides comprehensive technical details about the project archite
 **Implementation Details:**
 - CodeMirror 6 with custom configuration
 - Real-time Markdown syntax highlighting
-- Comprehensive keyboard shortcuts (25+ shortcuts)
+- Comprehensive keyboard shortcuts (30+ shortcuts)
 - Search and replace functionality
 - **Theme-aware rendering** (light/dark mode)
 - **Configurable font size** from settings
@@ -101,6 +108,7 @@ interface EditorRef {
   getSelection: () => { start: number; end: number };
   setSelection: (start: number, end: number) => void;
   getValue: () => string;
+  setValue: (value: string) => void;
   insertText: (text: string, start?: number, end?: number) => void;
   openSearchPanel: () => void;
 }
@@ -120,12 +128,14 @@ interface EditorRef {
 - Multiple preview themes
 - Live rendering with debounced updates
 - Scroll synchronization with editor
+- **Frontmatter removal** before parsing (frontmatter not displayed in preview)
 
 **Processing Pipeline:**
-1. Markdown → marked.js → Raw HTML
-2. Raw HTML → DOMPurify → Sanitized HTML
-3. Sanitized HTML → highlight.js → Highlighted HTML
-4. Highlighted HTML → DOM → Rendered Preview
+1. Markdown → Frontmatter extraction → Content without frontmatter
+2. Content → marked.js → Raw HTML
+3. Raw HTML → DOMPurify → Sanitized HTML
+4. Sanitized HTML → highlight.js → Highlighted HTML
+5. Highlighted HTML → DOM → Rendered Preview
 
 **Performance Optimizations:**
 - Asynchronous markdown parsing
@@ -144,14 +154,28 @@ interface EditorRef {
 - **Headers:** H1, H2, H3 with visual hierarchy
 - **Lists:** Unordered, Ordered, Checklists
 - **Structure:** Blockquotes, Tables, Links, Images
-- **Tools:** Search, Undo, Export, Help, **Settings**
+- **Tools:** Search, Undo, Export, Help, **Settings**, **Frontmatter**
 - **File Operations:** New, Open, Save with modern/legacy support
 
 **Dropdown Systems:**
 - Code language selector
-- Export format options (HTML, PDF)
+- Export format options (HTML, PDF, DOCX)
 - Help system (Full help, Cheat sheet, **Settings**)
 - Theme selection
+
+### `components/FrontmatterModal.tsx` - YAML Frontmatter Editor
+**Implementation Details:**
+- Visual editor for YAML frontmatter key-value pairs
+- Default keys: title, date, description, tags, author
+- Dynamic entry addition and deletion
+- Auto-fill date field with current date
+- Integration with markdown content
+
+**Features:**
+- Key-value pair editing interface
+- Empty frontmatter detection
+- Frontmatter extraction and combination utilities
+- Seamless integration with document content
 
 ### `components/HelpModal.tsx` - Documentation System
 **Content Organization:**
@@ -217,6 +241,46 @@ interface EditorSettings {
 - Text Formatting, Headers, Lists, Links & Images
 - Code & Syntax, Tables, Quotes, Advanced Features
 
+### `components/LinterPanel.tsx` - Markdown Linting
+**Implementation Details:**
+- Real-time Markdown linting with markdownlint
+- Error display with severity levels
+- Click-to-navigate to error locations
+- Auto-fix functionality for fixable issues
+- Collapsible panel interface
+
+**Features:**
+- Visual error indicators (red/green status)
+- Error count display
+- Line number navigation
+- Theme-aware styling
+
+### Tab Management System
+**Components:**
+- `components/TabBar.tsx` - Tab navigation bar
+- `components/Tab.tsx` - Individual tab component
+- `components/TabContextMenu.tsx` - Right-click context menu
+- `utils/tabManager.ts` - TabManager class for state management
+- `hooks/useTabManager.ts` - React hook for tab operations
+
+**Features:**
+- Multi-tab document editing
+- Tab isolation (each tab maintains separate state)
+- Unsaved changes tracking per tab
+- Tab history and undo/redo per tab
+- Tab persistence to localStorage
+- Keyboard shortcuts for tab management
+- Context menu for tab operations (duplicate, close others, etc.)
+
+**TabManager API:**
+- `createTab()` - Create new tab
+- `closeTab()` - Close tab (with unsaved changes check)
+- `switchToTab()` - Switch active tab
+- `duplicateTab()` - Duplicate existing tab
+- `updateTabContent()` - Update tab content
+- `getActiveTab()` - Get currently active tab
+- `getState()` - Get complete tab manager state
+
 ## 🔧 Technical Implementation Details
 
 ### State Management Pattern
@@ -229,6 +293,7 @@ interface EditorSettings {
 **Persistence Strategy:**
 - LocalStorage for automatic content/filename saving
 - File System Access API for explicit file operations
+- Tab state persistence with versioning
 - Graceful fallback handling
 
 ### Event Handling Architecture
@@ -266,6 +331,20 @@ interface EditorSettings {
 - Real-time theme switching
 - Status bar selector for easy access
 - 30+ professionally designed themes
+
+### Frontmatter Implementation
+**Utilities (`utils/frontmatterUtils.ts`):**
+- `extractFrontmatter()` - Extract YAML frontmatter from markdown
+- `hasFrontmatter()` - Check if markdown has frontmatter
+- `removeFrontmatter()` - Remove frontmatter from markdown
+- `frontmatterToYaml()` - Convert frontmatter object to YAML string
+- `combineFrontmatterAndContent()` - Combine frontmatter and content
+
+**Integration:**
+- Frontmatter removed from preview rendering
+- FrontmatterModal for visual editing
+- Seamless save/load with document content
+- YAML parsing for key-value pairs
 
 ## 🛡️ Security Considerations
 
@@ -316,8 +395,8 @@ interface EditorSettings {
 3. `Editor.tsx` calls `onChange`
 4. `App.tsx` updates markdown state
 5. `App.tsx` persists to localStorage
-6. `Preview.tsx` re-renders with new content
-7. Debounced history update after 500ms
+6. `Preview.tsx` re-renders with new content (frontmatter removed)
+7. Debounced history update after configured delay
 
 ### Format Commands
 1. User clicks toolbar button or uses keyboard shortcut
@@ -340,3 +419,20 @@ interface EditorSettings {
 3. `Editor.tsx` receives new theme via props
 4. CodeMirror extensions recreated with new theme
 5. Editor re-renders with new theme applied
+
+### Frontmatter Operations
+1. User opens FrontmatterModal from toolbar
+2. Existing frontmatter extracted from markdown
+3. User edits key-value pairs in modal
+4. On save, frontmatter combined with content
+5. Document updated with new frontmatter
+6. Preview re-renders without frontmatter
+
+### Tab Operations
+1. User creates/switches/closes tab
+2. TabManager updates internal state
+3. State change triggers subscription callbacks
+4. App.tsx syncs active tab state to component state
+5. Editor and Preview update with active tab content
+6. Tab state persisted to localStorage
+
