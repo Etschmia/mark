@@ -81,9 +81,42 @@ export const ListOlIcon: React.FC = () => (
 );
 
 export const ChecklistIcon: React.FC = () => (
-  <IconWrapper>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-3m-4 4l2 2 4-4" />
-  </IconWrapper>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+    <text
+      x="25%"
+      y="35%"
+      dominantBaseline="middle"
+      textAnchor="middle"
+      fontSize={14}
+      fontWeight="bold"
+      fontFamily="system-ui, sans-serif"
+    >
+      ✓
+    </text>
+    <text
+      x="25%"
+      y="65%"
+      dominantBaseline="middle"
+      textAnchor="middle"
+      fontSize={14}
+      fontWeight="bold"
+      fontFamily="system-ui, sans-serif"
+    >
+      ✓
+    </text>
+    <text
+      x="70%"
+      y="50%"
+      dominantBaseline="middle"
+      textAnchor="middle"
+      fontSize={16}
+      fontWeight="normal"
+      fontFamily="system-ui, sans-serif"
+      dy=".1em"
+    >
+      =
+    </text>
+  </svg>
 );
 
 export const TableIcon: React.FC = () => (
