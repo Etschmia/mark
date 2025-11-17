@@ -193,3 +193,18 @@ export const LinterIcon: React.FC = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </IconWrapper>
 );
+
+export const FrontmatterIcon: React.FC = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+    {/* Upper row: 4 squares */}
+    <rect x="3" y="7" width="3" height="3" rx="0.5" />
+    <rect x="7.5" y="7" width="3" height="3" rx="0.5" />
+    <rect x="12" y="7" width="3" height="3" rx="0.5" />
+    <rect x="16.5" y="7" width="3" height="3" rx="0.5" />
+    {/* Lower row: 4 squares */}
+    <rect x="3" y="14" width="3" height="3" rx="0.5" />
+    <rect x="7.5" y="14" width="3" height="3" rx="0.5" />
+    <rect x="12" y="14" width="3" height="3" rx="0.5" />
+    <rect x="16.5" y="14" width="3" height="3" rx="0.5" />
+  </svg>
+);

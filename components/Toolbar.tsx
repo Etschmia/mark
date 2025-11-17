@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType, GitHubState, FileSource } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon, FrontmatterIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf, exportAsDocx } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
 import { SettingsModal, EditorSettings } from './SettingsModal';
 import { AboutModal } from './AboutModal';
 import { UpdateInfoModal } from './UpdateInfoModal';
+import { FrontmatterModal } from './FrontmatterModal';
 import { GitHubButton } from './GitHubButton';
 import { pwaManager } from '../utils/pwaManager';
 import { checkAndInstallUpdate } from '../utils/updateManager';
@@ -50,6 +51,10 @@ interface ToolbarProps {
   hasUnsavedChanges: boolean;
   // Linter props
   isLinterActive: boolean;
+  // Frontmatter props
+  isFrontmatterModalOpen: boolean;
+  setIsFrontmatterModalOpen: (open: boolean) => void;
+  onFrontmatterSave: (frontmatter: { [key: string]: string }) => void;
 }
 
 const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean; active?: boolean }> = ({ onClick, children, title, disabled = false, active = false }) => (
@@ -102,6 +107,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   setIsAboutModalOpen,
   // Update modal props
   onUpdate,
+  // Frontmatter props
+  isFrontmatterModalOpen,
+  setIsFrontmatterModalOpen,
+  onFrontmatterSave,
   // GitHub props
   githubState,
   onGitHubConnect,
@@ -258,6 +267,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <div className="w-px h-6 bg-slate-600 mx-2"></div>
         <ToolButton onClick={() => onFormat('search')} title="Find and replace"><SearchIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('lint')} title="Markdown Linter" active={isLinterActive}><LinterIcon /></ToolButton>
+        <ToolButton onClick={() => setIsFrontmatterModalOpen(true)} title="Edit Frontmatter"><FrontmatterIcon /></ToolButton>
         <ToolButton onClick={onUndo} title="Undo" disabled={!canUndo}><UndoIcon /></ToolButton>
         
         <div className="relative" ref={exportDropdownRef}>

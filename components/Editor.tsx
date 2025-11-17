@@ -270,6 +270,7 @@ export interface EditorRef {
   setSelection: (start: number, end: number) => void;
   getValue: () => string;
   insertText: (text: string, start?: number, end?: number) => void;
+  setValue: (value: string) => void;
   openSearchPanel: () => void;
 }
 
@@ -319,6 +320,22 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         selection: { anchor: from + text.length }
       });
       view.focus();
+    },
+    setValue: (value: string) => {
+      const view = viewRef.current;
+      if (!view) return;
+      
+      const currentContent = view.state.doc.toString();
+      if (currentContent !== value) {
+        view.dispatch({
+          changes: {
+            from: 0,
+            to: view.state.doc.length,
+            insert: value
+          },
+          selection: { anchor: Math.min(view.state.selection.main.anchor, value.length) }
+        });
+      }
     },
     openSearchPanel: () => {
       const view = viewRef.current;
@@ -544,6 +561,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       console.error('Failed to update CodeMirror theme:', error);
     }
   }, [codemirrorTheme]);
+
 
   // DO NOT update editor content from value prop during normal typing!
   // This causes cursor jumps. Content updates should only happen during tab switches

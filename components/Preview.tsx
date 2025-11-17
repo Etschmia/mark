@@ -1,5 +1,6 @@
 import React, { useState, useEffect, forwardRef } from 'react';
 import { themes } from './preview-themes';
+import { removeFrontmatter } from '../utils/frontmatterUtils';
 
 // Dynamic imports for heavy dependencies
 let marked: any = null;
@@ -197,8 +198,11 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     // An async function to handle parsing and sanitizing.
     const parseAndSanitize = async () => {
       try {
+        // Remove frontmatter before parsing (frontmatter should not appear in preview)
+        const markdownWithoutFrontmatter = removeFrontmatter(markdown);
+        
         // marked.parse is asynchronous and returns a Promise.
-        const rawHtml = await dependencies.marked.parse(markdown);
+        const rawHtml = await dependencies.marked.parse(markdownWithoutFrontmatter);
         
         // DOMPurify sanitizes the HTML to prevent XSS vulnerabilities.
         // We configure it to allow the tags and attributes necessary for our markdown features.

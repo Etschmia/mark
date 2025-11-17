@@ -11,6 +11,7 @@ import { CheatSheetModal } from './components/CheatSheetModal';
 import { SettingsModal } from './components/SettingsModal';
 import { AboutModal } from './components/AboutModal';
 import { UpdateInfoModal } from './components/UpdateInfoModal';
+import { FrontmatterModal } from './components/FrontmatterModal';
 import { pwaManager } from './utils/pwaManager';
 import { githubService } from './utils/githubService';
 import { GitHubModal } from './components/GitHubModal';
@@ -33,6 +34,7 @@ import { useLinter } from './hooks/useLinter';
 import { useResizer } from './hooks/useResizer';
 import { useScrollSync } from './hooks/useScrollSync';
 import { useUpdateService } from './services/updateService';
+import { extractFrontmatter, combineFrontmatterAndContent, FrontmatterData } from './utils/frontmatterUtils';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -146,6 +148,7 @@ const App: React.FC = () => {
   const [isCheatSheetModalOpen, setIsCheatSheetModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [isFrontmatterModalOpen, setIsFrontmatterModalOpen] = useState(false);
 
   // Update modal states
   const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
@@ -468,7 +471,7 @@ const App: React.FC = () => {
       // Don't handle shortcuts when typing in input fields or modals are open
       const target = event.target as HTMLElement;
       const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
-      const isModalOpen = isHelpModalOpen || isCheatSheetModalOpen || isSettingsModalOpen || isAboutModalOpen || isGitHubModalOpen || isSaveOptionsModalOpen || isTabConfirmationOpen;
+      const isModalOpen = isHelpModalOpen || isCheatSheetModalOpen || isSettingsModalOpen || isAboutModalOpen || isFrontmatterModalOpen || isGitHubModalOpen || isSaveOptionsModalOpen || isTabConfirmationOpen;
 
       if (isInputField || isModalOpen) {
         return;
@@ -538,7 +541,7 @@ const App: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [tabManagerState.activeTabId, isHelpModalOpen, isCheatSheetModalOpen, isSettingsModalOpen, isAboutModalOpen, isGitHubModalOpen, isSaveOptionsModalOpen, isTabConfirmationOpen, switchToTab, closeTab, createNewTab]);
+  }, [tabManagerState.activeTabId, isHelpModalOpen, isCheatSheetModalOpen, isSettingsModalOpen, isAboutModalOpen, isFrontmatterModalOpen, isGitHubModalOpen, isSaveOptionsModalOpen, isTabConfirmationOpen, switchToTab, closeTab, createNewTab]);
 
   // Check if current content differs from original (for GitHub files)
   const hasUnsavedChanges = useCallback(() => {
@@ -708,6 +711,44 @@ const App: React.FC = () => {
     }
   };
 
+  // Handler for frontmatter save
+  const handleFrontmatterSave = useCallback((newFrontmatter: FrontmatterData) => {
+    const activeTab = tabManagerRef.current.getActiveTab();
+    if (!activeTab) return;
+
+    const currentContent = activeTab.content;
+    const extracted = extractFrontmatter(currentContent);
+    
+    let newContent: string;
+    if (extracted) {
+      // Replace existing frontmatter
+      newContent = combineFrontmatterAndContent(newFrontmatter, extracted.content);
+    } else {
+      // Add new frontmatter
+      newContent = combineFrontmatterAndContent(newFrontmatter, currentContent);
+    }
+
+    // Update tab content
+    tabManagerRef.current.updateTabContent(activeTab.id, newContent);
+    
+    // Update tab manager state to trigger re-render
+    setTabManagerState(tabManagerRef.current.getState());
+    
+    // Update markdown state - this will trigger Editor update
+    setMarkdown(newContent);
+    
+    // Force editor update using setValue method
+    // This is needed because the Editor doesn't automatically update on value prop changes
+    setTimeout(() => {
+      if (editorRef.current) {
+        editorRef.current.setValue(newContent);
+      }
+    }, 0);
+    
+    // Add to history
+    addHistoryEntry(newContent);
+  }, [addHistoryEntry]);
+
   const handleMarkdownChange = (newMarkdown: string, cursor?: { line: number, column: number }) => {
     // console.log('🟡 APP handleMarkdownChange - Tab:', tabManagerState.activeTabId, 'Length:', newMarkdown.length);
     if (cursor) {
@@ -836,6 +877,10 @@ const App: React.FC = () => {
           hasUnsavedChanges={hasUnsavedChangesForToolbar()}
           // Linter props
           isLinterActive={isLinterActive}
+          // Frontmatter props
+          isFrontmatterModalOpen={isFrontmatterModalOpen}
+          setIsFrontmatterModalOpen={setIsFrontmatterModalOpen}
+          onFrontmatterSave={handleFrontmatterSave}
         />
       </header>
       <main
@@ -963,6 +1008,16 @@ const App: React.FC = () => {
       <AboutModal
         isOpen={isAboutModalOpen}
         onClose={() => setIsAboutModalOpen(false)}
+      />
+
+      <FrontmatterModal
+        isOpen={isFrontmatterModalOpen}
+        onClose={() => setIsFrontmatterModalOpen(false)}
+        frontmatter={(() => {
+          const extracted = extractFrontmatter(markdown);
+          return extracted ? extracted.frontmatter : {};
+        })()}
+        onSave={handleFrontmatterSave}
       />
 
       <UpdateInfoModal
