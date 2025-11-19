@@ -30,10 +30,15 @@ Für die selbst gehostete Version wird `react-ga4` verwendet.
 Die Initialisierung erfolgt nur, wenn `!isVercel()` wahr ist.
 
 **Konfiguration:**
-Die Measurement ID ist aktuell als Platzhalter im Code (`src/components/WebAnalytics.tsx`) hinterlegt:
-`const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';`
+Die Measurement ID wird aus der Umgebungsvariable `VITE_GA_MEASUREMENT_ID` gelesen.
+Erstellen Sie eine `.env` Datei im Projekt-Root mit folgendem Inhalt:
 
-Um dies zu ändern, ersetzen Sie den Platzhalter durch Ihre echte GA4 Measurement ID.
+```env
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+Ersetzen Sie `G-XXXXXXXXXX` durch Ihre echte GA4 Measurement ID.
+**Wichtig:** Die Variable muss mit `VITE_` beginnen, damit sie vom Client-Code gelesen werden kann.
 
 ## Nutzung
 

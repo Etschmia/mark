@@ -3,14 +3,15 @@ import { Analytics } from '@vercel/analytics/react';
 import ReactGA from 'react-ga4';
 import { isVercel } from '../utils/environment';
 
-// Placeholder for GA4 Measurement ID. 
-// In a real scenario, this should be an environment variable.
-const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';
+// Read GA Measurement ID from environment variables (must start with VITE_)
+// This will be undefined on Vercel if not set, which is fine as we check isVercel()
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
 export const WebAnalytics: React.FC = () => {
     useEffect(() => {
         // Initialize GA4 only if we are NOT on Vercel (Self-hosted / Localhost)
-        if (!isVercel()) {
+        // and if the Measurement ID is available.
+        if (!isVercel() && GA_MEASUREMENT_ID) {
             try {
                 ReactGA.initialize(GA_MEASUREMENT_ID);
                 // Send initial page view
@@ -18,6 +19,8 @@ export const WebAnalytics: React.FC = () => {
             } catch (error) {
                 console.error("GA4 Initialization Error:", error);
             }
+        } else if (!isVercel() && !GA_MEASUREMENT_ID) {
+            console.warn("Web Analytics: VITE_GA_MEASUREMENT_ID is not set in .env");
         }
     }, []);
 
