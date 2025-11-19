@@ -23,5 +23,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-public/build-info.json
-public/sw.js
