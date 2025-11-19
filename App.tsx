@@ -23,6 +23,7 @@ import { checkAndInstallUpdate, checkUpdateCompletion } from './utils/updateMana
 import { StatusBar } from './components/StatusBar';
 import { LinterPanel } from './components/LinterPanel';
 import { lintMarkdown, LintResult, LintError, applyAutoFix } from './utils/markdownLinter';
+import { WebAnalytics } from './components/WebAnalytics';
 
 // Import the new hooks and services
 import { useTabManager } from './hooks/useTabManager';
@@ -718,7 +719,7 @@ const App: React.FC = () => {
 
     const currentContent = activeTab.content;
     const extracted = extractFrontmatter(currentContent);
-    
+
     let newContent: string;
     if (extracted) {
       // Replace existing frontmatter
@@ -730,13 +731,13 @@ const App: React.FC = () => {
 
     // Update tab content
     tabManagerRef.current.updateTabContent(activeTab.id, newContent);
-    
+
     // Update tab manager state to trigger re-render
     setTabManagerState(tabManagerRef.current.getState());
-    
+
     // Update markdown state - this will trigger Editor update
     setMarkdown(newContent);
-    
+
     // Force editor update using setValue method
     // This is needed because the Editor doesn't automatically update on value prop changes
     setTimeout(() => {
@@ -744,7 +745,7 @@ const App: React.FC = () => {
         editorRef.current.setValue(newContent);
       }
     }, 0);
-    
+
     // Add to history
     addHistoryEntry(newContent);
   }, [addHistoryEntry]);
@@ -985,6 +986,9 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Web Analytics */}
+      <WebAnalytics />
 
       {/* Modals rendered at app level for proper z-index */}
       <HelpModal
