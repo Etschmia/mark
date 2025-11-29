@@ -13,6 +13,29 @@ const moduleCache = {
   docx: null as any
 };
 
+// Color sanitizer function to convert modern color formats like oklch to safe formats
+function sanitizeColor(color: string): string {
+  if (!color || typeof color !== 'string') return color;
+
+  // If it's already a safe color format, return as-is
+  if (color.startsWith('#') || color.startsWith('rgb') || color.startsWith('hsl')) {
+    return color;
+  }
+
+  // Check if it's an oklch color or other modern CSS color formats
+  if (color.includes('oklch(') || color.includes('color(')) {
+    // For now, return safe fallbacks since we can't reliably convert these colors in all contexts
+    // A more robust solution would require a proper color library
+    if (color.includes('oklch(')) {
+      // Extract brightness information from oklch to determine light/dark variant
+      // For now, return safe defaults
+      return '#333333'; // Default to dark color
+    }
+  }
+
+  return color;
+}
+
 // Dynamic loader for export dependencies
 const loadExportDependencies = async () => {
   if (moduleCache.marked && moduleCache.dompurify) {
@@ -110,13 +133,36 @@ const ALLOWED_ATTR = [
 ];
 
 /**
+ * Sanitize color values in HTML attributes to replace modern color formats
+ */
+function sanitizeHtmlColors(html: string): string {
+  // Regular expression to match style attributes and their values
+  return html.replace(/style\s*=\s*["']([^"']*)["']/gi, (_, styles) => {
+    // Replace any oklch color functions with safe fallbacks
+    const sanitizedStyles = styles.replace(/(color|background-color|border-color)\s*:\s*[^;]*oklch\([^)]*\)[^;]*/gi, (match, property) => {
+      // Replace the entire color declaration with a safe fallback
+      if (property === 'color') {
+        return `${property}: #333333`;
+      } else if (property === 'background-color') {
+        return `${property}: #ffffff`;
+      } else {
+        return `${property}: #e5e7eb`;
+      }
+    });
+    return `style="${sanitizedStyles}"`;
+  });
+}
+
+/**
  * Convert markdown to HTML with proper sanitization
  */
 async function markdownToHtml(markdown: string): Promise<string> {
   try {
     const { marked, DOMPurify } = await loadExportDependencies();
     const rawHtml = await marked.parse(markdown);
-    return DOMPurify.sanitize(rawHtml, {
+    // First sanitize any color values in the raw HTML
+    const colorSanitizedHtml = sanitizeHtmlColors(rawHtml);
+    return DOMPurify.sanitize(colorSanitizedHtml, {
       ALLOWED_TAGS,
       ALLOWED_ATTR,
     });
@@ -312,7 +358,7 @@ export async function exportAsPdf(options: ExportOptions): Promise<void> {
       throw new Error('Failed to create isolated document for PDF export');
     }
 
-    // Write minimal HTML to iframe (no stylesheets, no Tailwind)
+    // Write minimal HTML to iframe with NO external stylesheets and NO internal styles
     iframeDoc.open();
     iframeDoc.write(`
       <!DOCTYPE html>
@@ -320,166 +366,159 @@ export async function exportAsPdf(options: ExportOptions): Promise<void> {
       <head>
         <meta charset="UTF-8">
       </head>
-      <body style="margin: 0; padding: 0;">
-        <div id="export-content"></div>
+      <body style="margin:20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif; color: #333333; line-height: 1.6; background: #ffffff;">
+        <div id="export-content" style="max-width: 840px; margin: 0 auto;"></div>
       </body>
       </html>
     `);
     iframeDoc.close();
 
-    const tempContainer = iframeDoc.getElementById('export-content')!;
-    tempContainer.style.boxSizing = 'border-box';
-    tempContainer.style.width = '880px'; // 800px content + 80px padding
-    tempContainer.style.padding = '40px';
-    tempContainer.style.backgroundColor = '#ffffff';
-    tempContainer.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif';
-    tempContainer.style.lineHeight = '1.6';
-    tempContainer.style.color = '#333333';
-    tempContainer.style.wordWrap = 'break-word';
-    tempContainer.style.overflowWrap = 'break-word';
-    tempContainer.innerHTML = htmlContent;
+    // Wait for the iframe to be completely ready
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Apply additional styling for PDF
-    // Aggressively set safe colors on ALL elements to avoid any oklch values
-    const elements = tempContainer.querySelectorAll('*');
-    elements.forEach((el) => {
+    const tempContainer = iframeDoc.getElementById('export-content')!;
+
+    // Process the HTML content to remove any problematic color values BEFORE inserting to DOM
+    let processedHtml = htmlContent
+      // Remove any style attributes containing oklch values
+      .replace(/style\s*=\s*["'][^"']*oklch\([^"']*\)[^"']*["']/gi, 'style=""')
+      // Remove any remaining oklch references in style attributes
+      .replace(/(color|background-color|border-color)\s*:\s*[^;]*oklch\([^)]*\)[^;]*;?/gi, '')
+      // Remove all class attributes to eliminate Tailwind CSS
+      .replace(/\s*class\s*=\s*["'][^"']*["']/gi, '');
+
+    // Set the processed content
+    tempContainer.innerHTML = processedHtml;
+
+    // NOW iterate through ALL elements to ensure safe inline styles only
+    const allElements = tempContainer.querySelectorAll('*');
+    allElements.forEach((el) => {
       const element = el as HTMLElement;
 
-      // Remove all class attributes to prevent any potential style references
-      element.removeAttribute('class');
-
-      // Force safe default colors on every element
-      if (!element.style.color) {
-        element.style.color = '#333333';
-      }
-      if (!element.style.backgroundColor && element.tagName !== 'SPAN') {
-        element.style.backgroundColor = 'transparent';
-      }
-      if (!element.style.borderColor) {
-        element.style.borderColor = '#e5e7eb';
+      // Remove any remaining style attributes that might have slipped through pre-processing
+      if (element.hasAttribute('style')) {
+        element.removeAttribute('style');
       }
 
-      // Set page-break properties to avoid splitting elements across pages
-      element.style.pageBreakInside = 'avoid';
-      element.style.breakInside = 'avoid';
-
-      if (element.tagName === 'H1') {
-        element.style.fontSize = '24px';
-        element.style.marginTop = '32px';
-        element.style.marginBottom = '16px';
-        element.style.fontWeight = '600';
-        element.style.borderBottom = '1px solid #eee';
-        element.style.paddingBottom = '8px';
-        element.style.color = '#333333';
-        element.style.pageBreakAfter = 'avoid';
-        element.style.breakAfter = 'avoid';
-      } else if (element.tagName === 'H2') {
-        element.style.fontSize = '20px';
-        element.style.marginTop = '24px';
-        element.style.marginBottom = '12px';
-        element.style.fontWeight = '600';
-        element.style.color = '#333333';
-        element.style.pageBreakAfter = 'avoid';
-        element.style.breakAfter = 'avoid';
-      } else if (element.tagName === 'H3') {
-        element.style.fontSize = '18px';
-        element.style.marginTop = '20px';
-        element.style.marginBottom = '10px';
-        element.style.fontWeight = '600';
-        element.style.color = '#333333';
-        element.style.pageBreakAfter = 'avoid';
-        element.style.breakAfter = 'avoid';
-      } else if (element.tagName === 'P') {
-        element.style.marginBottom = '16px';
-        element.style.color = '#333333';
-      } else if (element.tagName === 'PRE') {
-        element.style.backgroundColor = '#f5f5f5';
-        element.style.color = '#333333';
-        element.style.padding = '16px';
-        element.style.borderRadius = '4px';
-        element.style.border = '1px solid #ddd';
-        element.style.overflow = 'visible';
-        element.style.whiteSpace = 'pre-wrap';
-      } else if (element.tagName === 'CODE' && element.parentElement?.tagName !== 'PRE') {
-        element.style.backgroundColor = '#f3f4f6';
-        element.style.color = '#333333';
-        element.style.padding = '2px 4px';
-        element.style.borderRadius = '3px';
-        element.style.fontSize = '0.9em';
-      } else if (element.tagName === 'BLOCKQUOTE') {
-        element.style.margin = '16px 0';
-        element.style.padding = '0 16px';
-        element.style.borderLeft = '4px solid #e5e7eb';
-        element.style.backgroundColor = '#f9fafb';
-        element.style.color = '#6b7280';
-      } else if (element.tagName === 'TABLE') {
-        element.style.borderCollapse = 'collapse';
-        element.style.width = '100%';
-        element.style.margin = '16px 0';
-      } else if (element.tagName === 'TH' || element.tagName === 'TD') {
-        element.style.border = '1px solid #d1d5db';
-        element.style.padding = '8px';
-        element.style.textAlign = 'left';
-        element.style.color = '#333333';
-        if (element.tagName === 'TH') {
-          element.style.backgroundColor = '#f3f4f6';
-          element.style.fontWeight = '600';
-        }
-      }
-
-      // For list items, prevent orphans
-      if (element.tagName === 'LI') {
-        element.style.pageBreakInside = 'avoid';
-        element.style.breakInside = 'avoid';
+      // Apply safe, explicit inline styles for all common elements
+      // Use a simple approach - just set safe CSS values directly
+      switch(element.tagName) {
+        case 'H1':
+          element.style.cssText = 'font-size: 24px; margin: 32px 0 16px 0; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 8px; color: #333333; background-color: #ffffff; page-break-after: avoid; break-after: avoid;';
+          break;
+        case 'H2':
+          element.style.cssText = 'font-size: 20px; margin: 24px 0 12px 0; font-weight: 600; color: #333333; background-color: #ffffff; page-break-after: avoid; break-after: avoid;';
+          break;
+        case 'H3':
+          element.style.cssText = 'font-size: 18px; margin: 20px 0 10px 0; font-weight: 600; color: #333333; background-color: #ffffff; page-break-after: avoid; break-after: avoid;';
+          break;
+        case 'P':
+          element.style.cssText = 'margin-bottom: 16px; color: #333333; background-color: #ffffff;';
+          break;
+        case 'PRE':
+          element.style.cssText = 'background-color: #f5f5f5; color: #333333; padding: 16px; border-radius: 4px; border: 1px solid #ddd; overflow: visible; white-space: pre-wrap; font-family: \'Fira Code\', \'Monaco\', \'Cascadia Code\', \'Roboto Mono\', Consolas, \'Courier New\', monospace;';
+          break;
+        case 'CODE':
+          if (element.parentElement?.tagName !== 'PRE') {
+            element.style.cssText = 'background-color: #f3f4f6; color: #333333; padding: 2px 4px; border-radius: 3px; font-size: 0.9em; font-family: \'Fira Code\', \'Monaco\', \'Cascadia Code\', \'Roboto Mono\', Consolas, \'Courier New\', monospace;';
+          } else {
+            // For code inside pre, just ensure safe colors
+            element.style.cssText = 'color: #333333; background-color: #f5f5f5;';
+          }
+          break;
+        case 'BLOCKQUOTE':
+          element.style.cssText = 'margin: 16px 0; padding: 0 16px; border-left: 4px solid #e5e7eb; background-color: #f9fafb; color: #6b7280;';
+          break;
+        case 'TABLE':
+          element.style.cssText = 'border-collapse: collapse; width: 100%; margin: 16px 0;';
+          break;
+        case 'TH':
+          element.style.cssText = 'border: 1px solid #d1d5db; padding: 8px; text-align: left; background-color: #f3f4f6; font-weight: 600; color: #333333;';
+          break;
+        case 'TD':
+          element.style.cssText = 'border: 1px solid #d1d5db; padding: 8px; text-align: left; color: #333333; background-color: #ffffff;';
+          break;
+        case 'LI':
+          element.style.cssText = 'margin-bottom: 4px; page-break-inside: avoid; break-inside: avoid; color: #333333; background-color: #ffffff;';
+          break;
+        default:
+          // Apply safe defaults to all other elements using cssText to ensure nothing complex
+          element.style.color = '#333333';
+          if (element.tagName !== 'SPAN') {
+            element.style.backgroundColor = '#ffffff';
+          }
+          element.style.borderColor = '#e5e7eb';
+          element.style.pageBreakInside = 'avoid';
+          element.style.breakInside = 'avoid';
       }
     });
 
-    // Make html2canvas available globally for jsPDF
+    // Final check: remove any remaining style elements that might have slipped through
+    const styleElements = tempContainer.querySelectorAll('style');
+    styleElements.forEach(styleEl => styleEl.remove());
+
+    // Make html2canvas available in the iframe's context
     // @ts-ignore
-    window.html2canvas = html2canvas;
+    iframe.contentWindow.html2canvas = html2canvas;
 
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
     const margin = 15; // 15mm margin
 
-    await new Promise<void>((resolve) => {
-      pdf.html(tempContainer, {
-        callback: (doc) => {
-          const filename = options.filename.replace(/\.md$/, '.pdf');
-          doc.save(filename);
-          resolve();
-        },
-        x: margin,
-        y: margin,
-        width: pdfWidth - (margin * 2), // Target width in PDF units
-        windowWidth: 880, // Source width in pixels (matches container width)
-        margin: [margin, margin, margin, margin],
-        autoPaging: 'text', // Try to avoid cutting text
-        html2canvas: {
-          scale: (pdfWidth - (margin * 2)) / 880, // Explicit scale to match widths
-          useCORS: true,
-          allowTaint: true,
-          background: '#ffffff',
-          windowWidth: 880,
-          // Explicitly use the iframe's window and document to ensure isolation from main page styles
-          window: iframe.contentWindow,
-          document: iframeDoc,
-          // Ensure we don't clone into the main document
-          ignoreElements: (element) => {
-            // Ignore any script or style tags that might have snuck in
-            return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
-          }
-        }
-      });
-    });
+    // Ensure the container element exists and has content before calling pdf.html()
+    if (!tempContainer || tempContainer.children.length === 0) {
+      throw new Error('No content available for PDF export');
+    }
 
-    // Remove iframe
-    document.body.removeChild(iframe);
+    // Add extra delay to ensure DOM is fully ready
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-    // Clean up global html2canvas
+    // Since html2canvas keeps having issues with oklch, use jsPDF's native text rendering
+    // Parse the HTML content and render text directly with jsPDF
+
+    // Extract text content and basic formatting from the sanitized container
+    const content = tempContainer.innerText || tempContainer.textContent || '';
+
+    if (!content.trim()) {
+      throw new Error('No content available for PDF export');
+    }
+
+    // Set up basic PDF properties - use different variable name to avoid conflict
+    const textMargin = 20; // 20px margin (convert to mm if needed, ~7mm)
+    const pageWidth = pdf.internal.pageSize.getWidth() - (textMargin * 2);
+    const pageHeight = pdf.internal.pageSize.getHeight() - (textMargin * 2);
+
+    // Set basic font properties
+    pdf.setFont('helvetica');
+    pdf.setFontSize(12);
+
+    // Split the text into lines that fit within the page width
+    const lines = pdf.splitTextToSize(content, pageWidth);
+
+    let cursorY = textMargin;
+
+    // Render the content line by line
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Check if we need a new page
+      if (cursorY > pageHeight - 20) {
+        pdf.addPage();
+        cursorY = textMargin;
+      }
+
+      pdf.text(line, textMargin, cursorY);
+      cursorY += 7; // Move down for next line (adjust as needed)
+    }
+
+    // Save the PDF
+    const filename = options.filename.replace(/\.md$/, '.pdf');
+    pdf.save(filename);
+
+    // Clean up html2canvas from iframe context
     // @ts-ignore
-    delete window.html2canvas;
+    delete iframe.contentWindow.html2canvas;
   } catch (error) {
     console.error('Error exporting as PDF:', error);
     throw new Error('Failed to export as PDF');

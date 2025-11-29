@@ -64,9 +64,47 @@ numbering: {
 }
 ```
 
+### Issue: Persistent `oklch` Parsing Despite Sanitization
+**Problem:** Even with iframe isolation and comprehensive HTML sanitization, `html2canvas` continued to encounter `oklch` values during CSS parsing, resulting in the error `Error: Attempting to parse an unsupported color function "oklch"`.
+
+**Failed Attempts:**
+- **Complete CSS Elimination:** Removing all stylesheets, class attributes, and problematic style attributes still did not prevent the error.
+- **Regex-based Sanitization:** Multiple approaches using regex to remove `oklch` values from HTML content.
+- **Inline Style Application:** Forcing safe hex colors with `cssText` and direct style assignment.
+- **Iframe Context Variations:** Different approaches to isolate the iframe context from the main document.
+- **Direct Canvas Rendering:** Attempting to bypass `pdf.html()` and using canvas rendering directly.
+
+**Successful Solution: Complete Abandonment of html2canvas**
+When all sanitization approaches failed, the solution was to avoid html2canvas entirely:
+1.  **Native Text Rendering:** Use jsPDF's built-in text rendering capabilities instead of HTML-to-canvas conversion.
+2.  **Content Extraction:** Extract plain text content from the processed HTML container.
+3.  **Line-by-Line Rendering:** Process text with `splitTextToSize()` and render line by line with automatic pagination.
+4.  **Simple Formatting:** Maintain basic readability without complex CSS formatting.
+
+```typescript
+// Example of text-only rendering approach
+const content = tempContainer.innerText || tempContainer.textContent || '';
+const lines = pdf.splitTextToSize(content, pageWidth);
+
+let cursorY = textMargin;
+for (let i = 0; i < lines.length; i++) {
+  const line = lines[i];
+
+  // Handle page breaks
+  if (cursorY > pageHeight - 20) {
+    pdf.addPage();
+    cursorY = textMargin;
+  }
+
+  pdf.text(line, textMargin, cursorY);
+  cursorY += 7;
+}
+```
+
 ## Summary of Best Practices for Future Exports
 
 1.  **Isolation is Key:** For PDF export, never rely on the main document's styles if you use modern CSS features (like `oklch`, CSS variables, or complex grids) that rendering libraries might not support. Always render in a clean, isolated container (iframe).
 2.  **Inline Styles:** For the export container, use explicit inline styles for everything (fonts, colors, spacing). This ensures consistent rendering across different environments and libraries.
 3.  **Use Library Features:** Prefer high-level APIs like `jspdf.html()` over manual canvas manipulation for better handling of multi-page documents and text wrapping.
 4.  **Verify Dependencies:** Be aware of library limitations (e.g., `html2canvas` vs. modern CSS) and version-specific API changes (e.g., `docx` configuration).
+5.  **Consider Alternative Approaches:** When complex HTML rendering fails despite thorough sanitization, consider simpler approaches like native text rendering that avoid problematic CSS parsing altogether.
