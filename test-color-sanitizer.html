@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Sanitizer Test</title>
+</head>
+
+<body>
+    <script>
+        function sanitizeColor(color) {
+            if (!color || !color.includes('oklch')) return color;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            return ctx.fillStyle;
+        }
+
+        const oklchColor = 'oklch(0.6 0.1 200)';
+        const sanitized = sanitizeColor(oklchColor);
+        console.log(`Original: ${oklchColor}`);
+        console.log(`Sanitized: ${sanitized}`);
+
+        if (sanitized.startsWith('#') || sanitized.startsWith('rgb')) {
+            console.log('SUCCESS: Color converted to safe format.');
+        } else {
+            console.error('FAILURE: Color NOT converted.');
+        }
+    </script>
+</body>
+
+</html>

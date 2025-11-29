@@ -70,6 +70,7 @@ const loadPDFDependencies = async () => {
 };
 
 // Dynamic loader for DOCX dependencies
+// Dynamic loader for DOCX dependencies
 const loadDocxDependencies = async () => {
   if (moduleCache.docx) {
     return moduleCache.docx;
@@ -77,8 +78,9 @@ const loadDocxDependencies = async () => {
 
   try {
     const docxModule = await import('docx');
-    moduleCache.docx = docxModule;
-    return docxModule;
+    // Handle both ESM and CJS interop
+    moduleCache.docx = (docxModule as any).default || docxModule;
+    return moduleCache.docx;
   } catch (error) {
     console.error('Failed to load DOCX dependencies:', error);
     throw error;
@@ -267,11 +269,11 @@ export async function exportAsHtml(options: ExportOptions): Promise<void> {
   try {
     const htmlContent = await markdownToHtml(options.content);
     const completeHtml = generateCompleteHtml(htmlContent, options.theme);
-    
+
     const filename = options.filename.replace(/\.md$/, '.html');
     const blob = new Blob([completeHtml], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
-    
+
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
@@ -292,28 +294,75 @@ export async function exportAsPdf(options: ExportOptions): Promise<void> {
   try {
     // Load PDF dependencies dynamically
     const { jsPDF, html2canvas } = await loadPDFDependencies();
-    
+
     const htmlContent = await markdownToHtml(options.content);
-    
-    // Create a temporary container for rendering
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.top = '0';
-    tempContainer.style.width = '800px';
+
+    // Create an iframe for complete isolation from page styles
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.left = '-9999px';
+    iframe.style.top = '0';
+    iframe.style.width = '800px';
+    iframe.style.height = '1px';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) {
+      document.body.removeChild(iframe);
+      throw new Error('Failed to create isolated document for PDF export');
+    }
+
+    // Write minimal HTML to iframe (no stylesheets, no Tailwind)
+    iframeDoc.open();
+    iframeDoc.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+      </head>
+      <body style="margin: 0; padding: 0;">
+        <div id="export-content"></div>
+      </body>
+      </html>
+    `);
+    iframeDoc.close();
+
+    const tempContainer = iframeDoc.getElementById('export-content')!;
+    tempContainer.style.boxSizing = 'border-box';
+    tempContainer.style.width = '880px'; // 800px content + 80px padding
     tempContainer.style.padding = '40px';
     tempContainer.style.backgroundColor = '#ffffff';
     tempContainer.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif';
     tempContainer.style.lineHeight = '1.6';
     tempContainer.style.color = '#333333';
+    tempContainer.style.wordWrap = 'break-word';
+    tempContainer.style.overflowWrap = 'break-word';
     tempContainer.innerHTML = htmlContent;
-    
-    document.body.appendChild(tempContainer);
-    
+
     // Apply additional styling for PDF
+    // Aggressively set safe colors on ALL elements to avoid any oklch values
     const elements = tempContainer.querySelectorAll('*');
     elements.forEach((el) => {
       const element = el as HTMLElement;
+
+      // Remove all class attributes to prevent any potential style references
+      element.removeAttribute('class');
+
+      // Force safe default colors on every element
+      if (!element.style.color) {
+        element.style.color = '#333333';
+      }
+      if (!element.style.backgroundColor && element.tagName !== 'SPAN') {
+        element.style.backgroundColor = 'transparent';
+      }
+      if (!element.style.borderColor) {
+        element.style.borderColor = '#e5e7eb';
+      }
+
+      // Set page-break properties to avoid splitting elements across pages
+      element.style.pageBreakInside = 'avoid';
+      element.style.breakInside = 'avoid';
+
       if (element.tagName === 'H1') {
         element.style.fontSize = '24px';
         element.style.marginTop = '32px';
@@ -321,20 +370,31 @@ export async function exportAsPdf(options: ExportOptions): Promise<void> {
         element.style.fontWeight = '600';
         element.style.borderBottom = '1px solid #eee';
         element.style.paddingBottom = '8px';
+        element.style.color = '#333333';
+        element.style.pageBreakAfter = 'avoid';
+        element.style.breakAfter = 'avoid';
       } else if (element.tagName === 'H2') {
         element.style.fontSize = '20px';
         element.style.marginTop = '24px';
         element.style.marginBottom = '12px';
         element.style.fontWeight = '600';
+        element.style.color = '#333333';
+        element.style.pageBreakAfter = 'avoid';
+        element.style.breakAfter = 'avoid';
       } else if (element.tagName === 'H3') {
         element.style.fontSize = '18px';
         element.style.marginTop = '20px';
         element.style.marginBottom = '10px';
         element.style.fontWeight = '600';
+        element.style.color = '#333333';
+        element.style.pageBreakAfter = 'avoid';
+        element.style.breakAfter = 'avoid';
       } else if (element.tagName === 'P') {
         element.style.marginBottom = '16px';
+        element.style.color = '#333333';
       } else if (element.tagName === 'PRE') {
         element.style.backgroundColor = '#f5f5f5';
+        element.style.color = '#333333';
         element.style.padding = '16px';
         element.style.borderRadius = '4px';
         element.style.border = '1px solid #ddd';
@@ -342,6 +402,7 @@ export async function exportAsPdf(options: ExportOptions): Promise<void> {
         element.style.whiteSpace = 'pre-wrap';
       } else if (element.tagName === 'CODE' && element.parentElement?.tagName !== 'PRE') {
         element.style.backgroundColor = '#f3f4f6';
+        element.style.color = '#333333';
         element.style.padding = '2px 4px';
         element.style.borderRadius = '3px';
         element.style.fontSize = '0.9em';
@@ -359,52 +420,66 @@ export async function exportAsPdf(options: ExportOptions): Promise<void> {
         element.style.border = '1px solid #d1d5db';
         element.style.padding = '8px';
         element.style.textAlign = 'left';
+        element.style.color = '#333333';
         if (element.tagName === 'TH') {
           element.style.backgroundColor = '#f3f4f6';
           element.style.fontWeight = '600';
         }
       }
+
+      // For list items, prevent orphans
+      if (element.tagName === 'LI') {
+        element.style.pageBreakInside = 'avoid';
+        element.style.breakInside = 'avoid';
+      }
     });
-    
-    // Generate canvas from the HTML content
-    const canvas = await html2canvas(tempContainer, {
-      width: 800,
-      height: tempContainer.scrollHeight,
-      useCORS: true,
-      allowTaint: true,
-      background: '#ffffff'
-    });
-    
-    // Remove temporary container
-    document.body.removeChild(tempContainer);
-    
-    // Create PDF
-    const imgData = canvas.toDataURL('image/png');
+
+    // Make html2canvas available globally for jsPDF
+    // @ts-ignore
+    window.html2canvas = html2canvas;
+
     const pdf = new jsPDF('p', 'mm', 'a4');
-    
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pdfWidth - 20; // 10mm margin on each side
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
-    let heightLeft = imgHeight;
-    let position = 10; // 10mm top margin
-    
-    // Add first page
-    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-    heightLeft -= (pdfHeight - 20); // subtract margins
-    
-    // Add additional pages if needed
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight + 10;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-      heightLeft -= (pdfHeight - 20);
-    }
-    
-    // Download the PDF
-    const filename = options.filename.replace(/\.md$/, '.pdf');
-    pdf.save(filename);
+    const margin = 15; // 15mm margin
+
+    await new Promise<void>((resolve) => {
+      pdf.html(tempContainer, {
+        callback: (doc) => {
+          const filename = options.filename.replace(/\.md$/, '.pdf');
+          doc.save(filename);
+          resolve();
+        },
+        x: margin,
+        y: margin,
+        width: pdfWidth - (margin * 2), // Target width in PDF units
+        windowWidth: 880, // Source width in pixels (matches container width)
+        margin: [margin, margin, margin, margin],
+        autoPaging: 'text', // Try to avoid cutting text
+        html2canvas: {
+          scale: (pdfWidth - (margin * 2)) / 880, // Explicit scale to match widths
+          useCORS: true,
+          allowTaint: true,
+          background: '#ffffff',
+          windowWidth: 880,
+          // Explicitly use the iframe's window and document to ensure isolation from main page styles
+          window: iframe.contentWindow,
+          document: iframeDoc,
+          // Ensure we don't clone into the main document
+          ignoreElements: (element) => {
+            // Ignore any script or style tags that might have snuck in
+            return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
+          }
+        }
+      });
+    });
+
+    // Remove iframe
+    document.body.removeChild(iframe);
+
+    // Clean up global html2canvas
+    // @ts-ignore
+    delete window.html2canvas;
   } catch (error) {
     console.error('Error exporting as PDF:', error);
     throw new Error('Failed to export as PDF');
@@ -422,10 +497,7 @@ export async function exportAsDocx(options: ExportOptions): Promise<void> {
 
     const doc = await markdownToDocx(options.content);
 
-    const buffer = await Packer.toBuffer(doc);
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
+    const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
 
     const filename = options.filename.replace(/\.md$/, '.docx');
@@ -451,13 +523,13 @@ async function markdownToDocx(markdown: string): Promise<any> {
   const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, ImageRun, ExternalHyperlink } = docx as any;
 
   const tokens = marked.lexer(markdown);
-  const children = await buildDocxChildren(tokens, marked);
+  const children = await buildDocxChildren(tokens, marked, docx);
 
   const doc = new Document({
     numbering: {
-      numberingDefinitions: [
+      config: [
         {
-          id: 0,
+          reference: 'default-numbering',
           levels: [
             {
               level: 0,
@@ -487,7 +559,8 @@ async function markdownToDocx(markdown: string): Promise<any> {
   return doc;
 }
 
-async function buildDocxChildren(tokens: any[], marked: any): Promise<any[]> {
+async function buildDocxChildren(tokens: any[], marked: any, docx: any): Promise<any[]> {
+  const { Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, ImageRun } = docx;
   const children = [];
 
   for (const token of tokens) {
@@ -522,7 +595,7 @@ async function buildDocxChildren(tokens: any[], marked: any): Promise<any[]> {
         break;
 
       case 'paragraph':
-        const inline = await buildInline(token.tokens || [{ type: 'text', text: token.text }], marked);
+        const inline = await buildInline(token.tokens || [{ type: 'text', text: token.text }], marked, docx);
         element = new Paragraph({
           children: inline,
           alignment: AlignmentType.LEFT,
@@ -533,7 +606,7 @@ async function buildDocxChildren(tokens: any[], marked: any): Promise<any[]> {
       case 'list':
         const isOrdered = token.ordered;
         for (const item of token.items) {
-          const itemInline = await buildInline(item.tokens || [{ type: 'text', text: item.text }], marked);
+          const itemInline = await buildInline(item.tokens || [{ type: 'text', text: item.text }], marked, docx);
           const listItem = new Paragraph({
             children: itemInline,
             bullet: isOrdered ? undefined : { level: 0 },
@@ -547,7 +620,7 @@ async function buildDocxChildren(tokens: any[], marked: any): Promise<any[]> {
         break;
 
       case 'blockquote':
-        const quoteChildren = await buildDocxChildren(token.tokens, marked);
+        const quoteChildren = await buildDocxChildren(token.tokens, marked, docx);
         for (const qChild of quoteChildren) {
           const quotePara = new Paragraph({
             children: Array.isArray(qChild.children) ? qChild.children : [qChild],
@@ -680,7 +753,7 @@ async function buildDocxChildren(tokens: any[], marked: any): Promise<any[]> {
 
       default:
         if (token.tokens) {
-          const subChildren = await buildDocxChildren(token.tokens, marked);
+          const subChildren = await buildDocxChildren(token.tokens, marked, docx);
           children.push(...subChildren);
         }
         break;
@@ -690,7 +763,8 @@ async function buildDocxChildren(tokens: any[], marked: any): Promise<any[]> {
   return children;
 }
 
-async function buildInline(tokens: any[], marked: any): Promise<any[]> {
+async function buildInline(tokens: any[], marked: any, docx: any): Promise<any[]> {
+  const { TextRun, ExternalHyperlink } = docx;
   const inline = [];
 
   for (const token of tokens) {

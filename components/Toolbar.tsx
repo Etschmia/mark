@@ -62,11 +62,10 @@ const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; tit
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`p-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent ${
-      active 
-        ? 'text-white bg-cyan-600 hover:bg-cyan-700' 
+    className={`p-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent ${active
+        ? 'text-white bg-cyan-600 hover:bg-cyan-700'
         : 'text-slate-400 hover:bg-slate-700 hover:text-white'
-    }`}
+      }`}
   >
     {children}
   </button>
@@ -82,14 +81,14 @@ const codeLanguages = [
 ];
 
 // Die Komponente akzeptiert jetzt die neuen Props für die Themes
-export const Toolbar: React.FC<ToolbarProps> = ({ 
-  onFormat, 
-  onNew, 
-  onOpen, 
-  onSave, 
-  fileName, 
-  onFileNameChange, 
-  onUndo, 
+export const Toolbar: React.FC<ToolbarProps> = ({
+  onFormat,
+  onNew,
+  onOpen,
+  onSave,
+  fileName,
+  onFileNameChange,
+  onUndo,
   canUndo,
   themes,
   selectedTheme,
@@ -154,25 +153,25 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     const handleInstallAvailable = () => {
       setCanInstallPWA(true);
     };
-    
+
     const handleInstallHidden = () => {
       setCanInstallPWA(false);
     };
-    
+
     // Check initial install status
     const status = pwaManager.getInstallationStatus();
     setCanInstallPWA(status.canInstall);
-    
+
     // Listen for PWA events
     window.addEventListener('pwa-install-available', handleInstallAvailable);
     window.addEventListener('pwa-install-hidden', handleInstallHidden);
-    
+
     return () => {
       window.removeEventListener('pwa-install-available', handleInstallAvailable);
       window.removeEventListener('pwa-install-hidden', handleInstallHidden);
     };
   }, []);
-  
+
   const handleCodeFormat = (lang?: string) => {
     onFormat('code', lang ? { language: lang } : undefined);
     setIsCodeDropdownOpen(false);
@@ -185,11 +184,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         content: markdown,
         theme: selectedTheme
       };
-      
+
       if (format === 'html') {
         await exportAsHtml(options);
       } else if (format === 'pdf') {
         await exportAsPdf(options);
+      } else if (format === 'docx') {
+        await exportAsDocx(options);
       }
     } catch (error) {
       console.error('Export failed:', error);
@@ -212,10 +213,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
   const handleUpdate = async () => {
     if (isUpdating) return;
-    
+
     setIsUpdating(true);
     setIsHelpDropdownOpen(false);
-    
+
     try {
       await onUpdate();
     } catch (error) {
@@ -241,7 +242,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <ToolButton onClick={() => onFormat('ul')} title="Unordered list"><ListUlIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('ol')} title="Ordered list"><ListOlIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('checklist')} title="Checklist"><ChecklistIcon /></ToolButton>
-        
+
         <div className="relative" ref={codeDropdownRef}>
           <ToolButton onClick={() => setIsCodeDropdownOpen(prev => !prev)} title="Code">
             <CodeIcon />
@@ -260,7 +261,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             </div>
           )}
         </div>
-        
+
         <ToolButton onClick={() => onFormat('table')} title="Insert table"><TableIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('image')} title="Insert image"><ImageIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('link')} title="Insert link"><LinkIcon /></ToolButton>
@@ -269,7 +270,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <ToolButton onClick={() => onFormat('lint')} title="Markdown Linter" active={isLinterActive}><LinterIcon /></ToolButton>
         <ToolButton onClick={() => setIsFrontmatterModalOpen(true)} title="Edit Frontmatter"><FrontmatterIcon /></ToolButton>
         <ToolButton onClick={onUndo} title="Undo" disabled={!canUndo}><UndoIcon /></ToolButton>
-        
+
         <div className="relative" ref={exportDropdownRef}>
           <ToolButton onClick={() => setIsExportDropdownOpen(prev => !prev)} title="Export">
             <ExportIcon />
@@ -307,7 +308,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             Open
           </button>
         </div>
-        
+
         <input
           type="text"
           value={fileName}
@@ -317,22 +318,21 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           aria-label="Filename"
           spellCheck="false"
         />
-        
-        <button 
-          onClick={onSave} 
-          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 ${
-            hasUnsavedChanges 
-              ? 'text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500' 
+
+        <button
+          onClick={onSave}
+          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 ${hasUnsavedChanges
+              ? 'text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500'
               : 'text-slate-300 bg-slate-700 hover:bg-slate-600 focus:ring-cyan-500'
-          }`}
+            }`}
         >
           Save
         </button>
-                
+
         {/* Help Dropdown */}
         <div className="relative" ref={helpDropdownRef}>
-          <button 
-            onClick={() => setIsHelpDropdownOpen(prev => !prev)} 
+          <button
+            onClick={() => setIsHelpDropdownOpen(prev => !prev)}
             title="Help & reference"
             className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500"
           >
@@ -427,7 +427,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             </div>
           )}
         </div>
-        
+
         {/* GitHub Button - Removed from toolbar */}
         {/* <GitHubButton 
           connectionStatus={githubState.auth.isConnected ? 'connected' : 'disconnected'}
