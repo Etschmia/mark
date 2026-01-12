@@ -12,7 +12,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { AboutModal } from './components/AboutModal';
 import { UpdateInfoModal } from './components/UpdateInfoModal';
 import { FrontmatterModal } from './components/FrontmatterModal';
-import { AppearanceModal, lightModePresets } from './components/AppearanceModal';
+import { AppearanceModal, lightModePresets, getPresetByName, darkModeClasses } from './components/AppearanceModal';
 import { pwaManager } from './utils/pwaManager';
 import { githubService } from './utils/githubService';
 import { GitHubModal } from './components/GitHubModal';
@@ -890,6 +890,8 @@ const App: React.FC = () => {
           // Appearance modal props
           isAppearanceModalOpen={isAppearanceModalOpen}
           setIsAppearanceModalOpen={setIsAppearanceModalOpen}
+          // Color preset
+          colorPreset={getPresetByName(currentColorPreset)}
         />
       </header>
       <main
@@ -937,31 +939,32 @@ const App: React.FC = () => {
             />
             <StatusBar
               theme={settings.theme}
-              items={[
-                <button onClick={toggleLineNumbers} className="text-xs hover:underline">
-                  {settings.showLineNumbers ? 'Hide' : 'Show'} Line Numbers
-                </button>,
-                <span>{`Ln ${cursorPosition.line}, Col ${cursorPosition.column}`}</span>,
-                // Add CodeMirror theme selector to status bar
-                <div className="flex items-center gap-1">
-                  <label className={`text-xs ${settings.theme === 'light' ? 'text-stone-500' : 'text-slate-400'}`}>Theme:</label>
-                  <select
-                    value={codemirrorTheme}
-                    onChange={(e) => setCodemirrorTheme(e.target.value)}
-                    className={`text-xs rounded p-1 max-w-[120px] ${
-                      settings.theme === 'light'
-                        ? 'bg-stone-200 text-stone-700 border border-stone-300'
-                        : 'bg-slate-700 text-white'
-                    }`}
-                  >
-                    {Object.keys(themeMap).map(themeKey => (
-                      <option key={themeKey} value={themeKey}>
-                        {formatThemeName(themeKey)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ]}
+              colorPreset={getPresetByName(currentColorPreset)}
+              items={(() => {
+                const preset = getPresetByName(currentColorPreset);
+                const themeClasses = settings.theme === 'light' ? preset.tailwindClasses : darkModeClasses;
+                return [
+                  <button onClick={toggleLineNumbers} className="text-xs hover:underline">
+                    {settings.showLineNumbers ? 'Hide' : 'Show'} Line Numbers
+                  </button>,
+                  <span>{`Ln ${cursorPosition.line}, Col ${cursorPosition.column}`}</span>,
+                  // Add CodeMirror theme selector to status bar
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs opacity-75">Theme:</label>
+                    <select
+                      value={codemirrorTheme}
+                      onChange={(e) => setCodemirrorTheme(e.target.value)}
+                      className={`text-xs rounded p-1 max-w-[120px] ${themeClasses.inputBg} ${themeClasses.inputText} ${settings.theme === 'light' ? `border ${themeClasses.inputBorder}` : ''}`}
+                    >
+                      {Object.keys(themeMap).map(themeKey => (
+                        <option key={themeKey} value={themeKey}>
+                          {formatThemeName(themeKey)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ];
+              })()}
             />
           </div>
         </div>
@@ -973,7 +976,7 @@ const App: React.FC = () => {
           role="separator"
         >
           <div className={`w-0.5 h-12 rounded-full group-hover:bg-cyan-500 transition-colors duration-150 ${
-            settings.theme === 'light' ? 'bg-stone-300' : 'bg-slate-700'
+            settings.theme === 'light' ? getPresetByName(currentColorPreset).tailwindClasses.divider : darkModeClasses.divider
           }`} />
         </div>
 
@@ -987,25 +990,26 @@ const App: React.FC = () => {
             />
             <StatusBar
               theme={settings.theme}
-              items={[
-                <div className="flex items-center gap-1">
-                  <label className={`text-xs ${settings.theme === 'light' ? 'text-stone-500' : 'text-slate-400'}`}>Theme:</label>
-                  <select
-                    value={previewTheme}
-                    onChange={(e) => setPreviewTheme(e.target.value)}
-                    className={`text-xs rounded p-1 ${
-                      settings.theme === 'light'
-                        ? 'bg-stone-200 text-stone-700 border border-stone-300'
-                        : 'bg-slate-700 text-white'
-                    }`}
-                  >
-                    {Object.keys(themes).map(name => (
-                      <option key={name} value={name}>{name}</option>
-                    ))}
-                  </select>
-                </div>,
-                <span>{`${markdown.length} Chars`}</span>
-              ]}
+              colorPreset={getPresetByName(currentColorPreset)}
+              items={(() => {
+                const preset = getPresetByName(currentColorPreset);
+                const themeClasses = settings.theme === 'light' ? preset.tailwindClasses : darkModeClasses;
+                return [
+                  <div className="flex items-center gap-1">
+                    <label className={`text-xs ${themeClasses.statusBarText}`}>Theme:</label>
+                    <select
+                      value={previewTheme}
+                      onChange={(e) => setPreviewTheme(e.target.value)}
+                      className={`text-xs rounded p-1 ${themeClasses.inputBg} ${themeClasses.inputText} border ${themeClasses.inputBorder}`}
+                    >
+                      {Object.keys(themes).map(name => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
+                    </select>
+                  </div>,
+                  <span>{`${markdown.length} Chars`}</span>
+                ];
+              })()}
             />
           </div>
         </div>

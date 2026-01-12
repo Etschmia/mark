@@ -221,6 +221,29 @@ export const lightModePresets: UIColorPreset[] = [
   }
 ];
 
+// Helper function to get preset by name
+export const getPresetByName = (name: string): UIColorPreset => {
+  return lightModePresets.find(p => p.name === name) || lightModePresets[0];
+};
+
+// Helper to get the default dark mode classes (for when theme is dark)
+export const darkModeClasses = {
+  headerBg: 'bg-slate-800',
+  statusBarBg: 'bg-slate-800',
+  statusBarText: 'text-slate-400',
+  statusBarBorder: 'border-slate-700',
+  buttonBg: 'bg-slate-700',
+  buttonText: 'text-slate-300',
+  buttonHover: 'hover:bg-slate-600',
+  dropdownBg: 'bg-slate-700',
+  dropdownText: 'text-slate-300',
+  dropdownHover: 'hover:bg-slate-600',
+  divider: 'bg-slate-600',
+  inputBg: 'bg-slate-700',
+  inputText: 'text-slate-300',
+  inputBorder: 'border-slate-600',
+};
+
 interface AppearanceModalProps {
   isOpen: boolean;
   onClose: () => void;
