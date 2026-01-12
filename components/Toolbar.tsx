@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType, GitHubState, FileSource } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon, FrontmatterIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon, FrontmatterIcon, PaletteIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf, exportAsDocx } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
@@ -55,21 +55,41 @@ interface ToolbarProps {
   isFrontmatterModalOpen: boolean;
   setIsFrontmatterModalOpen: (open: boolean) => void;
   onFrontmatterSave: (frontmatter: { [key: string]: string }) => void;
+  // Appearance modal props
+  isAppearanceModalOpen: boolean;
+  setIsAppearanceModalOpen: (open: boolean) => void;
 }
 
-const ToolButton: React.FC<{ onClick: () => void; children: React.ReactNode; title: string; disabled?: boolean; active?: boolean }> = ({ onClick, children, title, disabled = false, active = false }) => (
-  <button
-    onClick={onClick}
-    title={title}
-    disabled={disabled}
-    className={`p-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent ${active
-        ? 'text-white bg-cyan-600 hover:bg-cyan-700'
-        : 'text-slate-400 hover:bg-slate-700 hover:text-white'
-      }`}
-  >
-    {children}
-  </button>
-);
+// Theme-aware ToolButton - accepts theme prop for light/dark styling
+const ToolButton: React.FC<{
+  onClick: () => void;
+  children: React.ReactNode;
+  title: string;
+  disabled?: boolean;
+  active?: boolean;
+  theme?: 'light' | 'dark';
+}> = ({ onClick, children, title, disabled = false, active = false, theme = 'dark' }) => {
+  const isLight = theme === 'light';
+
+  const baseClasses = 'p-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent';
+
+  const activeClasses = 'text-white bg-cyan-600 hover:bg-cyan-700';
+
+  const inactiveClasses = isLight
+    ? 'text-stone-600 hover:bg-stone-200 hover:text-stone-900'
+    : 'text-slate-400 hover:bg-slate-700 hover:text-white';
+
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      disabled={disabled}
+      className={`${baseClasses} ${active ? activeClasses : inactiveClasses}`}
+    >
+      {children}
+    </button>
+  );
+};
 
 const codeLanguages = [
   { name: 'Default Code', key: undefined },
@@ -119,7 +139,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   // Save state props
   hasUnsavedChanges,
   // Linter props
-  isLinterActive
+  isLinterActive,
+  // Appearance modal props
+  isAppearanceModalOpen,
+  setIsAppearanceModalOpen
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
@@ -226,34 +249,46 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     }
   };
 
+  // Theme helper
+  const isLight = settings.theme === 'light';
+  const theme = settings.theme;
+
+  // Theme-aware style classes
+  const dividerClass = isLight ? 'bg-stone-300' : 'bg-slate-600';
+  const dropdownBgClass = isLight ? 'bg-white border border-stone-200' : 'bg-slate-700';
+  const dropdownItemClass = isLight
+    ? 'text-stone-700 hover:bg-stone-100 hover:text-stone-900'
+    : 'text-slate-300 hover:bg-slate-600 hover:text-white';
+  const dropdownDividerClass = isLight ? 'border-stone-200' : 'border-slate-600';
+
   return (
     // flex-wrap sorgt für besseres Verhalten auf kleinen Bildschirmen
     <div className="flex items-center justify-between p-2 flex-wrap gap-y-2">
       <div className="flex items-center gap-1 flex-wrap">
-        <ToolButton onClick={() => onFormat('bold')} title="Bold"><BoldIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('italic')} title="Italic"><ItalicIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('strikethrough')} title="Strikethrough"><StrikethroughIcon /></ToolButton>
-        <div className="w-px h-6 bg-slate-600 mx-2"></div>
-        <ToolButton onClick={() => onFormat('h1')} title="Heading 1"><H1Icon /></ToolButton>
-        <ToolButton onClick={() => onFormat('h2')} title="Heading 2"><H2Icon /></ToolButton>
-        <ToolButton onClick={() => onFormat('h3')} title="Heading 3"><H3Icon /></ToolButton>
-        <div className="w-px h-6 bg-slate-600 mx-2"></div>
-        <ToolButton onClick={() => onFormat('quote')} title="Quote"><QuoteIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('ul')} title="Unordered list"><ListUlIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('ol')} title="Ordered list"><ListOlIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('checklist')} title="Checklist"><ChecklistIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('bold')} title="Bold" theme={theme}><BoldIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('italic')} title="Italic" theme={theme}><ItalicIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('strikethrough')} title="Strikethrough" theme={theme}><StrikethroughIcon /></ToolButton>
+        <div className={`w-px h-6 mx-2 ${dividerClass}`}></div>
+        <ToolButton onClick={() => onFormat('h1')} title="Heading 1" theme={theme}><H1Icon /></ToolButton>
+        <ToolButton onClick={() => onFormat('h2')} title="Heading 2" theme={theme}><H2Icon /></ToolButton>
+        <ToolButton onClick={() => onFormat('h3')} title="Heading 3" theme={theme}><H3Icon /></ToolButton>
+        <div className={`w-px h-6 mx-2 ${dividerClass}`}></div>
+        <ToolButton onClick={() => onFormat('quote')} title="Quote" theme={theme}><QuoteIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('ul')} title="Unordered list" theme={theme}><ListUlIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('ol')} title="Ordered list" theme={theme}><ListOlIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('checklist')} title="Checklist" theme={theme}><ChecklistIcon /></ToolButton>
 
         <div className="relative" ref={codeDropdownRef}>
-          <ToolButton onClick={() => setIsCodeDropdownOpen(prev => !prev)} title="Code">
+          <ToolButton onClick={() => setIsCodeDropdownOpen(prev => !prev)} title="Code" theme={theme}>
             <CodeIcon />
           </ToolButton>
           {isCodeDropdownOpen && (
-            <div className="absolute right-0 z-20 mt-2 w-40 origin-top-right rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+            <div className={`absolute right-0 z-20 mt-2 w-40 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1 ${dropdownBgClass}`}>
               {codeLanguages.map(lang => (
                 <button
                   key={lang.name}
                   onClick={() => handleCodeFormat(lang.key)}
-                  className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                  className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
                 >
                   {lang.name}
                 </button>
@@ -262,36 +297,36 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </div>
 
-        <ToolButton onClick={() => onFormat('table')} title="Insert table"><TableIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('image')} title="Insert image"><ImageIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('link')} title="Insert link"><LinkIcon /></ToolButton>
-        <div className="w-px h-6 bg-slate-600 mx-2"></div>
-        <ToolButton onClick={() => onFormat('search')} title="Find and replace"><SearchIcon /></ToolButton>
-        <ToolButton onClick={() => onFormat('lint')} title="Markdown Linter" active={isLinterActive}><LinterIcon /></ToolButton>
-        <ToolButton onClick={() => setIsFrontmatterModalOpen(true)} title="Edit Frontmatter"><FrontmatterIcon /></ToolButton>
-        <ToolButton onClick={onUndo} title="Undo" disabled={!canUndo}><UndoIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('table')} title="Insert table" theme={theme}><TableIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('image')} title="Insert image" theme={theme}><ImageIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('link')} title="Insert link" theme={theme}><LinkIcon /></ToolButton>
+        <div className={`w-px h-6 mx-2 ${dividerClass}`}></div>
+        <ToolButton onClick={() => onFormat('search')} title="Find and replace" theme={theme}><SearchIcon /></ToolButton>
+        <ToolButton onClick={() => onFormat('lint')} title="Markdown Linter" active={isLinterActive} theme={theme}><LinterIcon /></ToolButton>
+        <ToolButton onClick={() => setIsFrontmatterModalOpen(true)} title="Edit Frontmatter" theme={theme}><FrontmatterIcon /></ToolButton>
+        <ToolButton onClick={onUndo} title="Undo" disabled={!canUndo} theme={theme}><UndoIcon /></ToolButton>
 
         <div className="relative" ref={exportDropdownRef}>
-          <ToolButton onClick={() => setIsExportDropdownOpen(prev => !prev)} title="Export">
+          <ToolButton onClick={() => setIsExportDropdownOpen(prev => !prev)} title="Export" theme={theme}>
             <ExportIcon />
           </ToolButton>
           {isExportDropdownOpen && (
-            <div className="absolute right-0 z-20 mt-2 w-32 origin-top-right rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+            <div className={`absolute right-0 z-20 mt-2 w-32 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1 ${dropdownBgClass}`}>
               <button
                 onClick={() => handleExport('html')}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
               >
                 Export HTML
               </button>
               <button
                 onClick={() => handleExport('pdf')}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
               >
                 Export PDF
               </button>
               <button
                 onClick={() => handleExport('docx')}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
               >
                 Export DOCX
               </button>
@@ -301,10 +336,24 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       </div>
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
-          <button onClick={onNew} className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
+          <button
+            onClick={onNew}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${
+              isLight
+                ? 'text-stone-700 bg-stone-200 hover:bg-stone-300 focus:ring-offset-white'
+                : 'text-slate-300 bg-slate-700 hover:bg-slate-600 focus:ring-offset-slate-800'
+            }`}
+          >
             New
           </button>
-          <button onClick={onOpen} className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500">
+          <button
+            onClick={onOpen}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${
+              isLight
+                ? 'text-stone-700 bg-stone-200 hover:bg-stone-300 focus:ring-offset-white'
+                : 'text-slate-300 bg-slate-700 hover:bg-slate-600 focus:ring-offset-slate-800'
+            }`}
+          >
             Open
           </button>
         </div>
@@ -313,7 +362,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           type="text"
           value={fileName}
           onChange={onFileNameChange}
-          className="px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 w-48 hidden sm:block"
+          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 w-48 hidden sm:block ${
+            isLight
+              ? 'text-stone-700 bg-stone-200 hover:bg-stone-300 focus:ring-offset-white border border-stone-300'
+              : 'text-slate-300 bg-slate-700 hover:bg-slate-600 focus:ring-offset-slate-800'
+          }`}
           placeholder="untitled.md"
           aria-label="Filename"
           spellCheck="false"
@@ -321,10 +374,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           onClick={onSave}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 ${hasUnsavedChanges
-              ? 'text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500'
-              : 'text-slate-300 bg-slate-700 hover:bg-slate-600 focus:ring-cyan-500'
-            }`}
+          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${
+            hasUnsavedChanges
+              ? 'text-white bg-cyan-600 hover:bg-cyan-700'
+              : isLight
+                ? 'text-stone-700 bg-stone-200 hover:bg-stone-300 focus:ring-offset-white'
+                : 'text-slate-300 bg-slate-700 hover:bg-slate-600 focus:ring-offset-slate-800'
+          }`}
         >
           Save
         </button>
@@ -334,18 +390,22 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <button
             onClick={() => setIsHelpDropdownOpen(prev => !prev)}
             title="Help & reference"
-            className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500"
+            className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${
+              isLight
+                ? 'text-stone-700 bg-stone-200 hover:bg-stone-300 focus:ring-offset-white'
+                : 'text-slate-300 bg-slate-700 hover:bg-slate-600 focus:ring-offset-slate-800'
+            }`}
           >
             Help
           </button>
           {isHelpDropdownOpen && (
-            <div className="absolute right-0 z-20 mt-2 w-48 origin-top-right rounded-md bg-slate-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1">
+            <div className={`absolute right-0 z-20 mt-2 w-48 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-1 ${dropdownBgClass}`}>
               <button
                 onClick={() => {
                   setIsHelpModalOpen(true);
                   setIsHelpDropdownOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
               >
                 📖 Help & shortcuts
               </button>
@@ -354,25 +414,35 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   setIsCheatSheetModalOpen(true);
                   setIsHelpDropdownOpen(false);
                 }}
-                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className={`flex items-center gap-2 w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
               >
                 <MarkdownIcon />
                 <span>Markdown cheat sheet</span>
               </button>
-              <div className="border-t border-slate-600 my-1"></div>
+              <div className={`border-t my-1 ${dropdownDividerClass}`}></div>
               <button
                 onClick={() => {
                   setIsSettingsModalOpen(true);
                   setIsHelpDropdownOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
               >
                 ⚙️ Settings
               </button>
               <button
+                onClick={() => {
+                  setIsAppearanceModalOpen(true);
+                  setIsHelpDropdownOpen(false);
+                }}
+                className={`flex items-center gap-2 w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
+              >
+                <PaletteIcon />
+                <span>Appearance</span>
+              </button>
+              <button
                 onClick={handleUpdate}
                 disabled={isUpdating}
-                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`flex items-center gap-2 w-full text-left px-4 py-2 text-sm transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${dropdownItemClass}`}
               >
                 {isUpdating ? (
                   <>
@@ -396,7 +466,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   }
                   setIsHelpDropdownOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
               >
                 {githubState.auth.isConnected ? '🔌 Disconnect GitHub' : '🔗 Connect GitHub'}
               </button>
@@ -407,19 +477,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                     handleInstallApp();
                     setIsHelpDropdownOpen(false);
                   }}
-                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                  className={`flex items-center gap-2 w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
                 >
                   <InstallIcon />
                   <span>Install App</span>
                 </button>
               )}
-              <div className="border-t border-slate-600 my-1"></div>
+              <div className={`border-t my-1 ${dropdownDividerClass}`}></div>
               <button
                 onClick={() => {
                   setIsAboutModalOpen(true);
                   setIsHelpDropdownOpen(false);
                 }}
-                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors duration-150"
+                className={`flex items-center gap-2 w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
               >
                 <InfoIcon />
                 <span>About this app</span>

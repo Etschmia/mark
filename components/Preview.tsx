@@ -85,47 +85,52 @@ interface PreviewProps {
   onScroll: (event: React.UIEvent<HTMLDivElement>) => void;
 }
 
-// Add scrollbar styling to match the editor with maximum specificity
-const getScrollbarStyles = (theme: string) => `
+// Add scrollbar styling to match the preview theme
+// Paper is the only light preview theme, all others are dark
+const getScrollbarStyles = (theme: string) => {
+  const isLightTheme = theme === 'Paper';
+
+  return `
   .preview-scrollbar,
   div.preview-scrollbar {
     overflow: auto !important;
     overflow-x: auto !important;
     overflow-y: auto !important;
     scrollbar-width: auto !important;
-    scrollbar-color: ${theme !== 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff'} !important;
+    scrollbar-color: ${isLightTheme ? '#a8a29e #f5f5f4' : '#64748b #1e293b'} !important;
   }
-  
+
   .preview-scrollbar::-webkit-scrollbar,
   div.preview-scrollbar::-webkit-scrollbar {
     width: 14px !important;
     height: 14px !important;
     display: block !important;
   }
-  
+
   .preview-scrollbar::-webkit-scrollbar-track,
   div.preview-scrollbar::-webkit-scrollbar-track {
-    background: ${theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+    background: ${isLightTheme ? '#f5f5f4' : '#1e293b'} !important;
     border-radius: 7px !important;
   }
-  
+
   .preview-scrollbar::-webkit-scrollbar-thumb,
   div.preview-scrollbar::-webkit-scrollbar-thumb {
-    background: ${theme === 'dark' ? '#64748b' : '#9ca3af'} !important;
+    background: ${isLightTheme ? '#a8a29e' : '#64748b'} !important;
     border-radius: 7px !important;
-    border: 2px solid ${theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+    border: 2px solid ${isLightTheme ? '#f5f5f4' : '#1e293b'} !important;
   }
-  
+
   .preview-scrollbar::-webkit-scrollbar-thumb:hover,
   div.preview-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: ${theme === 'dark' ? '#94a3b8' : '#6b7280'} !important;
+    background: ${isLightTheme ? '#78716c' : '#94a3b8'} !important;
   }
-  
+
   .preview-scrollbar::-webkit-scrollbar-corner,
   div.preview-scrollbar::-webkit-scrollbar-corner {
-    background: ${theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+    background: ${isLightTheme ? '#f5f5f4' : '#1e293b'} !important;
   }
-`;
+`};
+
 
 // Configuration for DOMPurify to allow specific tags and attributes
 // needed for markdown rendering and syntax highlighting.
