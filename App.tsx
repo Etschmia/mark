@@ -28,6 +28,7 @@ import { WebAnalytics } from './components/WebAnalytics';
 
 // Import the new hooks and services
 import { useTabManager } from './hooks/useTabManager';
+import { useThemeBundle } from './hooks/useThemeBundle';
 import { useFileService } from './services/fileService';
 import { useGitHubServiceHandlers } from './services/githubServiceHandlers';
 import { useFormatting } from './hooks/useFormatting';
@@ -76,10 +77,22 @@ const App: React.FC = () => {
         debounceTime: 500,
         previewTheme: 'Default',
         autoSave: true,
-        showLineNumbers: false
+        showLineNumbers: false,
+        masterTheme: 'midnight-pro',
+        useUnifiedTheme: true
       };
 
-      return savedSettings ? { ...defaultSettings, ...JSON.parse(savedSettings) } : defaultSettings;
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        // Migration: if useUnifiedTheme is not defined, it's a legacy user
+        // Keep their existing settings by setting useUnifiedTheme to false
+        if (typeof parsed.useUnifiedTheme === 'undefined') {
+          parsed.useUnifiedTheme = false;
+        }
+        return { ...defaultSettings, ...parsed };
+      }
+
+      return defaultSettings;
     } catch (error) {
       console.warn('Failed to load persisted settings from localStorage:', error);
       return {
@@ -88,7 +101,9 @@ const App: React.FC = () => {
         debounceTime: 500,
         previewTheme: 'Default',
         autoSave: true,
-        showLineNumbers: false
+        showLineNumbers: false,
+        masterTheme: 'midnight-pro',
+        useUnifiedTheme: true
       };
     }
   };
@@ -155,6 +170,15 @@ const App: React.FC = () => {
   // Appearance modal states
   const [isAppearanceModalOpen, setIsAppearanceModalOpen] = useState(false);
   const [currentColorPreset, setCurrentColorPreset] = useState('Stone (Default)');
+
+  // Theme bundle hook
+  const { applyThemeBundle } = useThemeBundle({
+    settings,
+    setSettings,
+    setCodemirrorTheme,
+    setPreviewTheme,
+    setCurrentColorPreset,
+  });
 
   // Update modal states
   const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
@@ -1059,6 +1083,7 @@ const App: React.FC = () => {
         onSettingsChange={handleSettingsChange}
         currentPreset={currentColorPreset}
         onPresetChange={setCurrentColorPreset}
+        onBundleSelect={applyThemeBundle}
       />
 
       <UpdateInfoModal

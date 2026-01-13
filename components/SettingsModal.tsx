@@ -8,6 +8,9 @@ export interface EditorSettings {
   previewTheme: string;
   autoSave: boolean;
   showLineNumbers: boolean;
+  // Theme bundle settings
+  masterTheme?: string;        // Theme bundle ID (when using unified theming)
+  useUnifiedTheme: boolean;    // Toggle between unified and individual theming
 }
 
 interface SettingsModalProps {
@@ -51,7 +54,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       debounceTime: 500,
       previewTheme: 'Default',
       autoSave: true,
-      showLineNumbers: false
+      showLineNumbers: false,
+      masterTheme: 'midnight-pro',
+      useUnifiedTheme: true
     };
     setLocalSettings(defaultSettings);
   };
