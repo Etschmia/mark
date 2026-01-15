@@ -616,8 +616,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   `;
 
   return (
-    <div className={`rounded-t-lg h-full flex flex-col overflow-hidden ${settings.theme === 'dark' ? 'bg-slate-800' : 'bg-white border border-gray-200'
-      }`}>
+    <div className="rounded-t-lg h-full flex flex-col overflow-hidden bg-app-panel border border-app-border-main">
       <style>{scrollbarStyles}</style>
       <div ref={editorRef} className="w-full h-full min-h-0" />
     </div>

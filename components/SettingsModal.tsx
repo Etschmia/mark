@@ -88,21 +88,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-      <div className={`${localSettings.theme === 'dark'
-        ? 'bg-slate-800 text-white border-slate-700'
-        : 'bg-white text-gray-900 border-gray-200'
-        } rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border`}>
+      <div className="bg-app-panel text-app-main border-app-border-main rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border">
 
         {/* Header */}
-        <div className={`flex items-center justify-between p-6 border-b ${localSettings.theme === 'dark' ? 'border-slate-700' : 'border-gray-200'
-          }`}>
+        <div className="flex items-center justify-between p-6 border-b border-app-border-muted">
           <h2 className="text-2xl font-bold">Settings</h2>
           <button
             onClick={handleCancel}
-            className={`p-2 rounded-md transition-colors duration-150 ${localSettings.theme === 'dark'
-              ? 'text-slate-400 hover:bg-slate-700 hover:text-white'
-              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-              }`}
+            className="p-2 rounded-md transition-colors duration-150 text-app-muted hover:bg-app-hover hover:text-app-main"
             aria-label="Close settings"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,8 +109,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Theme Settings */}
           <div className="space-y-4">
-            <h3 className={`text-lg font-semibold ${localSettings.themeId === 'midnight-pro' || localSettings.themeId === 'github-dark' || localSettings.themeId === 'nord' || localSettings.themeId === 'dracula' ? 'text-cyan-400' : 'text-blue-600'
-              }`}>
+            <h3 className="text-lg font-semibold text-app-accent">
               Appearance
             </h3>
 
@@ -148,8 +140,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Editor Settings */}
           <div className="space-y-4">
-            <h3 className={`text-lg font-semibold ${localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
-              }`}>
+            <h3 className="text-lg font-semibold text-app-accent">
               Editor
             </h3>
 
@@ -164,7 +155,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   max="24"
                   value={localSettings.fontSize}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, fontSize: parseInt(e.target.value) }))}
-                  className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700"
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-app-border-muted"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>10px</span>
@@ -186,8 +177,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Behavior Settings */}
           <div className="space-y-4">
-            <h3 className={`text-lg font-semibold ${localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
-              }`}>
+            <h3 className="text-lg font-semibold text-app-accent">
               Behavior
             </h3>
 
@@ -203,7 +193,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   step="100"
                   value={localSettings.debounceTime}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, debounceTime: parseInt(e.target.value) }))}
-                  className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700"
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-app-border-muted"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>100ms</span>
@@ -224,8 +214,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Info Section */}
-          <div className={`p-4 rounded-lg ${localSettings.theme === 'dark' ? 'bg-slate-700' : 'bg-gray-100'
-            }`}>
+          <div className="p-4 rounded-lg bg-app-hover">
             <h4 className="font-medium mb-2">💡 Tips</h4>
             <ul className="text-sm space-y-1 opacity-80">
               <li>• Settings are saved automatically</li>
@@ -237,14 +226,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className={`border-t p-4 flex justify-between ${localSettings.theme === 'dark' ? 'border-slate-700' : 'border-gray-200'
-          }`}>
+        <div className="border-t p-4 flex justify-between border-app-border-muted">
           <button
             onClick={handleReset}
-            className={`px-4 py-2 rounded-md border transition-colors duration-150 ${localSettings.theme === 'dark'
-              ? 'border-slate-600 text-slate-300 hover:bg-slate-700'
-              : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-              }`}
+            className="px-4 py-2 rounded-md border transition-colors duration-150 border-app-border-main text-app-muted hover:bg-app-hover hover:text-app-main"
           >
             Reset
           </button>
@@ -252,19 +237,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="flex gap-2">
             <button
               onClick={handleCancel}
-              className={`px-4 py-2 rounded-md border transition-colors duration-150 ${localSettings.theme === 'dark'
-                ? 'border-slate-600 text-slate-300 hover:bg-slate-700'
-                : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-                }`}
+              className="px-4 py-2 rounded-md border transition-colors duration-150 border-app-border-main text-app-muted hover:bg-app-hover hover:text-app-main"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className={`px-4 py-2 rounded-md transition-colors duration-150 ${localSettings.theme === 'dark'
-                ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+              className="px-4 py-2 rounded-md transition-colors duration-150 bg-app-accent-main hover:bg-app-accent-hover text-app-accent-text"
             >
               Save
             </button>

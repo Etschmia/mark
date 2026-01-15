@@ -40,28 +40,20 @@ export const Tab: React.FC<TabProps> = ({
   const handleCloseMouseLeave = () => setIsCloseHovered(false);
 
   // Truncate filename if too long
-  const displayName = tab.filename.length > 20 
-    ? `${tab.filename.substring(0, 17)}...` 
+  const displayName = tab.filename.length > 20
+    ? `${tab.filename.substring(0, 17)}...`
     : tab.filename;
 
   // Enhanced theme-aware styling with improved transitions and focus states
   const baseClasses = "relative flex items-center px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-all duration-200 ease-in-out cursor-pointer select-none group min-w-0";
-  
-  const themeClasses = theme === 'dark' 
-    ? {
-        active: "bg-slate-800 text-white border-cyan-500 shadow-lg",
-        inactive: "bg-slate-700 text-slate-300 border-transparent hover:bg-slate-600 hover:text-white hover:shadow-md",
-        closeButton: "text-slate-400 hover:text-white hover:bg-slate-600 hover:shadow-sm",
-        closeButtonHovered: "text-white bg-slate-600 shadow-sm",
-        focusRing: "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-slate-900"
-      }
-    : {
-        active: "bg-white text-gray-900 border-blue-500 shadow-lg",
-        inactive: "bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200 hover:text-gray-900 hover:shadow-md",
-        closeButton: "text-gray-400 hover:text-gray-600 hover:bg-gray-200 hover:shadow-sm",
-        closeButtonHovered: "text-gray-600 bg-gray-200 shadow-sm",
-        focusRing: "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-gray-50"
-      };
+
+  const themeClasses = {
+    active: "bg-app-panel text-app-main border-app-accent-main shadow-lg",
+    inactive: "bg-app-activity-bar text-app-muted border-transparent hover:bg-app-hover hover:text-app-main hover:shadow-md",
+    closeButton: "text-app-muted hover:text-app-main hover:bg-app-hover hover:shadow-sm",
+    closeButtonHovered: "text-app-main bg-app-hover shadow-sm",
+    focusRing: "focus:outline-none focus:ring-2 focus:ring-app-accent-main focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-app-bg-main"
+  };
 
   const tabClasses = `${baseClasses} ${isActive ? themeClasses.active : themeClasses.inactive} ${themeClasses.focusRing}`;
 
@@ -84,28 +76,20 @@ export const Tab: React.FC<TabProps> = ({
         <span className="truncate font-medium text-sm">
           {displayName}
         </span>
-        
+
         {/* Loading indicator */}
         {tab.isLoading && (
-          <div 
-            className={`w-3 h-3 rounded-full border-2 border-transparent flex-shrink-0 animate-spin ${
-              theme === 'dark' 
-                ? 'border-t-cyan-400 border-r-cyan-400' 
-                : 'border-t-blue-500 border-r-blue-500'
-            }`}
+          <div
+            className="w-3 h-3 rounded-full border-2 border-transparent flex-shrink-0 animate-spin border-t-app-accent-main border-r-app-accent-main"
             title="Loading..."
             aria-label="Loading"
           />
         )}
-        
+
         {/* Unsaved changes indicator */}
         {tab.hasUnsavedChanges && !tab.isLoading && (
-          <span 
-            className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse ${
-              theme === 'dark' 
-                ? 'bg-orange-400 shadow-sm shadow-orange-400/50' 
-                : 'bg-orange-500 shadow-sm shadow-orange-500/50'
-            }`}
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse bg-orange-500 shadow-sm shadow-orange-500/50"
             title="Unsaved changes"
             aria-label="Unsaved changes"
           />
@@ -115,11 +99,10 @@ export const Tab: React.FC<TabProps> = ({
       {/* Close button with enhanced animations */}
       {(isHovered || isActive) && (
         <button
-          className={`ml-2 w-4 h-4 rounded-sm flex items-center justify-center transition-all duration-200 ease-in-out flex-shrink-0 transform hover:scale-110 ${
-            isCloseHovered 
-              ? themeClasses.closeButtonHovered 
+          className={`ml-2 w-4 h-4 rounded-sm flex items-center justify-center transition-all duration-200 ease-in-out flex-shrink-0 transform hover:scale-110 ${isCloseHovered
+              ? themeClasses.closeButtonHovered
               : themeClasses.closeButton
-          }`}
+            }`}
           onClick={handleCloseClick}
           onMouseEnter={handleCloseMouseEnter}
           onMouseLeave={handleCloseMouseLeave}
@@ -148,23 +131,21 @@ export const Tab: React.FC<TabProps> = ({
 
       {/* Enhanced active tab indicator with gradient */}
       {isActive && (
-        <div 
-          className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-in-out ${
-            theme === 'dark' 
-              ? 'bg-gradient-to-r from-cyan-400 to-cyan-600 shadow-sm shadow-cyan-500/50' 
+        <div
+          className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-in-out ${theme === 'dark'
+              ? 'bg-gradient-to-r from-cyan-400 to-cyan-600 shadow-sm shadow-cyan-500/50'
               : 'bg-gradient-to-r from-blue-400 to-blue-600 shadow-sm shadow-blue-500/50'
-          }`}
+            }`}
         />
       )}
 
       {/* Subtle hover indicator for inactive tabs */}
       {!isActive && isHovered && (
-        <div 
-          className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200 ease-in-out ${
-            theme === 'dark' 
-              ? 'bg-slate-500' 
+        <div
+          className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200 ease-in-out ${theme === 'dark'
+              ? 'bg-slate-500'
               : 'bg-gray-400'
-          }`}
+            }`}
         />
       )}
     </div>

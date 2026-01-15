@@ -824,10 +824,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`flex flex-col h-screen font-sans ${settings.theme === 'dark'
-      ? 'bg-slate-900 text-white'
-      : 'bg-gray-50 text-gray-900'
-      }`}>
+    <div className="flex flex-col h-screen font-sans bg-app-main text-app-main">
       {/* Offline Indicator */}
       {isOffline && (
         <div className="bg-orange-600 text-white text-center py-2 text-sm font-medium">
@@ -851,10 +848,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <header className={`flex-shrink-0 shadow-md z-10 ${settings.theme === 'dark'
-        ? 'bg-slate-800 border-b border-slate-700'
-        : 'bg-white border-b border-gray-200'
-        }`}>
+      <header className="flex-shrink-0 shadow-md z-10 bg-app-panel border-b border-app-border-main">
         <Toolbar
           onFormat={handleFormat}
           onNew={() => {
