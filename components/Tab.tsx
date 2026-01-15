@@ -100,8 +100,8 @@ export const Tab: React.FC<TabProps> = ({
       {(isHovered || isActive) && (
         <button
           className={`ml-2 w-4 h-4 rounded-sm flex items-center justify-center transition-all duration-200 ease-in-out flex-shrink-0 transform hover:scale-110 ${isCloseHovered
-              ? themeClasses.closeButtonHovered
-              : themeClasses.closeButton
+            ? themeClasses.closeButtonHovered
+            : themeClasses.closeButton
             }`}
           onClick={handleCloseClick}
           onMouseEnter={handleCloseMouseEnter}
@@ -132,20 +132,14 @@ export const Tab: React.FC<TabProps> = ({
       {/* Enhanced active tab indicator with gradient */}
       {isActive && (
         <div
-          className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-in-out ${theme === 'dark'
-              ? 'bg-gradient-to-r from-cyan-400 to-cyan-600 shadow-sm shadow-cyan-500/50'
-              : 'bg-gradient-to-r from-blue-400 to-blue-600 shadow-sm shadow-blue-500/50'
-            }`}
+          className="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-in-out bg-app-accent-main shadow-sm"
         />
       )}
 
       {/* Subtle hover indicator for inactive tabs */}
       {!isActive && isHovered && (
         <div
-          className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200 ease-in-out ${theme === 'dark'
-              ? 'bg-slate-500'
-              : 'bg-gray-400'
-            }`}
+          className="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200 ease-in-out bg-app-border-muted"
         />
       )}
     </div>
