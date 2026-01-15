@@ -32,6 +32,7 @@ This allows UI components to simple use `className="bg-app-main"` and automatica
 *   **Toolbar.tsx & StatusBar.tsx**: Refactored to use the new CSS-variable-based classes. Removed dependency on `UIColorPreset` and `darkModeClasses`.
 *   **SettingsModal.tsx**: Simplified the "Appearance" section. Users now select a single "Theme" (e.g., "Dracula", "Nord", "GitHub Light"), and the entire app updates instantly.
 *   **Editor.tsx**: Updated to accept a direct `Extension` for the theme, removing the need for string-based lookups inside the component.
+*   **Preview.tsx**: Refactored to accept raw CSS strings via `themeStyles` prop, eliminating internal theme lookups and ensuring WYSIWYG consistency with the configured `AppTheme`.
 
 ## Removed Legacy Files
 The following files were removed as they are now obsolete:
