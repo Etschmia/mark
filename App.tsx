@@ -968,7 +968,8 @@ const App: React.FC = () => {
           <div className="flex flex-col min-h-0 flex-grow">
             <Preview
               markdown={markdown}
-              theme={currentTheme.previewTheme}
+              themeStyles={currentTheme.previewTheme}
+              themeType={currentTheme.type}
               onScroll={(event) => handleScroll('preview', event.nativeEvent)}
               ref={previewRef}
             />

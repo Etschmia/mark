@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef } from 'react';
-import { themes } from './preview-themes';
+
 import { removeFrontmatter } from '../utils/frontmatterUtils';
 
 // Dynamic imports for heavy dependencies
@@ -81,14 +81,14 @@ const loadMarkdownDependencies = async () => {
 
 interface PreviewProps {
   markdown: string;
-  theme: string;
+  themeStyles: string;
+  themeType: 'light' | 'dark';
   onScroll: (event: React.UIEvent<HTMLDivElement>) => void;
 }
 
 // Add scrollbar styling to match the preview theme
-// Paper is the only light preview theme, all others are dark
-const getScrollbarStyles = (theme: string) => {
-  const isLightTheme = theme === 'Paper';
+const getScrollbarStyles = (type: 'light' | 'dark') => {
+  const isLightTheme = type === 'light';
 
   return `
   .preview-scrollbar,
@@ -135,17 +135,17 @@ const getScrollbarStyles = (theme: string) => {
 // Configuration for DOMPurify to allow specific tags and attributes
 // needed for markdown rendering and syntax highlighting.
 const ALLOWED_TAGS = [
-    'p', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'blockquote', 'pre', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-    'hr', 'br', 'span', 'img', 'del', 's', 'strike', 'input'
+  'p', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'blockquote', 'pre', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+  'hr', 'br', 'span', 'img', 'del', 's', 'strike', 'input'
 ];
 const ALLOWED_ATTR = [
-    'style', 'class', 'href', 'src', 'alt', 'title', 'width', 'height',
-    'start', 'type', 'align', 'colspan', 'rowspan', 'checked', 'disabled'
+  'style', 'class', 'href', 'src', 'alt', 'title', 'width', 'height',
+  'start', 'type', 'align', 'colspan', 'rowspan', 'checked', 'disabled'
 ];
 
 
-export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, theme, onScroll }, ref) => {
+export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, themeStyles, themeType, onScroll }, ref) => {
   const [sanitizedHtml, setSanitizedHtml] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [dependencies, setDependencies] = useState<{
@@ -157,13 +157,13 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
   // Load dependencies on first mount
   useEffect(() => {
     let isMounted = true;
-    
+
     const initializeDependencies = async () => {
       try {
         const deps = await loadMarkdownDependencies();
-        
+
         if (!isMounted) return;
-        
+
         // Configure marked with custom renderer
         const renderer = new deps.marked.Renderer();
 
@@ -175,10 +175,10 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
           // Manually construct the final HTML with the correct classes needed by highlight.js themes.
           return `<pre><code class="hljs language-${language}">${highlightedCode}</code></pre>`;
         };
-        
+
         // Use the custom renderer
         deps.marked.use({ renderer, gfm: true, breaks: true });
-        
+
         setDependencies(deps);
         setIsLoading(false);
       } catch (error) {
@@ -186,9 +186,9 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
         setIsLoading(false);
       }
     };
-    
+
     initializeDependencies();
-    
+
     return () => {
       isMounted = false;
     };
@@ -199,21 +199,21 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     if (!dependencies || isLoading) {
       return;
     }
-    
+
     // An async function to handle parsing and sanitizing.
     const parseAndSanitize = async () => {
       try {
         // Remove frontmatter before parsing (frontmatter should not appear in preview)
         const markdownWithoutFrontmatter = removeFrontmatter(markdown);
-        
+
         // marked.parse is asynchronous and returns a Promise.
         const rawHtml = await dependencies.marked.parse(markdownWithoutFrontmatter);
-        
+
         // DOMPurify sanitizes the HTML to prevent XSS vulnerabilities.
         // We configure it to allow the tags and attributes necessary for our markdown features.
         const sanitized = dependencies.DOMPurify.sanitize(rawHtml, {
-            ALLOWED_TAGS: ALLOWED_TAGS,
-            ALLOWED_ATTR: ALLOWED_ATTR,
+          ALLOWED_TAGS: ALLOWED_TAGS,
+          ALLOWED_ATTR: ALLOWED_ATTR,
         });
         setSanitizedHtml(sanitized);
       } catch (error) {
@@ -226,7 +226,7 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     // This effect only depends on the `markdown` prop and dependencies.
   }, [markdown, dependencies, isLoading]);
 
-  const currentThemeStyles = themes[theme] || themes['Default'];
+
 
   if (isLoading) {
     return (
@@ -248,8 +248,8 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
         onScroll={onScroll}
         className="preview-scrollbar h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
       >
-        <style>{currentThemeStyles}</style>
-        <style>{getScrollbarStyles(theme)}</style>
+        <style>{themeStyles}</style>
+        <style>{getScrollbarStyles(themeType)}</style>
         <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
       </div>
     </div>
