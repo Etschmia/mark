@@ -12,7 +12,6 @@ import { SettingsModal } from './components/SettingsModal';
 import { AboutModal } from './components/AboutModal';
 import { UpdateInfoModal } from './components/UpdateInfoModal';
 import { FrontmatterModal } from './components/FrontmatterModal';
-import { AppearanceModal, lightModePresets, getPresetByName, darkModeClasses } from './components/AppearanceModal';
 import { pwaManager } from './utils/pwaManager';
 import { githubService } from './utils/githubService';
 import { GitHubModal } from './components/GitHubModal';
@@ -28,7 +27,7 @@ import { WebAnalytics } from './components/WebAnalytics';
 
 // Import the new hooks and services
 import { useTabManager } from './hooks/useTabManager';
-import { useThemeBundle } from './hooks/useThemeBundle';
+import { useAppTheme } from './hooks/useAppTheme';
 import { useFileService } from './services/fileService';
 import { useGitHubServiceHandlers } from './services/githubServiceHandlers';
 import { useFormatting } from './hooks/useFormatting';
@@ -78,8 +77,7 @@ const App: React.FC = () => {
         previewTheme: 'Default',
         autoSave: true,
         showLineNumbers: false,
-        masterTheme: 'midnight-pro',
-        useUnifiedTheme: true
+        themeId: 'midnight-pro'
       };
 
       if (savedSettings) {
@@ -102,8 +100,7 @@ const App: React.FC = () => {
         previewTheme: 'Default',
         autoSave: true,
         showLineNumbers: false,
-        masterTheme: 'midnight-pro',
-        useUnifiedTheme: true
+        themeId: 'midnight-pro'
       };
     }
   };
@@ -126,16 +123,20 @@ const App: React.FC = () => {
   const editorRef = useRef<EditorRef>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const fileHandleRef = useRef<FileSystemFileHandle | null>(activeTab?.fileHandle || null);
-
-  const [previewTheme, setPreviewTheme] = useState<string>(persistedSettings.previewTheme);
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
 
-  // Add state for CodeMirror theme
-  const [codemirrorTheme, setCodemirrorTheme] = useState<string>('basicDark');
+
+  // App Theme Hook
+  const { currentTheme, setThemeId } = useAppTheme(settings.themeId);
+
   // Handle settings changes
   const handleSettingsChange = useCallback((newSettings: EditorSettings) => {
     setSettings(newSettings);
-    setPreviewTheme(newSettings.previewTheme);
+
+    // Update theme if changed
+    if (newSettings.themeId !== settings.themeId) {
+      setThemeId(newSettings.themeId);
+    }
 
     // Persist settings to localStorage
     try {
@@ -143,7 +144,7 @@ const App: React.FC = () => {
     } catch (error) {
       console.warn('Failed to persist settings to localStorage:', error);
     }
-  }, []);
+  }, [settings.themeId, setThemeId]);
 
   // State and refs for resizing functionality
   const [isResizing, setIsResizing] = useState(false);
@@ -167,18 +168,8 @@ const App: React.FC = () => {
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isFrontmatterModalOpen, setIsFrontmatterModalOpen] = useState(false);
 
-  // Appearance modal states
-  const [isAppearanceModalOpen, setIsAppearanceModalOpen] = useState(false);
-  const [currentColorPreset, setCurrentColorPreset] = useState('Stone (Default)');
 
-  // Theme bundle hook
-  const { applyThemeBundle } = useThemeBundle({
-    settings,
-    setSettings,
-    setCodemirrorTheme,
-    setPreviewTheme,
-    setCurrentColorPreset,
-  });
+
 
   // Update modal states
   const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
@@ -501,7 +492,7 @@ const App: React.FC = () => {
       // Don't handle shortcuts when typing in input fields or modals are open
       const target = event.target as HTMLElement;
       const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
-      const isModalOpen = isHelpModalOpen || isCheatSheetModalOpen || isSettingsModalOpen || isAboutModalOpen || isFrontmatterModalOpen || isAppearanceModalOpen || isGitHubModalOpen || isSaveOptionsModalOpen || isTabConfirmationOpen;
+      const isModalOpen = isHelpModalOpen || isCheatSheetModalOpen || isSettingsModalOpen || isAboutModalOpen || isFrontmatterModalOpen || isGitHubModalOpen || isSaveOptionsModalOpen || isTabConfirmationOpen;
 
       if (isInputField || isModalOpen) {
         return;
@@ -571,7 +562,7 @@ const App: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [tabManagerState.activeTabId, isHelpModalOpen, isCheatSheetModalOpen, isSettingsModalOpen, isAboutModalOpen, isFrontmatterModalOpen, isAppearanceModalOpen, isGitHubModalOpen, isSaveOptionsModalOpen, isTabConfirmationOpen, switchToTab, closeTab, createNewTab]);
+  }, [tabManagerState.activeTabId, isHelpModalOpen, isCheatSheetModalOpen, isSettingsModalOpen, isAboutModalOpen, isFrontmatterModalOpen, isGitHubModalOpen, isSaveOptionsModalOpen, isTabConfirmationOpen, switchToTab, closeTab, createNewTab]);
 
   // Check if current content differs from original (for GitHub files)
   const hasUnsavedChanges = useCallback(() => {
@@ -881,9 +872,9 @@ const App: React.FC = () => {
           onFileNameChange={handleFileNameChange}
           onUndo={handleUndo}
           canUndo={historyIndex > 0}
-          themes={Object.keys(themes)}
-          selectedTheme={previewTheme}
-          onThemeChange={setPreviewTheme}
+          themes={[]}
+          selectedTheme={settings.themeId}
+          onThemeChange={() => { }}
           markdown={markdown}
           settings={settings}
           onSettingsChange={handleSettingsChange}
@@ -911,11 +902,7 @@ const App: React.FC = () => {
           isFrontmatterModalOpen={isFrontmatterModalOpen}
           setIsFrontmatterModalOpen={setIsFrontmatterModalOpen}
           onFrontmatterSave={handleFrontmatterSave}
-          // Appearance modal props
-          isAppearanceModalOpen={isAppearanceModalOpen}
-          setIsAppearanceModalOpen={setIsAppearanceModalOpen}
-          // Color preset
-          colorPreset={getPresetByName(currentColorPreset)}
+
         />
       </header>
       <main
@@ -951,7 +938,7 @@ const App: React.FC = () => {
               onFormat={handleFormat}
               settings={settings}
               ref={editorRef}
-              codemirrorTheme={codemirrorTheme} // Pass the CodeMirror theme
+              theme={currentTheme.codeMirrorTheme}
             />
             <LinterPanel
               errors={lintResult.errors}
@@ -962,31 +949,12 @@ const App: React.FC = () => {
               theme={settings.theme}
             />
             <StatusBar
-              theme={settings.theme}
-              colorPreset={getPresetByName(currentColorPreset)}
               items={(() => {
-                const preset = getPresetByName(currentColorPreset);
-                const themeClasses = settings.theme === 'light' ? preset.tailwindClasses : darkModeClasses;
                 return [
                   <button onClick={toggleLineNumbers} className="text-xs hover:underline">
                     {settings.showLineNumbers ? 'Hide' : 'Show'} Line Numbers
                   </button>,
-                  <span>{`Ln ${cursorPosition.line}, Col ${cursorPosition.column}`}</span>,
-                  // Add CodeMirror theme selector to status bar
-                  <div className="flex items-center gap-1">
-                    <label className="text-xs opacity-75">Theme:</label>
-                    <select
-                      value={codemirrorTheme}
-                      onChange={(e) => setCodemirrorTheme(e.target.value)}
-                      className={`text-xs rounded p-1 max-w-[120px] ${themeClasses.inputBg} ${themeClasses.inputText} ${settings.theme === 'light' ? `border ${themeClasses.inputBorder}` : ''}`}
-                    >
-                      {Object.keys(themeMap).map(themeKey => (
-                        <option key={themeKey} value={themeKey}>
-                          {formatThemeName(themeKey)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <span>{`Ln ${cursorPosition.line}, Col ${cursorPosition.column}`}</span>
                 ];
               })()}
             />
@@ -999,41 +967,21 @@ const App: React.FC = () => {
           aria-label="Resize panels"
           role="separator"
         >
-          <div className={`w-0.5 h-12 rounded-full group-hover:bg-cyan-500 transition-colors duration-150 ${
-            settings.theme === 'light' ? getPresetByName(currentColorPreset).tailwindClasses.divider : darkModeClasses.divider
-          }`} />
+          <div className="w-0.5 h-12 rounded-full group-hover:bg-cyan-500 transition-colors duration-150 bg-app-border-main" />
         </div>
 
         <div className="flex flex-col min-h-0">
           <div className="flex flex-col min-h-0 flex-grow">
             <Preview
               markdown={markdown}
-              theme={previewTheme}
+              theme={currentTheme.previewTheme}
               onScroll={(event) => handleScroll('preview', event.nativeEvent)}
               ref={previewRef}
             />
             <StatusBar
-              theme={settings.theme}
-              colorPreset={getPresetByName(currentColorPreset)}
-              items={(() => {
-                const preset = getPresetByName(currentColorPreset);
-                const themeClasses = settings.theme === 'light' ? preset.tailwindClasses : darkModeClasses;
-                return [
-                  <div className="flex items-center gap-1">
-                    <label className={`text-xs ${themeClasses.statusBarText}`}>Theme:</label>
-                    <select
-                      value={previewTheme}
-                      onChange={(e) => setPreviewTheme(e.target.value)}
-                      className={`text-xs rounded p-1 ${themeClasses.inputBg} ${themeClasses.inputText} border ${themeClasses.inputBorder}`}
-                    >
-                      {Object.keys(themes).map(name => (
-                        <option key={name} value={name}>{name}</option>
-                      ))}
-                    </select>
-                  </div>,
-                  <span>{`${markdown.length} Chars`}</span>
-                ];
-              })()}
+              items={[
+                <span>{`${markdown.length} Chars`}</span>
+              ]}
             />
           </div>
         </div>
@@ -1076,15 +1024,7 @@ const App: React.FC = () => {
         onSave={handleFrontmatterSave}
       />
 
-      <AppearanceModal
-        isOpen={isAppearanceModalOpen}
-        onClose={() => setIsAppearanceModalOpen(false)}
-        settings={settings}
-        onSettingsChange={handleSettingsChange}
-        currentPreset={currentColorPreset}
-        onPresetChange={setCurrentColorPreset}
-        onBundleSelect={applyThemeBundle}
-      />
+
 
       <UpdateInfoModal
         isOpen={isUpdateInfoModalOpen}

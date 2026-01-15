@@ -8,9 +8,7 @@ export interface EditorSettings {
   previewTheme: string;
   autoSave: boolean;
   showLineNumbers: boolean;
-  // Theme bundle settings
-  masterTheme?: string;        // Theme bundle ID (when using unified theming)
-  useUnifiedTheme: boolean;    // Toggle between unified and individual theming
+  themeId: string; // Unified theme ID
 }
 
 interface SettingsModalProps {
@@ -21,10 +19,10 @@ interface SettingsModalProps {
   availablePreviewThemes: string[];
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  settings, 
+export const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  settings,
   onSettingsChange,
   availablePreviewThemes
 }) => {
@@ -55,8 +53,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       previewTheme: 'Default',
       autoSave: true,
       showLineNumbers: false,
-      masterTheme: 'midnight-pro',
-      useUnifiedTheme: true
+      themeId: 'midnight-pro'
     };
     setLocalSettings(defaultSettings);
   };
@@ -69,16 +66,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   // Handle escape key to close modal - always define this hook
   React.useEffect(() => {
     if (!isOpen) return; // Early return if not open, but hook is still called
-    
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         handleCancel();
       }
     };
-    
+
     document.addEventListener('keydown', handleEscape);
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
@@ -91,24 +88,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-      <div className={`${
-        localSettings.theme === 'dark' 
-          ? 'bg-slate-800 text-white border-slate-700' 
-          : 'bg-white text-gray-900 border-gray-200'
-      } rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border`}>
-        
+      <div className={`${localSettings.theme === 'dark'
+        ? 'bg-slate-800 text-white border-slate-700'
+        : 'bg-white text-gray-900 border-gray-200'
+        } rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border`}>
+
         {/* Header */}
-        <div className={`flex items-center justify-between p-6 border-b ${
-          localSettings.theme === 'dark' ? 'border-slate-700' : 'border-gray-200'
-        }`}>
+        <div className={`flex items-center justify-between p-6 border-b ${localSettings.theme === 'dark' ? 'border-slate-700' : 'border-gray-200'
+          }`}>
           <h2 className="text-2xl font-bold">Settings</h2>
           <button
             onClick={handleCancel}
-            className={`p-2 rounded-md transition-colors duration-150 ${
-              localSettings.theme === 'dark'
-                ? 'text-slate-400 hover:bg-slate-700 hover:text-white'
-                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-            }`}
+            className={`p-2 rounded-md transition-colors duration-150 ${localSettings.theme === 'dark'
+              ? 'text-slate-400 hover:bg-slate-700 hover:text-white'
+              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+              }`}
             aria-label="Close settings"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,61 +110,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </svg>
           </button>
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
+
           {/* Theme Settings */}
           <div className="space-y-4">
-            <h3 className={`text-lg font-semibold ${
-              localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
-            }`}>
+            <h3 className={`text-lg font-semibold ${localSettings.themeId === 'midnight-pro' || localSettings.themeId === 'github-dark' || localSettings.themeId === 'nord' || localSettings.themeId === 'dracula' ? 'text-cyan-400' : 'text-blue-600'
+              }`}>
               Appearance
             </h3>
-            
+
             <div className="space-y-3">
               <label className="block">
-                <span className="text-sm font-medium mb-2 block">Editor theme</span>
-                <div className="flex gap-3">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="dark"
-                      checked={localSettings.theme === 'dark'}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, theme: e.target.value as 'light' | 'dark' }))}
-                      className="mr-2"
-                    />
-                    🌙 Dark
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="light"
-                      checked={localSettings.theme === 'light'}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, theme: e.target.value as 'light' | 'dark' }))}
-                      className="mr-2"
-                    />
-                    ☀️ Light
-                  </label>
-                </div>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium mb-2 block">Preview theme</span>
+                <span className="text-sm font-medium mb-2 block">Theme</span>
                 <select
-                  value={localSettings.previewTheme}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, previewTheme: e.target.value }))}
-                  className={`w-full p-2 border rounded-md ${
-                    localSettings.theme === 'dark'
-                      ? 'bg-slate-700 border-slate-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-900'
-                  }`}
+                  value={localSettings.themeId}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, themeId: e.target.value }))}
+                  className={`w-full p-2 border rounded-md bg-app-input text-app-main border-app-main`}
                 >
-                  {availablePreviewThemes.map(theme => (
-                    <option key={theme} value={theme}>{theme}</option>
-                  ))}
+                  <optgroup label="Dark Themes">
+                    <option value="midnight-pro">Midnight Pro</option>
+                    <option value="github-dark">GitHub Dark</option>
+                    <option value="nord">Nord</option>
+                    <option value="dracula">Dracula</option>
+                  </optgroup>
+                  <optgroup label="Light Themes">
+                    <option value="classic-paper">Classic Paper</option>
+                    <option value="github-light">GitHub Light</option>
+                    <option value="solarized-light">Solarized Light</option>
+                    <option value="ocean-breeze">Ocean Breeze</option>
+                  </optgroup>
                 </select>
               </label>
             </div>
@@ -178,12 +148,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Editor Settings */}
           <div className="space-y-4">
-            <h3 className={`text-lg font-semibold ${
-              localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
-            }`}>
+            <h3 className={`text-lg font-semibold ${localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
+              }`}>
               Editor
             </h3>
-            
+
             <div className="space-y-3">
               <label className="block">
                 <span className="text-sm font-medium mb-2 block">
@@ -217,12 +186,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Behavior Settings */}
           <div className="space-y-4">
-            <h3 className={`text-lg font-semibold ${
-              localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
-            }`}>
+            <h3 className={`text-lg font-semibold ${localSettings.theme === 'dark' ? 'text-cyan-400' : 'text-blue-600'
+              }`}>
               Behavior
             </h3>
-            
+
             <div className="space-y-3">
               <label className="block">
                 <span className="text-sm font-medium mb-2 block">
@@ -256,9 +224,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Info Section */}
-          <div className={`p-4 rounded-lg ${
-            localSettings.theme === 'dark' ? 'bg-slate-700' : 'bg-gray-100'
-          }`}>
+          <div className={`p-4 rounded-lg ${localSettings.theme === 'dark' ? 'bg-slate-700' : 'bg-gray-100'
+            }`}>
             <h4 className="font-medium mb-2">💡 Tips</h4>
             <ul className="text-sm space-y-1 opacity-80">
               <li>• Settings are saved automatically</li>
@@ -268,40 +235,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </ul>
           </div>
         </div>
-        
+
         {/* Footer */}
-        <div className={`border-t p-4 flex justify-between ${
-          localSettings.theme === 'dark' ? 'border-slate-700' : 'border-gray-200'
-        }`}>
+        <div className={`border-t p-4 flex justify-between ${localSettings.theme === 'dark' ? 'border-slate-700' : 'border-gray-200'
+          }`}>
           <button
             onClick={handleReset}
-            className={`px-4 py-2 rounded-md border transition-colors duration-150 ${
-              localSettings.theme === 'dark'
-                ? 'border-slate-600 text-slate-300 hover:bg-slate-700'
-                : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-            }`}
+            className={`px-4 py-2 rounded-md border transition-colors duration-150 ${localSettings.theme === 'dark'
+              ? 'border-slate-600 text-slate-300 hover:bg-slate-700'
+              : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+              }`}
           >
             Reset
           </button>
-          
+
           <div className="flex gap-2">
             <button
               onClick={handleCancel}
-              className={`px-4 py-2 rounded-md border transition-colors duration-150 ${
-                localSettings.theme === 'dark'
-                  ? 'border-slate-600 text-slate-300 hover:bg-slate-700'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-              }`}
+              className={`px-4 py-2 rounded-md border transition-colors duration-150 ${localSettings.theme === 'dark'
+                ? 'border-slate-600 text-slate-300 hover:bg-slate-700'
+                : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className={`px-4 py-2 rounded-md transition-colors duration-150 ${
-                localSettings.theme === 'dark'
-                  ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
+              className={`px-4 py-2 rounded-md transition-colors duration-150 ${localSettings.theme === 'dark'
+                ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
             >
               Save
             </button>

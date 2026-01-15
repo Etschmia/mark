@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType, GitHubState, FileSource } from '../types';
 import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon, FrontmatterIcon, PaletteIcon } from './icons/Icons';
-import { UIColorPreset, darkModeClasses } from './AppearanceModal';
 import { ExportFormat, exportAsHtml, exportAsPdf, exportAsDocx } from '../utils/exportUtils';
 import { HelpModal } from './HelpModal';
 import { CheatSheetModal } from './CheatSheetModal';
@@ -56,11 +55,6 @@ interface ToolbarProps {
   isFrontmatterModalOpen: boolean;
   setIsFrontmatterModalOpen: (open: boolean) => void;
   onFrontmatterSave: (frontmatter: { [key: string]: string }) => void;
-  // Appearance modal props
-  isAppearanceModalOpen: boolean;
-  setIsAppearanceModalOpen: (open: boolean) => void;
-  // Color preset for light mode
-  colorPreset: UIColorPreset;
 }
 
 // Theme-aware ToolButton - accepts buttonText and buttonHover classes from preset
@@ -72,10 +66,10 @@ const ToolButton: React.FC<{
   active?: boolean;
   buttonText?: string;
   buttonHover?: string;
-}> = ({ onClick, children, title, disabled = false, active = false, buttonText = 'text-slate-400', buttonHover = 'hover:bg-slate-700 hover:text-white' }) => {
+}> = ({ onClick, children, title, disabled = false, active = false, buttonText = 'text-app-muted', buttonHover = 'hover:bg-app-hover hover:text-app-main' }) => {
   const baseClasses = 'p-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent';
 
-  const activeClasses = 'text-white bg-cyan-600 hover:bg-cyan-700';
+  const activeClasses = 'text-app-accent-text bg-app-accent-main hover:bg-app-accent-hover';
 
   const inactiveClasses = `${buttonText} ${buttonHover}`;
 
@@ -140,11 +134,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   hasUnsavedChanges,
   // Linter props
   isLinterActive,
-  // Appearance modal props
-  isAppearanceModalOpen,
-  setIsAppearanceModalOpen,
-  // Color preset
-  colorPreset
 }) => {
   const [isCodeDropdownOpen, setIsCodeDropdownOpen] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
@@ -251,26 +240,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     }
   };
 
-  // Theme helper
-  const isLight = settings.theme === 'light';
-  const theme = settings.theme;
-
-  // Get the current theme classes (from preset for light mode, from darkModeClasses for dark mode)
-  const themeClasses = isLight ? colorPreset.tailwindClasses : darkModeClasses;
-
-  // Theme-aware style classes using preset
-  const dividerClass = themeClasses.divider;
-  const dropdownBgClass = `${themeClasses.dropdownBg} border ${themeClasses.inputBorder}`;
-  const dropdownItemClass = `${themeClasses.dropdownText} ${themeClasses.dropdownHover}`;
-  const dropdownDividerClass = themeClasses.inputBorder;
+  // Theme-aware style classes using CSS variables
+  const dividerClass = 'bg-app-border-main';
+  const dropdownBgClass = 'bg-app-panel border border-app-border-main';
+  const dropdownItemClass = 'text-app-main hover:bg-app-hover';
+  const dropdownDividerClass = 'border-app-border-main';
 
   // Tool button classes
-  const toolButtonText = themeClasses.buttonText;
-  const toolButtonHover = `${themeClasses.buttonHover} ${isLight ? 'hover:text-gray-900' : 'hover:text-white'}`;
+  const toolButtonText = 'text-app-muted';
+  const toolButtonHover = 'hover:bg-app-hover hover:text-app-main';
 
   // Regular button classes
-  const buttonClasses = `${themeClasses.buttonBg} ${themeClasses.buttonText} ${themeClasses.buttonHover}`;
-  const focusRingOffset = isLight ? 'focus:ring-offset-white' : 'focus:ring-offset-slate-800';
+  const buttonClasses = 'bg-app-panel text-app-main hover:bg-app-hover border border-app-border-main';
+  const focusRingOffset = 'focus:ring-offset-app-bg-main';
 
   return (
     // flex-wrap sorgt für besseres Verhalten auf kleinen Bildschirmen
@@ -349,13 +331,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onNew}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${buttonClasses} ${focusRingOffset}`}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-app-accent-main ${buttonClasses} ${focusRingOffset}`}
           >
             New
           </button>
           <button
             onClick={onOpen}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${buttonClasses} ${focusRingOffset}`}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-app-accent-main ${buttonClasses} ${focusRingOffset}`}
           >
             Open
           </button>
@@ -365,7 +347,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           type="text"
           value={fileName}
           onChange={onFileNameChange}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 w-48 hidden sm:block ${themeClasses.inputBg} ${themeClasses.inputText} ${themeClasses.buttonHover} ${focusRingOffset} ${isLight ? `border ${themeClasses.inputBorder}` : ''}`}
+          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-app-accent-main w-48 hidden sm:block bg-app-input text-app-main border border-app-border-main ${toolButtonHover} ${focusRingOffset}`}
           placeholder="untitled.md"
           aria-label="Filename"
           spellCheck="false"
@@ -373,11 +355,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           onClick={onSave}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${
-            hasUnsavedChanges
-              ? 'text-white bg-cyan-600 hover:bg-cyan-700'
+          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-app-accent-main ${hasUnsavedChanges
+              ? 'text-app-accent-text bg-app-accent-main hover:bg-app-accent-hover'
               : `${buttonClasses} ${focusRingOffset}`
-          }`}
+            }`}
         >
           Save
         </button>
@@ -387,7 +368,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <button
             onClick={() => setIsHelpDropdownOpen(prev => !prev)}
             title="Help & reference"
-            className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 ${buttonClasses} ${focusRingOffset}`}
+            className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-app-accent-main ${buttonClasses} ${focusRingOffset}`}
           >
             Help
           </button>
@@ -422,16 +403,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               >
                 ⚙️ Settings
               </button>
-              <button
-                onClick={() => {
-                  setIsAppearanceModalOpen(true);
-                  setIsHelpDropdownOpen(false);
-                }}
-                className={`flex items-center gap-2 w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
-              >
-                <PaletteIcon />
-                <span>Appearance</span>
-              </button>
+
               <button
                 onClick={handleUpdate}
                 disabled={isUpdating}

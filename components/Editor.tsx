@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { EditorView, keymap, lineNumbers } from '@codemirror/view';
-import { EditorState, Compartment } from '@codemirror/state';
+import { EditorState, Compartment, Extension } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
 import { indentWithTab } from '@codemirror/commands';
 import { searchKeymap, openSearchPanel } from '@codemirror/search';
@@ -14,23 +14,23 @@ import { createTheme } from '@uiw/codemirror-themes';
 import { themeMap, getThemeExtension } from '../utils/themes';
 
 // Import basic setup components
-import { 
-  closeBrackets, 
-  autocompletion, 
-  closeBracketsKeymap, 
-  completionKeymap 
+import {
+  closeBrackets,
+  autocompletion,
+  closeBracketsKeymap,
+  completionKeymap
 } from '@codemirror/autocomplete';
-import { 
-  defaultKeymap, 
+import {
+  defaultKeymap,
   historyKeymap,
-  history 
+  history
 } from '@codemirror/commands';
-import { 
-  bracketMatching, 
-  indentOnInput, 
-  syntaxHighlighting, 
-  defaultHighlightStyle, 
-  foldKeymap 
+import {
+  bracketMatching,
+  indentOnInput,
+  syntaxHighlighting,
+  defaultHighlightStyle,
+  foldKeymap
 } from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
 
@@ -119,7 +119,7 @@ const customSearchKeymap = [
 // Create formatting keymap
 const createFormattingKeymap = (onFormat?: (formatType: string, options?: any) => void) => {
   if (!onFormat) return [];
-  
+
   return [
     // Text formatting
     {
@@ -261,7 +261,8 @@ interface EditorProps {
   onScroll?: (event: Event) => void;
   onFormat?: (formatType: string, options?: any) => void;
   settings: EditorSettings;
-  codemirrorTheme?: string; // Add this new prop
+  codemirrorTheme?: string; // Legacy string based theme
+  theme?: Extension; // Direct extension theme
 }
 
 export interface EditorRef {
@@ -274,13 +275,13 @@ export interface EditorRef {
   openSearchPanel: () => void;
 }
 
-export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat, settings, codemirrorTheme = 'basicDark' }, ref) => {
+export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat, settings, codemirrorTheme = 'basicDark', theme }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
-  
+
   // Create theme compartment per editor instance to avoid conflicts
   const themeCompartment = useRef(new Compartment()).current;
-  
+
   // Debug: Log available themes on first render
   useEffect(() => {
     console.log('Available CodeMirror themes:', Object.keys(themeMap));
@@ -310,11 +311,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     insertText: (text: string, start?: number, end?: number) => {
       const view = viewRef.current;
       if (!view) return;
-      
+
       const selection = view.state.selection.main;
       const from = start !== undefined ? start : selection.from;
       const to = end !== undefined ? end : selection.to;
-      
+
       view.dispatch({
         changes: { from, to, insert: text },
         selection: { anchor: from + text.length }
@@ -324,7 +325,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     setValue: (value: string) => {
       const view = viewRef.current;
       if (!view) return;
-      
+
       const currentContent = view.state.doc.toString();
       if (currentContent !== value) {
         view.dispatch({
@@ -357,13 +358,13 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         if (update.docChanged || update.selectionSet) {
           const newValue = update.state.doc.toString();
           const selection = update.state.selection.main;
-          
+
           // Calculate line and column from cursor position
           const pos = selection.from;
           const line = update.state.doc.lineAt(pos);
           const column = pos - line.from + 1; // 1-based indexing
           const lineNum = line.number;
-          
+
           // console.log('🔵 EDITOR CHANGE - Cursor at:', selection.from, 'Content length:', newValue.length);
           onChange(newValue, { line: lineNum, column: column });
         }
@@ -452,7 +453,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     const languagesToPreload = ['javascript', 'sql', 'python', 'php', 'xml'];
     const preloadPromises = languagesToPreload.map(lang => loadLanguage(lang));
     const loadedLanguages = await Promise.all(preloadPromises);
-    
+
     // Add loaded languages to extensions
     loadedLanguages.forEach(lang => {
       if (lang) {
@@ -473,10 +474,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     const initializeEditor = async () => {
       try {
         const baseExtensions = await createEditorExtensions(settings);
-        
+
         // Safely get the initial theme with fallback
-        const initialTheme = getThemeExtension(codemirrorTheme);
-        
+        const initialTheme = theme || getThemeExtension(codemirrorTheme);
+
         if (!isMounted) return; // Component was unmounted while loading
 
         const startState = EditorState.create({
@@ -493,7 +494,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         });
 
         viewRef.current = view;
-        
+
         // Force scrollbar styles with MutationObserver to continuously enforce them
         const forceScrollbarStyles = () => {
           const scrollerElement = editorRef.current?.querySelector('.cm-scroller') as HTMLElement;
@@ -505,15 +506,15 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
             scrollerElement.style.setProperty('scrollbar-color', settings.theme === 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff', 'important');
           }
         };
-        
+
         // Apply styles immediately
         setTimeout(forceScrollbarStyles, 50);
-        
+
         // Set up MutationObserver to re-apply styles if CodeMirror changes them
         const observer = new MutationObserver(() => {
           forceScrollbarStyles();
         });
-        
+
         if (editorRef.current) {
           observer.observe(editorRef.current, {
             childList: true,
@@ -522,7 +523,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
             attributeFilter: ['style', 'class']
           });
         }
-        
+
         // Store observer for cleanup
         (view as any)._scrollbarObserver = observer;
       } catch (error) {
@@ -550,17 +551,16 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     if (!view) return;
 
     try {
-      const newTheme = getThemeExtension(codemirrorTheme);
-      console.log('🎨 Updating CodeMirror theme to:', codemirrorTheme);
-      console.log('🎨 Theme extensions:', newTheme);
-      
+      const newTheme = theme || getThemeExtension(codemirrorTheme);
+      console.log('🎨 Updating CodeMirror theme extension');
+
       view.dispatch({
-        effects: themeCompartment.reconfigure(newTheme.flat())
+        effects: themeCompartment.reconfigure(Array.isArray(newTheme) ? newTheme : [newTheme])
       });
     } catch (error) {
       console.error('Failed to update CodeMirror theme:', error);
     }
-  }, [codemirrorTheme]);
+  }, [codemirrorTheme, theme]);
 
 
   // DO NOT update editor content from value prop during normal typing!
@@ -616,9 +616,8 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   `;
 
   return (
-    <div className={`rounded-t-lg h-full flex flex-col overflow-hidden ${
-      settings.theme === 'dark' ? 'bg-slate-800' : 'bg-white border border-gray-200'
-    }`}>
+    <div className={`rounded-t-lg h-full flex flex-col overflow-hidden ${settings.theme === 'dark' ? 'bg-slate-800' : 'bg-white border border-gray-200'
+      }`}>
       <style>{scrollbarStyles}</style>
       <div ref={editorRef} className="w-full h-full min-h-0" />
     </div>
