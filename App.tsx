@@ -57,8 +57,6 @@ declare global {
   }
 }
 
-// Import central theme configuration
-import { themeMap, formatThemeName } from './utils/themes';
 
 const App: React.FC = () => {
   // Initialize TabManager

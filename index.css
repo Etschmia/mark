@@ -1,7 +1,6 @@
 
 @layer utilities {
   .bg-app-main { background-color: var(--app-bg-main); }
-  .bg-app-sidebar { background-color: var(--app-bg-sidebar); }
   .bg-app-activity-bar { background-color: var(--app-bg-activity-bar); }
   .bg-app-panel { background-color: var(--app-bg-panel); }
   .bg-app-hover { background-color: var(--app-bg-hover); }
@@ -14,11 +13,10 @@
   .text-app-accent { color: var(--app-fg-accent); }
 
   .border-app-main { border-color: var(--app-border-main); }
-  .border-app-muted { border-color: var(--app-border-muted); }
 
   .bg-app-accent-main { background-color: var(--app-accent-main); }
   .bg-app-accent-hover { background-color: var(--app-accent-hover); }
   .text-app-accent-text { color: var(--app-accent-text); }
-  
+
   .border-app-accent-main { border-color: var(--app-accent-main); }
 }
