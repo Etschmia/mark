@@ -53,7 +53,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       previewTheme: 'Default',
       autoSave: true,
       showLineNumbers: false,
-      themeId: 'midnight-pro'
+      themeId: 'claude-dark'
     };
     setLocalSettings(defaultSettings);
   };
@@ -121,6 +121,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, themeId: e.target.value }))}
                   className={`w-full p-2 border rounded-md bg-app-input text-app-main border-app-main`}
                 >
+                  <optgroup label="Claude Themes">
+                    <option value="claude-dark">Claude Dark</option>
+                    <option value="claude-light">Claude Light</option>
+                  </optgroup>
                   <optgroup label="Dark Themes">
                     <option value="midnight-pro">Midnight Pro</option>
                     <option value="github-dark">GitHub Dark</option>

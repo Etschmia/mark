@@ -10,7 +10,79 @@ import {
     solarizedLight,
     materialLight,
 } from '@uiw/codemirror-themes-all';
+import { createTheme } from '@uiw/codemirror-themes';
+import { tags as t } from '@lezer/highlight';
 import { themes as previewThemes } from '../components/preview-themes';
+
+// Custom Claude Light theme for CodeMirror
+const claudeLightTheme = createTheme({
+    theme: 'light',
+    settings: {
+        background: '#FDFDF7',
+        foreground: '#171714',
+        caret: '#D4A27F',
+        selection: '#D4A27F33',
+        selectionMatch: '#D4A27F22',
+        lineHighlight: '#F5F5F0',
+        gutterBackground: '#FDFDF7',
+        gutterForeground: '#9E9E98',
+        gutterBorder: 'transparent',
+    },
+    styles: [
+        { tag: [t.keyword, t.operatorKeyword], color: '#9E6E42' },
+        { tag: [t.string, t.special(t.string)], color: '#5A7D3A' },
+        { tag: [t.number, t.bool, t.null], color: '#7A5B9E' },
+        { tag: [t.comment, t.lineComment, t.blockComment], color: '#8E8E88', fontStyle: 'italic' },
+        { tag: [t.function(t.variableName), t.function(t.propertyName)], color: '#4A7A9E' },
+        { tag: [t.variableName, t.propertyName], color: '#171714' },
+        { tag: [t.operator, t.punctuation], color: '#6E5C42' },
+        { tag: [t.typeName, t.className, t.namespace], color: '#7A5B9E' },
+        { tag: [t.definition(t.variableName), t.definition(t.propertyName)], color: '#4A7A9E' },
+        { tag: [t.tagName], color: '#9E6E42' },
+        { tag: [t.attributeName], color: '#4A7A9E' },
+        { tag: [t.attributeValue], color: '#5A7D3A' },
+        { tag: [t.heading], color: '#171714', fontWeight: 'bold' },
+        { tag: [t.emphasis], fontStyle: 'italic' },
+        { tag: [t.strong], fontWeight: 'bold' },
+        { tag: [t.link], color: '#C27B4F', textDecoration: 'underline' },
+        { tag: [t.url], color: '#C27B4F' },
+    ],
+});
+
+// Custom Claude Dark theme for CodeMirror
+const claudeDarkTheme = createTheme({
+    theme: 'dark',
+    settings: {
+        background: '#1A1918',
+        foreground: '#FAF9F6',
+        caret: '#D4A27F',
+        selection: '#D4A27F44',
+        selectionMatch: '#D4A27F33',
+        lineHighlight: '#252523',
+        gutterBackground: '#1A1918',
+        gutterForeground: '#666663',
+        gutterBorder: 'transparent',
+    },
+    styles: [
+        { tag: [t.keyword, t.operatorKeyword], color: '#D4A27F' },
+        { tag: [t.string, t.special(t.string)], color: '#A8C47A' },
+        { tag: [t.number, t.bool, t.null], color: '#B39CD0' },
+        { tag: [t.comment, t.lineComment, t.blockComment], color: '#666663', fontStyle: 'italic' },
+        { tag: [t.function(t.variableName), t.function(t.propertyName)], color: '#7DB4D4' },
+        { tag: [t.variableName, t.propertyName], color: '#FAF9F6' },
+        { tag: [t.operator, t.punctuation], color: '#C9A882' },
+        { tag: [t.typeName, t.className, t.namespace], color: '#B39CD0' },
+        { tag: [t.definition(t.variableName), t.definition(t.propertyName)], color: '#7DB4D4' },
+        { tag: [t.tagName], color: '#D4A27F' },
+        { tag: [t.attributeName], color: '#7DB4D4' },
+        { tag: [t.attributeValue], color: '#A8C47A' },
+        { tag: [t.heading], color: '#FAF9F6', fontWeight: 'bold' },
+        { tag: [t.emphasis], fontStyle: 'italic' },
+        { tag: [t.strong], fontWeight: 'bold' },
+        { tag: [t.link], color: '#D4A27F', textDecoration: 'underline' },
+        { tag: [t.url], color: '#D4A27F' },
+    ],
+});
 
 export interface AppTheme {
     id: string;
@@ -54,6 +126,88 @@ export interface AppTheme {
 }
 
 export const appThemes: AppTheme[] = [
+    // Claude Themes
+    {
+        id: 'claude-dark',
+        name: 'Claude Dark',
+        description: 'Warm dark theme inspired by Claude documentation',
+        type: 'dark',
+        colors: {
+            bg: {
+                main: '#1A1918',
+                sidebar: '#252523',
+                activityBar: '#1A1918',
+                panel: '#252523',
+                hover: '#2D2D2A',
+                active: '#3D3D39',
+                input: '#2D2D2A',
+            },
+            fg: {
+                main: '#FAF9F6',
+                secondary: '#B8B8B3',
+                muted: '#757571',
+                accent: '#D4A27F',
+            },
+            border: {
+                main: '#3D3D39',
+                muted: '#252523',
+            },
+            accent: {
+                main: '#D4A27F',
+                hover: '#E5B899',
+                text: '#1A1918',
+            },
+            status: {
+                info: '#7DB4D4',
+                warning: '#D4A27F',
+                error: '#C27B4F',
+                success: '#A8C47A',
+            },
+        },
+        codeMirrorTheme: claudeDarkTheme,
+        previewTheme: previewThemes['Claude Dark'],
+    },
+    {
+        id: 'claude-light',
+        name: 'Claude Light',
+        description: 'Warm light theme inspired by Claude documentation',
+        type: 'light',
+        colors: {
+            bg: {
+                main: '#FDFDF7',
+                sidebar: '#F8F8F3',
+                activityBar: '#F5F5F0',
+                panel: '#FDFDF7',
+                hover: '#F5F5F0',
+                active: '#E5E5DC',
+                input: '#F5F5F0',
+            },
+            fg: {
+                main: '#171714',
+                secondary: '#52524E',
+                muted: '#6E6E6A',
+                accent: '#C27B4F',
+            },
+            border: {
+                main: '#E5E5DC',
+                muted: '#F5F5F0',
+            },
+            accent: {
+                main: '#D4A27F',
+                hover: '#C08A66',
+                text: '#FDFDF7',
+            },
+            status: {
+                info: '#4A7A9E',
+                warning: '#9E6E42',
+                error: '#C27B4F',
+                success: '#5A7D3A',
+            },
+        },
+        codeMirrorTheme: claudeLightTheme,
+        previewTheme: previewThemes['Claude Light'],
+    },
+
     // Dark Themes
     {
         id: 'midnight-pro',
@@ -383,4 +537,4 @@ export const getAppThemeById = (id: string): AppTheme => {
     return appThemes.find((t) => t.id === id) || appThemes[0];
 };
 
-export const defaultThemeId = 'midnight-pro';
+export const defaultThemeId = 'claude-dark';

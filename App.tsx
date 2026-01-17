@@ -77,7 +77,7 @@ const App: React.FC = () => {
         previewTheme: 'Default',
         autoSave: true,
         showLineNumbers: false,
-        themeId: 'midnight-pro'
+        themeId: 'claude-dark'
       };
 
       if (savedSettings) {
@@ -100,7 +100,7 @@ const App: React.FC = () => {
         previewTheme: 'Default',
         autoSave: true,
         showLineNumbers: false,
-        themeId: 'midnight-pro'
+        themeId: 'claude-dark'
       };
     }
   };

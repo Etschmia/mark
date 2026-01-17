@@ -19,6 +19,38 @@ const baseStyles = `
 `;
 
 export const themes: { [key: string]: string } = {
+  // ===== CLAUDE THEMES =====
+
+  // Claude Light - warm off-white theme inspired by Claude documentation
+  'Claude Light': baseStyles + `
+    .prose-styles { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #FDFDF7; color: #171714; }
+    .prose-styles h1, .prose-styles h2, .prose-styles th, .prose-styles td, .prose-styles hr { border-color: #E5E5DC; }
+    .prose-styles h1, .prose-styles h2, .prose-styles h3 { color: #171714; font-weight: 600; }
+    .prose-styles a { color: #C27B4F; }
+    .prose-styles a:hover { color: #C08A66; }
+    .prose-styles blockquote { color: #52524E; border-color: #D4A27F; background-color: #F8F8F3; }
+    .prose-styles code:not(pre > code) { background-color: #F5F5F0; color: #9E6E42; font-family: 'Fira Code', monospace; border: 1px solid #E5E5DC; }
+    .prose-styles pre { background-color: #F5F5F0; border: 1px solid #E5E5DC; }
+    .prose-styles pre code { font-family: 'Fira Code', monospace; }
+    .prose-styles th { background-color: #F8F8F3; }
+    .prose-styles li::marker { color: #D4A27F; }
+  `,
+
+  // Claude Dark - dark warm theme inspired by Claude documentation
+  'Claude Dark': baseStyles + `
+    .prose-styles { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #1A1918; color: #FAF9F6; }
+    .prose-styles h1, .prose-styles h2, .prose-styles th, .prose-styles td, .prose-styles hr { border-color: #3D3D39; }
+    .prose-styles h1, .prose-styles h2, .prose-styles h3 { color: #FAF9F6; font-weight: 600; }
+    .prose-styles a { color: #D4A27F; }
+    .prose-styles a:hover { color: #E5B899; }
+    .prose-styles blockquote { color: #B8B8B3; border-color: #D4A27F; background-color: #252523; }
+    .prose-styles code:not(pre > code) { background-color: #2D2D2A; color: #D4A27F; font-family: 'Fira Code', monospace; border: 1px solid #3D3D39; }
+    .prose-styles pre { background-color: #2D2D2A; border: 1px solid #3D3D39; }
+    .prose-styles pre code { font-family: 'Fira Code', monospace; }
+    .prose-styles th { background-color: #252523; }
+    .prose-styles li::marker { color: #D4A27F; }
+  `,
+
   // ===== DARK BUNDLE THEMES =====
 
   // Midnight Pro - matches VS Code Dark
