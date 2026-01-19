@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { AppTheme, getAppThemeById, defaultThemeId } from '../utils/appThemes';
+import { AppTheme, appThemes, getAppThemeById, defaultThemeId } from '../utils/appThemes';
 
 interface UseAppThemeReturn {
     currentTheme: AppTheme;
@@ -74,6 +74,6 @@ export const useAppTheme = (initialThemeId?: string): UseAppThemeReturn => {
     return {
         currentTheme,
         setThemeId,
-        availableThemes: [], // Can export list if needed, but usually imported directly
+        availableThemes: appThemes,
     };
 };

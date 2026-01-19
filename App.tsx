@@ -999,7 +999,6 @@ const App: React.FC = () => {
         onClose={() => setIsSettingsModalOpen(false)}
         settings={settings}
         onSettingsChange={handleSettingsChange}
-        availablePreviewThemes={Object.keys(themes)}
       />
 
       <AboutModal

@@ -13,6 +13,7 @@
   .text-app-accent { color: var(--app-fg-accent); }
 
   .border-app-main { border-color: var(--app-border-main); }
+  .border-app-border-muted { border-color: var(--app-border-muted); }
 
   .bg-app-accent-main { background-color: var(--app-accent-main); }
   .bg-app-accent-hover { background-color: var(--app-accent-hover); }

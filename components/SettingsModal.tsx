@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal } from './common/Modal';
+import { appThemes } from '../utils/appThemes';
 
 export interface EditorSettings {
   theme: 'light' | 'dark';
@@ -16,7 +17,6 @@ interface SettingsModalProps {
   onClose: () => void;
   settings: EditorSettings;
   onSettingsChange: (settings: EditorSettings) => void;
-  availablePreviewThemes: string[];
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -24,7 +24,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   settings,
   onSettingsChange,
-  availablePreviewThemes
 }) => {
   const [localSettings, setLocalSettings] = useState<EditorSettings>(settings);
 
@@ -32,13 +31,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   React.useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
-
-  // Debug: Log when modal should be visible
-  React.useEffect(() => {
-    if (isOpen) {
-      console.log('Settings modal opened');
-    }
-  }, [isOpen]);
 
   const handleSave = () => {
     onSettingsChange(localSettings);
@@ -122,20 +114,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   className={`w-full p-2 border rounded-md bg-app-input text-app-main border-app-main`}
                 >
                   <optgroup label="Claude Themes">
-                    <option value="claude-dark">Claude Dark</option>
-                    <option value="claude-light">Claude Light</option>
+                    {appThemes.filter(t => t.id.startsWith('claude-')).map(theme => (
+                      <option key={theme.id} value={theme.id}>{theme.name}</option>
+                    ))}
                   </optgroup>
                   <optgroup label="Dark Themes">
-                    <option value="midnight-pro">Midnight Pro</option>
-                    <option value="github-dark">GitHub Dark</option>
-                    <option value="nord">Nord</option>
-                    <option value="dracula">Dracula</option>
+                    {appThemes.filter(t => t.type === 'dark' && !t.id.startsWith('claude-')).map(theme => (
+                      <option key={theme.id} value={theme.id}>{theme.name}</option>
+                    ))}
                   </optgroup>
                   <optgroup label="Light Themes">
-                    <option value="classic-paper">Classic Paper</option>
-                    <option value="github-light">GitHub Light</option>
-                    <option value="solarized-light">Solarized Light</option>
-                    <option value="ocean-breeze">Ocean Breeze</option>
+                    {appThemes.filter(t => t.type === 'light' && !t.id.startsWith('claude-')).map(theme => (
+                      <option key={theme.id} value={theme.id}>{theme.name}</option>
+                    ))}
                   </optgroup>
                 </select>
               </label>
