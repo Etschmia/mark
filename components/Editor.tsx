@@ -12,6 +12,7 @@ import { createTheme } from '@uiw/codemirror-themes';
 
 // Import central theme configuration
 import { themeMap, getThemeExtension } from '../utils/themes';
+import { getAppThemeById } from '../utils/appThemes';
 
 // Import basic setup components
 import {
@@ -279,6 +280,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
+  // Determine if theme is dark using the ID for accuracy
+  const activeTheme = getAppThemeById(settings.themeId);
+  const isDark = activeTheme.type === 'dark';
+
   // Create theme compartment per editor instance to avoid conflicts
   const themeCompartment = useRef(new Compartment()).current;
 
@@ -503,7 +508,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
             scrollerElement.style.setProperty('overflow-x', 'auto', 'important');
             scrollerElement.style.setProperty('overflow', 'auto', 'important');
             scrollerElement.style.setProperty('scrollbar-width', 'auto', 'important');
-            scrollerElement.style.setProperty('scrollbar-color', settings.theme === 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff', 'important');
+            scrollerElement.style.setProperty('scrollbar-color', isDark ? '#64748b #1e293b' : '#a8a29e #f5f5f4', 'important');
           }
         };
 
@@ -543,7 +548,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         view.destroy();
       }
     };
-  }, [settings.theme, settings.fontSize, settings.showLineNumbers]); // Don't recreate on codemirror theme change
+  }, [settings.theme, settings.themeId, settings.fontSize, settings.showLineNumbers]); // Recreate when basic settings or theme ID change
 
   // Separate effect for updating CodeMirror theme without recreating the editor
   useEffect(() => {
@@ -568,6 +573,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   // which are handled by recreating the editor with new initial content.
 
   // Force native scrollbars on CodeMirror with maximum specificity
+  // properties must match Preview.tsx exactly
   const scrollbarStyles = `
     .cm-editor .cm-scroller,
     .cm-scroller,
@@ -576,7 +582,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       overflow-x: auto !important;
       overflow-y: auto !important;
       scrollbar-width: auto !important;
-      scrollbar-color: ${settings.theme === 'dark' ? '#64748b #1e293b' : '#9ca3af #ffffff'} !important;
+      scrollbar-color: ${isDark ? '#64748b #1e293b' : '#a8a29e #f5f5f4'} !important;
     }
     
     .cm-editor .cm-scroller::-webkit-scrollbar,
@@ -590,28 +596,28 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     .cm-editor .cm-scroller::-webkit-scrollbar-track,
     .cm-scroller::-webkit-scrollbar-track,
     div.cm-editor .cm-scroller::-webkit-scrollbar-track {
-      background: ${settings.theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+      background: ${isDark ? '#1e293b' : '#f5f5f4'} !important;
       border-radius: 7px !important;
     }
     
     .cm-editor .cm-scroller::-webkit-scrollbar-thumb,
     .cm-scroller::-webkit-scrollbar-thumb,
     div.cm-editor .cm-scroller::-webkit-scrollbar-thumb {
-      background: ${settings.theme === 'dark' ? '#64748b' : '#9ca3af'} !important;
+      background: ${isDark ? '#64748b' : '#a8a29e'} !important;
       border-radius: 7px !important;
-      border: 2px solid ${settings.theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+      border: 2px solid ${isDark ? '#1e293b' : '#f5f5f4'} !important;
     }
     
     .cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover,
     .cm-scroller::-webkit-scrollbar-thumb:hover,
     div.cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
-      background: ${settings.theme === 'dark' ? '#94a3b8' : '#6b7280'} !important;
+      background: ${isDark ? '#94a3b8' : '#78716c'} !important;
     }
     
     .cm-editor .cm-scroller::-webkit-scrollbar-corner,
     .cm-scroller::-webkit-scrollbar-corner,
     div.cm-editor .cm-scroller::-webkit-scrollbar-corner {
-      background: ${settings.theme === 'dark' ? '#1e293b' : '#ffffff'} !important;
+      background: ${isDark ? '#1e293b' : '#f5f5f4'} !important;
     }
   `;
 
