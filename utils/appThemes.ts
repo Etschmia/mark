@@ -537,4 +537,16 @@ export const getAppThemeById = (id: string): AppTheme => {
     return appThemes.find((t) => t.id === id) || appThemes[0];
 };
 
+export interface ScrollbarColors {
+    track: string;
+    thumb: string;
+    thumbHover: string;
+}
+
+export const getScrollbarColors = (theme: AppTheme): ScrollbarColors => ({
+    track: theme.colors.bg.panel,
+    thumb: theme.colors.fg.muted,
+    thumbHover: theme.colors.fg.secondary,
+});
+
 export const defaultThemeId = 'claude-dark';

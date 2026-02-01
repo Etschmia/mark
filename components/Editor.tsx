@@ -12,7 +12,7 @@ import { createTheme } from '@uiw/codemirror-themes';
 
 // Import central theme configuration
 import { themeMap, getThemeExtension } from '../utils/themes';
-import { getAppThemeById } from '../utils/appThemes';
+import { getAppThemeById, getScrollbarColors } from '../utils/appThemes';
 
 // Import basic setup components
 import {
@@ -283,6 +283,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
   // Determine if theme is dark using the ID for accuracy
   const activeTheme = getAppThemeById(settings.themeId);
   const isDark = activeTheme.type === 'dark';
+  const sbColors = getScrollbarColors(activeTheme);
 
   // Create theme compartment per editor instance to avoid conflicts
   const themeCompartment = useRef(new Compartment()).current;
@@ -508,7 +509,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
             scrollerElement.style.setProperty('overflow-x', 'auto', 'important');
             scrollerElement.style.setProperty('overflow', 'auto', 'important');
             scrollerElement.style.setProperty('scrollbar-width', 'auto', 'important');
-            scrollerElement.style.setProperty('scrollbar-color', isDark ? '#64748b #1e293b' : '#a8a29e #f5f5f4', 'important');
+            scrollerElement.style.setProperty('scrollbar-color', `${sbColors.thumb} ${sbColors.track}`, 'important');
           }
         };
 
@@ -582,9 +583,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       overflow-x: auto !important;
       overflow-y: auto !important;
       scrollbar-width: auto !important;
-      scrollbar-color: ${isDark ? '#64748b #1e293b' : '#a8a29e #f5f5f4'} !important;
+      scrollbar-color: ${sbColors.thumb} ${sbColors.track} !important;
     }
-    
+
     .cm-editor .cm-scroller::-webkit-scrollbar,
     .cm-scroller::-webkit-scrollbar,
     div.cm-editor .cm-scroller::-webkit-scrollbar {
@@ -592,32 +593,32 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       height: 14px !important;
       display: block !important;
     }
-    
+
     .cm-editor .cm-scroller::-webkit-scrollbar-track,
     .cm-scroller::-webkit-scrollbar-track,
     div.cm-editor .cm-scroller::-webkit-scrollbar-track {
-      background: ${isDark ? '#1e293b' : '#f5f5f4'} !important;
+      background: ${sbColors.track} !important;
       border-radius: 7px !important;
     }
-    
+
     .cm-editor .cm-scroller::-webkit-scrollbar-thumb,
     .cm-scroller::-webkit-scrollbar-thumb,
     div.cm-editor .cm-scroller::-webkit-scrollbar-thumb {
-      background: ${isDark ? '#64748b' : '#a8a29e'} !important;
+      background: ${sbColors.thumb} !important;
       border-radius: 7px !important;
-      border: 2px solid ${isDark ? '#1e293b' : '#f5f5f4'} !important;
+      border: 2px solid ${sbColors.track} !important;
     }
-    
+
     .cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover,
     .cm-scroller::-webkit-scrollbar-thumb:hover,
     div.cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
-      background: ${isDark ? '#94a3b8' : '#78716c'} !important;
+      background: ${sbColors.thumbHover} !important;
     }
-    
+
     .cm-editor .cm-scroller::-webkit-scrollbar-corner,
     .cm-scroller::-webkit-scrollbar-corner,
     div.cm-editor .cm-scroller::-webkit-scrollbar-corner {
-      background: ${isDark ? '#1e293b' : '#f5f5f4'} !important;
+      background: ${sbColors.track} !important;
     }
   `;
 

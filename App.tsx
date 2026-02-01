@@ -28,6 +28,7 @@ import { WebAnalytics } from './components/WebAnalytics';
 // Import the new hooks and services
 import { useTabManager } from './hooks/useTabManager';
 import { useAppTheme } from './hooks/useAppTheme';
+import { getScrollbarColors } from './utils/appThemes';
 import { useFileService } from './services/fileService';
 import { useGitHubServiceHandlers } from './services/githubServiceHandlers';
 import { useFormatting } from './hooks/useFormatting';
@@ -968,6 +969,7 @@ const App: React.FC = () => {
               markdown={markdown}
               themeStyles={currentTheme.previewTheme}
               themeType={currentTheme.type}
+              scrollbarColors={getScrollbarColors(currentTheme)}
               onScroll={(event) => handleScroll('preview', event.nativeEvent)}
               ref={previewRef}
             />

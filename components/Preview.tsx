@@ -1,6 +1,7 @@
 import React, { useState, useEffect, forwardRef } from 'react';
 
 import { removeFrontmatter } from '../utils/frontmatterUtils';
+import type { ScrollbarColors } from '../utils/appThemes';
 
 // Dynamic imports for heavy dependencies
 let marked: any = null;
@@ -83,13 +84,12 @@ interface PreviewProps {
   markdown: string;
   themeStyles: string;
   themeType: 'light' | 'dark';
+  scrollbarColors: ScrollbarColors;
   onScroll: (event: React.UIEvent<HTMLDivElement>) => void;
 }
 
-// Add scrollbar styling to match the preview theme
-const getScrollbarStyles = (type: 'light' | 'dark') => {
-  const isLightTheme = type === 'light';
-
+// Add scrollbar styling to match the current app theme
+const getScrollbarStyles = (colors: ScrollbarColors) => {
   return `
   .preview-scrollbar,
   div.preview-scrollbar {
@@ -97,7 +97,7 @@ const getScrollbarStyles = (type: 'light' | 'dark') => {
     overflow-x: auto !important;
     overflow-y: auto !important;
     scrollbar-width: auto !important;
-    scrollbar-color: ${isLightTheme ? '#a8a29e #f5f5f4' : '#64748b #1e293b'} !important;
+    scrollbar-color: ${colors.thumb} ${colors.track} !important;
   }
 
   .preview-scrollbar::-webkit-scrollbar,
@@ -109,25 +109,25 @@ const getScrollbarStyles = (type: 'light' | 'dark') => {
 
   .preview-scrollbar::-webkit-scrollbar-track,
   div.preview-scrollbar::-webkit-scrollbar-track {
-    background: ${isLightTheme ? '#f5f5f4' : '#1e293b'} !important;
+    background: ${colors.track} !important;
     border-radius: 7px !important;
   }
 
   .preview-scrollbar::-webkit-scrollbar-thumb,
   div.preview-scrollbar::-webkit-scrollbar-thumb {
-    background: ${isLightTheme ? '#a8a29e' : '#64748b'} !important;
+    background: ${colors.thumb} !important;
     border-radius: 7px !important;
-    border: 2px solid ${isLightTheme ? '#f5f5f4' : '#1e293b'} !important;
+    border: 2px solid ${colors.track} !important;
   }
 
   .preview-scrollbar::-webkit-scrollbar-thumb:hover,
   div.preview-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: ${isLightTheme ? '#78716c' : '#94a3b8'} !important;
+    background: ${colors.thumbHover} !important;
   }
 
   .preview-scrollbar::-webkit-scrollbar-corner,
   div.preview-scrollbar::-webkit-scrollbar-corner {
-    background: ${isLightTheme ? '#f5f5f4' : '#1e293b'} !important;
+    background: ${colors.track} !important;
   }
 `};
 
@@ -145,7 +145,7 @@ const ALLOWED_ATTR = [
 ];
 
 
-export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, themeStyles, themeType, onScroll }, ref) => {
+export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, themeStyles, themeType, scrollbarColors, onScroll }, ref) => {
   const [sanitizedHtml, setSanitizedHtml] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [dependencies, setDependencies] = useState<{
@@ -249,7 +249,7 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
         className="preview-scrollbar h-full overflow-y-auto p-6 prose-styles transition-colors duration-300"
       >
         <style>{themeStyles}</style>
-        <style>{getScrollbarStyles(themeType)}</style>
+        <style>{getScrollbarStyles(scrollbarColors)}</style>
         <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
       </div>
     </div>
