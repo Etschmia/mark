@@ -25,7 +25,7 @@ npm run update-sw-version     # Update service worker cache version
 ### State Management
 - **App.tsx** (1100+ lines) is the central orchestrator holding all state
 - **TabManager class** (`utils/tabManager.ts`) manages multi-tab state with localStorage persistence
-- Custom hooks extract logic from App.tsx: `useTabManager`, `useFormatting`, `useHistoryManager`, `useKeyboardShortcuts`, `useLinter`, `useResizer`, `useScrollSync`, `useSettings`
+- Custom hooks extract logic from App.tsx: `useTabManager`, `useFormatting`, `useHistoryManager`, `useLinter`, `useResizer`, `useScrollSync`, `useAppTheme`
 
 ### Component Structure
 ```
@@ -58,9 +58,9 @@ Vite config splits chunks: `codemirror-all`, `markdown-processing`, `syntax-high
 
 ## Key Types (types.ts)
 
-- **Tab**: id, filename, content, history, historyIndex, editorState, fileSource, fileHandle, unsavedChanges
+- **Tab**: id, filename, content, history, historyIndex, editorState, fileSource, fileHandle, hasUnsavedChanges
 - **FileSource**: `{type: 'local'|'github', repository?, path?, sha?}`
-- **EditorSettings**: theme, fontSize, debounceTime, previewTheme, autoSave, showLineNumbers
+- **EditorSettings**: theme, fontSize, debounceTime, previewTheme, autoSave, showLineNumbers, themeId
 - **FormatType**: Union of all formatting operations
 
 ## Key APIs
@@ -111,9 +111,9 @@ Toolbar button / Keyboard shortcut → onFormat callback
 
 ## Technology Stack
 
-- **Editor**: CodeMirror 6 with @uiw/codemirror-themes-all (16 themes)
+- **Editor**: CodeMirror 6 with @uiw/codemirror-themes-all
 - **Markdown**: marked 17.x, DOMPurify 3.x, highlight.js 11.x
-- **Export**: jsPDF 3.x, html2canvas, docx 9.x
+- **Export**: jsPDF 4.x, html2canvas, docx 9.x
 - **GitHub**: @octokit/rest 22.x with OAuth PKCE flow
 - **PWA**: Service worker with cache-first strategy, versioned via build scripts
 
