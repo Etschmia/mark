@@ -104,8 +104,6 @@ const App: React.FC = () => {
     }
   };
 
-  const persistedSettings = getPersistedSettings();
-
   // Get active tab for current state
   const activeTab = tabManagerRef.current.getActiveTab();
 
@@ -118,7 +116,7 @@ const App: React.FC = () => {
     return currentTab?.content || '';
   };
   const [fileName, setFileName] = useState<string>(activeTab?.filename || 'untitled.md');
-  const [settings, setSettings] = useState<EditorSettings>(persistedSettings);
+  const [settings, setSettings] = useState<EditorSettings>(getPersistedSettings);
   const editorRef = useRef<EditorRef>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const fileHandleRef = useRef<FileSystemFileHandle | null>(activeTab?.fileHandle || null);
