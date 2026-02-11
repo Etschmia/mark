@@ -1,6 +1,8 @@
+mod menu;
+
 use std::env;
 use std::path::PathBuf;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -21,7 +23,6 @@ pub fn run() {
       }
       .canonicalize()
       .unwrap_or_else(|_| {
-        // canonicalize fails if path doesn't exist — use joined path
         let joined = if PathBuf::from(arg).is_absolute() {
           PathBuf::from(arg)
         } else {
@@ -44,6 +45,15 @@ pub fn run() {
             .build(),
         )?;
       }
+
+      // Build and set native menu bar
+      let app_menu = menu::build_menu(app.handle())?;
+      app.set_menu(app_menu)?;
+
+      // Forward custom menu events to the frontend
+      app.on_menu_event(|handle, event| {
+        let _ = handle.emit("menu-action", event.id().as_ref());
+      });
 
       // Inject resolved CLI args into the webview
       if !resolved.is_empty() {

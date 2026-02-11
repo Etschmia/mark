@@ -315,8 +315,57 @@ export const useFileService = ({
     tabManagerRef.current?.markTabAsSaved(updatedActiveTab.id);
   }, [syncStateToActiveTab, githubState.auth.isConnected, tabManagerRef, setIsSaveOptionsModalOpen, setFileName, fileHandleRef]);
 
+  const handleSaveFileAs = useCallback(async () => {
+    syncStateToActiveTab();
+    const tab = tabManagerRef.current?.getActiveTab();
+    if (!tab) return;
+
+    if (isDesktopApp()) {
+      const { desktopSaveFileAs } = await import('./desktopFileService');
+      const result = await desktopSaveFileAs(
+        tab.content,
+        tab.filename.trim() || 'untitled.md'
+      );
+      if (!result) return;
+
+      tabManagerRef.current?.updateTabFileSource(tab.id, {
+        type: 'local',
+        path: result.filePath,
+      });
+      tabManagerRef.current?.updateTabFilename(tab.id, result.fileName);
+      tabManagerRef.current?.markTabAsSaved(tab.id);
+      setFileName(result.fileName);
+      return;
+    }
+
+    // Browser: show save picker (always as "save as")
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: tab.filename.trim() || 'untitled.md',
+          types: [{
+            description: 'Markdown Files',
+            accept: { 'text/markdown': ['.md', '.txt', '.markdown'] }
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(tab.content);
+        await writable.close();
+        tabManagerRef.current?.updateTabFileHandle(tab.id, handle);
+        tabManagerRef.current?.updateTabFilename(tab.id, handle.name);
+        tabManagerRef.current?.markTabAsSaved(tab.id);
+        setFileName(handle.name);
+        fileHandleRef.current = handle;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        console.warn('Save As failed:', err);
+      }
+    }
+  }, [syncStateToActiveTab, tabManagerRef, setFileName, fileHandleRef]);
+
   return {
     handleOpenFile,
     handleSaveFile,
+    handleSaveFileAs,
   };
 };

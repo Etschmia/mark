@@ -303,7 +303,7 @@ const App: React.FC = () => {
   });
 
   // Use the file service hook
-  const { handleOpenFile, handleSaveFile } = useFileService({
+  const { handleOpenFile, handleSaveFile, handleSaveFileAs } = useFileService({
     tabManagerRef,
     syncStateToActiveTab,
     githubState,
@@ -581,6 +581,79 @@ const App: React.FC = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [tabManagerState.activeTabId, isHelpModalOpen, isCheatSheetModalOpen, isSettingsModalOpen, isAboutModalOpen, isFrontmatterModalOpen, isGitHubModalOpen, isSaveOptionsModalOpen, isTabConfirmationOpen, switchToTab, closeTab, createNewTab]);
+
+  // Native menu event listener (desktop only)
+  useEffect(() => {
+    if (!isDesktopApp()) return;
+
+    let unlisten: (() => void) | null = null;
+
+    (async () => {
+      const { listen } = await import('@tauri-apps/api/event');
+
+      unlisten = await listen<string>('menu-action', (event) => {
+        switch (event.payload) {
+          case 'new_file':
+            createNewTab();
+            setGithubState(prev => ({ ...prev, currentFile: null }));
+            editorRef.current?.focus();
+            break;
+          case 'open_file':
+            handleOpenFile();
+            break;
+          case 'open_folder':
+            openFolder();
+            break;
+          case 'save':
+            handleSaveFile();
+            break;
+          case 'save_as':
+            handleSaveFileAs();
+            break;
+          case 'close_tab':
+            if (tabManagerState.activeTabId) {
+              closeTab(tabManagerState.activeTabId);
+            }
+            break;
+          case 'find':
+            editorRef.current?.openSearchPanel();
+            break;
+          case 'toggle_preview':
+            // Preview is always visible in current layout — reserved for future use
+            break;
+          case 'toggle_linter':
+            setIsLinterActive(prev => !prev);
+            break;
+          case 'toggle_sidebar':
+            toggleSidebar();
+            break;
+          case 'toggle_fullscreen':
+            if (document.fullscreenElement) {
+              document.exitFullscreen();
+            } else {
+              document.documentElement.requestFullscreen();
+            }
+            break;
+          case 'shortcuts':
+            setIsHelpModalOpen(true);
+            break;
+          case 'cheatsheet':
+            setIsCheatSheetModalOpen(true);
+            break;
+          case 'about':
+            setIsAboutModalOpen(true);
+            break;
+        }
+      });
+    })();
+
+    return () => {
+      unlisten?.();
+    };
+  }, [
+    createNewTab, handleOpenFile, handleSaveFile, handleSaveFileAs,
+    openFolder, closeTab, toggleSidebar, tabManagerState.activeTabId,
+  ]);
 
   // Check if current content differs from original (for GitHub files)
   const hasUnsavedChanges = useCallback(() => {
