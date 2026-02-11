@@ -63,10 +63,34 @@ for (const { name, size } of pngSizes) {
   console.log(`  ${name} (${size}x${size})`);
 }
 
-// icon.ico — write 256x256 PNG (Tauri bundler handles conversion on Windows)
-const ico = await sharp(Buffer.from(createSVG(256))).png().toBuffer();
-writeFileSync(resolve(iconsDir, 'icon.ico'), ico);
-console.log('  icon.ico (256x256)');
+// icon.ico — build a proper ICO file with multiple sizes embedded as PNG
+const icoSizes = [16, 32, 48, 256];
+const icoPngs = [];
+for (const s of icoSizes) {
+  icoPngs.push(await sharp(Buffer.from(createSVG(s))).png().toBuffer());
+}
+// ICO format: 6-byte header + 16-byte entry per image + image data
+const headerSize = 6 + icoSizes.length * 16;
+const header = Buffer.alloc(headerSize);
+header.writeUInt16LE(0, 0);      // reserved
+header.writeUInt16LE(1, 2);      // type: 1 = ICO
+header.writeUInt16LE(icoSizes.length, 4); // image count
+let dataOffset = headerSize;
+for (let i = 0; i < icoSizes.length; i++) {
+  const entryOffset = 6 + i * 16;
+  const s = icoSizes[i];
+  header.writeUInt8(s < 256 ? s : 0, entryOffset);       // width (0 = 256)
+  header.writeUInt8(s < 256 ? s : 0, entryOffset + 1);   // height (0 = 256)
+  header.writeUInt8(0, entryOffset + 2);                  // color palette
+  header.writeUInt8(0, entryOffset + 3);                  // reserved
+  header.writeUInt16LE(1, entryOffset + 4);               // color planes
+  header.writeUInt16LE(32, entryOffset + 6);              // bits per pixel
+  header.writeUInt32LE(icoPngs[i].length, entryOffset + 8);  // image size
+  header.writeUInt32LE(dataOffset, entryOffset + 12);     // data offset
+  dataOffset += icoPngs[i].length;
+}
+writeFileSync(resolve(iconsDir, 'icon.ico'), Buffer.concat([header, ...icoPngs]));
+console.log('  icon.ico (16,32,48,256)');
 
 // icon.icns — write 512x512 PNG (Tauri bundler handles conversion on macOS)
 const icns = await sharp(Buffer.from(createSVG(512))).png().toBuffer();
