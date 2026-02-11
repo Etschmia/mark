@@ -4,6 +4,11 @@ import { isBrowserApp } from '../utils/environment';
 const DISMISSED_KEY = 'desktop-banner-dismissed';
 const RELEASES_URL = 'https://github.com/Etschmia/mark/releases/latest';
 
+function isMobile(): boolean {
+  const ua = navigator.userAgent.toLowerCase();
+  return /android|iphone|ipad|ipod|mobile|tablet/.test(ua);
+}
+
 function detectOS(): 'linux' | 'macos' | 'windows' | 'unknown' {
   const ua = navigator.userAgent.toLowerCase();
   if (ua.includes('win')) return 'windows';
@@ -27,7 +32,7 @@ export const DesktopDownloadBanner: React.FC = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!isBrowserApp()) return;
+    if (!isBrowserApp() || isMobile()) return;
     const dismissed = localStorage.getItem(DISMISSED_KEY);
     if (!dismissed) setVisible(true);
   }, []);
