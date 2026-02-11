@@ -38,7 +38,11 @@ import { useLinter } from './hooks/useLinter';
 import { useResizer } from './hooks/useResizer';
 import { useScrollSync } from './hooks/useScrollSync';
 import { useUpdateService } from './services/updateService';
+import { openFileByPath } from './services/fileService';
 import { extractFrontmatter, combineFrontmatterAndContent, FrontmatterData } from './utils/frontmatterUtils';
+import { isDesktopApp } from './utils/environment';
+import { useWorkspace } from './hooks/useWorkspace';
+import { WorkspaceSidebar } from './components/WorkspaceSidebar';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -424,6 +428,17 @@ const App: React.FC = () => {
     setUpdateBuildInfo,
     setIsUpdateInfoModalOpen,
   });
+
+  // Workspace hook (desktop only — no-op in browser)
+  const { workspace, openFolder, closeWorkspace, toggleSidebar, refreshFiles } = useWorkspace();
+
+  // Handle file selection from workspace sidebar
+  const handleWorkspaceFileSelect = useCallback(async (filePath: string) => {
+    await openFileByPath(filePath, tabManagerRef, createNewTab, switchToTab);
+  }, [tabManagerRef, createNewTab, switchToTab]);
+
+  // Get current active file path for sidebar highlighting
+  const activeFilePath = tabManagerRef.current.getActiveTab()?.fileSource?.path || null;
 
   // Tab Manager subscription and initialization
   useEffect(() => {
@@ -885,10 +900,26 @@ const App: React.FC = () => {
 
         />
       </header>
-      <main
-        ref={mainRef}
-        className="flex-grow grid grid-cols-1 md:grid-cols-[50%_auto_1fr] gap-2 p-4 overflow-hidden"
-      >
+      <div className="flex-grow flex overflow-hidden">
+        {/* Workspace Sidebar (desktop only) */}
+        {isDesktopApp() && (
+          <WorkspaceSidebar
+            rootPath={workspace.rootPath}
+            files={workspace.files}
+            isLoading={workspace.isLoading}
+            isOpen={workspace.isOpen}
+            activeFilePath={activeFilePath}
+            onFileSelect={handleWorkspaceFileSelect}
+            onOpenFolder={openFolder}
+            onClose={closeWorkspace}
+            onRefresh={refreshFiles}
+          />
+        )}
+
+        <main
+          ref={mainRef}
+          className="flex-grow grid grid-cols-1 md:grid-cols-[50%_auto_1fr] gap-2 p-4 overflow-hidden"
+        >
         <div className="flex flex-col min-h-0">
           {/* TabBar - conditionally rendered when multiple tabs exist */}
           <TabBar
@@ -968,6 +999,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+      </div>
 
       {/* Web Analytics */}
       <WebAnalytics />
