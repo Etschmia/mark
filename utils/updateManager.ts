@@ -1,3 +1,5 @@
+import { getStorageService } from '../services/storage';
+
 interface BuildInfo {
     buildDate: string;
     buildTimestamp: number;
@@ -15,6 +17,7 @@ interface UpdateResult {
  * Check for and install application updates
  */
 export async function checkAndInstallUpdate(): Promise<UpdateResult> {
+    const storage = getStorageService();
     try {
         // First, get current build info
         let currentBuildInfo: BuildInfo | null = null;
@@ -103,7 +106,7 @@ export async function checkAndInstallUpdate(): Promise<UpdateResult> {
             
             // Clear all browser storage and cache
             try {
-                localStorage.setItem('app-update-pending', 'true');
+                storage.saveUpdatePending(true);
                 
                 // Force a hard reload to get the new version
                 window.location.reload();
@@ -141,9 +144,10 @@ export async function checkAndInstallUpdate(): Promise<UpdateResult> {
  * Check if an update was just completed (for showing success message after reload)
  */
 export function checkUpdateCompletion(): { wasUpdated: boolean; newBuildInfo?: BuildInfo } {
-    const updatePending = localStorage.getItem('app-update-pending');
-    if (updatePending === 'true') {
-        localStorage.removeItem('app-update-pending');
+    const storage = getStorageService();
+    const updatePending = storage.loadUpdatePending();
+    if (updatePending) {
+        storage.clearUpdatePending();
         
         // Try to get the new build info
         fetch('/build-info.json')

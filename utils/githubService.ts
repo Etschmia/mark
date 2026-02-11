@@ -41,6 +41,8 @@ const loadGitHubDependencies = async () => {
   }
 };
 
+import { getStorageService } from '../services/storage';
+import type { StorageService } from '../services/storage';
 import type {
   GitHubUser,
   GitHubRepository,
@@ -59,8 +61,10 @@ interface GitHubConfig {
 class GitHubService {
   private octokit: any | null = null;
   private config: GitHubConfig;
+  private storage: StorageService;
 
   constructor() {
+    this.storage = getStorageService();
     // GitHub OAuth App configuration
     // Note: This needs to be replaced with an actual GitHub OAuth App client ID
     // Create a GitHub OAuth App at: https://github.com/settings/developers
@@ -98,7 +102,7 @@ class GitHubService {
       authUrl.searchParams.set('state', this.generateRandomString(32));
       
       // Store state for verification
-      localStorage.setItem('github_oauth_state', authUrl.searchParams.get('state')!);
+      this.storage.saveOAuthState(authUrl.searchParams.get('state')!);
       
       // For now, redirect to GitHub OAuth
       // In production, you would need a backend service to handle the token exchange
@@ -128,13 +132,13 @@ class GitHubService {
       // If we have a code, show instructions for manual token creation
       if (code && state) {
         // Verify state parameter (CSRF protection)
-        const storedState = localStorage.getItem('github_oauth_state');
+        const storedState = this.storage.loadOAuthState();
         if (!storedState || state !== storedState) {
           throw new Error('Invalid state parameter');
         }
-        
+
         // Clean up OAuth parameters
-        localStorage.removeItem('github_oauth_state');
+        this.storage.clearOAuthState();
         
         // Clean up URL parameters
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -149,7 +153,7 @@ class GitHubService {
       console.error('GitHub OAuth callback failed:', error);
       
       // Clean up OAuth parameters on error
-      localStorage.removeItem('github_oauth_state');
+      this.storage.clearOAuthState();
       
       throw error;
     }
@@ -541,7 +545,7 @@ Note: This is required because this app runs entirely in your browser for securi
   }
 
   /**
-   * Store token securely in localStorage
+   * Store token via StorageService
    */
   private storeToken(token: string): void {
     try {
@@ -549,7 +553,7 @@ Note: This is required because this app runs entirely in your browser for securi
         token,
         timestamp: Date.now()
       };
-      localStorage.setItem('github_token', JSON.stringify(tokenData));
+      this.storage.saveGitHubToken(tokenData);
     } catch (error) {
       console.error('Failed to store token:', error);
     }
@@ -560,11 +564,9 @@ Note: This is required because this app runs entirely in your browser for securi
    */
   getStoredToken(): string | null {
     try {
-      const stored = localStorage.getItem('github_token');
-      if (!stored) return null;
+      const tokenData = this.storage.loadGitHubToken() as { token: string; timestamp: number } | null;
+      if (!tokenData) return null;
 
-      const tokenData = JSON.parse(stored);
-      
       // Check if token is older than 1 year (GitHub tokens don't expire but we want to refresh)
       const oneYear = 365 * 24 * 60 * 60 * 1000;
       if (Date.now() - tokenData.timestamp > oneYear) {
@@ -584,7 +586,7 @@ Note: This is required because this app runs entirely in your browser for securi
    */
   clearToken(): void {
     try {
-      localStorage.removeItem('github_token');
+      this.storage.clearGitHubToken();
     } catch (error) {
       console.error('Failed to clear token:', error);
     }

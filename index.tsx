@@ -2,6 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { StorageProvider } from './services/storage';
 import './tailwind.css';
 import './index.css';
 
@@ -14,6 +15,8 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <StorageProvider>
+      <App />
+    </StorageProvider>
   </React.StrictMode>
 );

@@ -28,6 +28,9 @@
     "@codemirror/view": "^6.38.2",
     "@octokit/rest": "^22.0.0",
     "@tailwindcss/vite": "^4.1.13",
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-dialog": "^2.6.0",
+    "@tauri-apps/plugin-fs": "^2.4.5",
     "@types/html2canvas": "^0.5.35",
     "@uiw/codemirror-themes": "^4.25.1",
     "@uiw/codemirror-themes-all": "^4.25.1",
@@ -47,6 +50,7 @@
     "vite": "^7.2.4"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0",
     "@types/dompurify": "^3.0.5",
     "@types/markdownlint": "^0.13.0",
     "@types/marked": "^5.0.2",

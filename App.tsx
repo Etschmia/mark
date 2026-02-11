@@ -20,6 +20,7 @@ import { ConfirmationModal } from './components/ConfirmationModal';
 import { TabManager } from './utils/tabManager';
 import { TabContextMenu } from './components/TabContextMenu';
 import { checkAndInstallUpdate, checkUpdateCompletion } from './utils/updateManager';
+import { getStorageService } from './services/storage';
 import { StatusBar } from './components/StatusBar';
 import { LinterPanel } from './components/LinterPanel';
 import { lintMarkdown, LintResult, LintError, applyAutoFix } from './utils/markdownLinter';
@@ -64,43 +65,35 @@ const App: React.FC = () => {
   const tabManagerRef = useRef<TabManager>(new TabManager());
   const [tabManagerState, setTabManagerState] = useState<TabManagerState>(tabManagerRef.current.getState());
 
-  // Load persisted state from localStorage (for settings only, tabs are handled by TabManager)
+  const storage = getStorageService();
+
+  // Load persisted state via StorageService (for settings only, tabs are handled by TabManager)
   const getPersistedSettings = () => {
+    const defaultSettings: EditorSettings = {
+      theme: 'dark',
+      fontSize: 14,
+      debounceTime: 500,
+      previewTheme: 'Default',
+      autoSave: true,
+      showLineNumbers: false,
+      themeId: 'claude-dark'
+    };
+
     try {
-      const savedSettings = localStorage.getItem('markdown-editor-settings');
+      const parsed = storage.loadSettings();
 
-      const defaultSettings: EditorSettings = {
-        theme: 'dark',
-        fontSize: 14,
-        debounceTime: 500,
-        previewTheme: 'Default',
-        autoSave: true,
-        showLineNumbers: false,
-        themeId: 'claude-dark'
-      };
-
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
+      if (parsed) {
         // Migration: if useUnifiedTheme is not defined, it's a legacy user
-        // Keep their existing settings by setting useUnifiedTheme to false
-        if (typeof parsed.useUnifiedTheme === 'undefined') {
-          parsed.useUnifiedTheme = false;
+        if (typeof (parsed as any).useUnifiedTheme === 'undefined') {
+          (parsed as any).useUnifiedTheme = false;
         }
         return { ...defaultSettings, ...parsed };
       }
 
       return defaultSettings;
     } catch (error) {
-      console.warn('Failed to load persisted settings from localStorage:', error);
-      return {
-        theme: 'dark',
-        fontSize: 14,
-        debounceTime: 500,
-        previewTheme: 'Default',
-        autoSave: true,
-        showLineNumbers: false,
-        themeId: 'claude-dark'
-      };
+      console.warn('Failed to load persisted settings:', error);
+      return defaultSettings;
     }
   };
 
@@ -135,12 +128,8 @@ const App: React.FC = () => {
       setThemeId(newSettings.themeId);
     }
 
-    // Persist settings to localStorage
-    try {
-      localStorage.setItem('markdown-editor-settings', JSON.stringify(newSettings));
-    } catch (error) {
-      console.warn('Failed to persist settings to localStorage:', error);
-    }
+    // Persist settings via StorageService
+    storage.saveSettings(newSettings);
   }, [settings.themeId, setThemeId]);
 
   // State and refs for resizing functionality

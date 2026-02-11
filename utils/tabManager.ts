@@ -1,7 +1,7 @@
 import { Tab, TabManagerState, PersistedTabState, FileSource } from '../types';
-import { 
-  createDefaultTabManagerState, 
-  createDefaultTab, 
+import {
+  createDefaultTabManagerState,
+  createDefaultTab,
   createTabFromData,
   duplicateTab as duplicateTabUtil,
   updateTabContent,
@@ -11,22 +11,23 @@ import {
   hasUnsavedChanges,
   generateUniqueFilename
 } from './tabUtils';
+import { StorageService, getStorageService } from '../services/storage';
 
-const STORAGE_KEY = 'markdown-editor-tabs';
 const STORAGE_VERSION = '1.0.0';
 const DEBOUNCE_DELAY = 500; // 500ms debounce for persistence
 
-// Legacy storage keys for migration
+// Legacy storage keys for migration (always localStorage)
 const LEGACY_CONTENT_KEY = 'markdown-editor-content';
 const LEGACY_FILENAME_KEY = 'markdown-editor-filename';
-const LEGACY_SETTINGS_KEY = 'markdown-editor-settings';
 
 export class TabManager {
   private state: TabManagerState;
   private listeners: Array<(state: TabManagerState) => void> = [];
   private persistenceDebounceTimer: number | null = null;
+  private storage: StorageService;
 
-  constructor(initialState?: TabManagerState) {
+  constructor(initialState?: TabManagerState, storage?: StorageService) {
+    this.storage = storage || getStorageService();
     this.state = initialState || this.loadPersistedState();
   }
 
@@ -532,7 +533,7 @@ export class TabManager {
   }
 
   /**
-   * Persist state to localStorage
+   * Persist state via StorageService
    */
   private persistState(): void {
     try {
@@ -554,26 +555,21 @@ export class TabManager {
         activeTabId: this.state.activeTabId
       };
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistedState));
+      this.storage.saveTabs(persistedState);
     } catch (error) {
-      console.warn('Failed to persist tab state to localStorage:', error);
+      console.warn('Failed to persist tab state:', error);
     }
   }
 
   /**
-   * Load persisted state from localStorage
+   * Load persisted state via StorageService
    */
   private loadPersistedState(): TabManagerState {
     try {
       // First, try to load new tab format
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const persistedState: PersistedTabState = JSON.parse(stored);
-        
-        // Validate the persisted state
-        if (this.isValidPersistedState(persistedState)) {
-          return this.convertPersistedStateToTabManagerState(persistedState);
-        }
+      const persistedState = this.storage.loadTabs();
+      if (persistedState && this.isValidPersistedState(persistedState)) {
+        return this.convertPersistedStateToTabManagerState(persistedState);
       }
 
       // If no new format found, try to migrate from legacy format
@@ -693,7 +689,8 @@ export class TabManager {
    */
   clearPersistedState(): void {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      this.storage.clearTabs();
+      // Legacy keys are always in localStorage
       localStorage.removeItem(LEGACY_CONTENT_KEY);
       localStorage.removeItem(LEGACY_FILENAME_KEY);
     } catch (error) {
