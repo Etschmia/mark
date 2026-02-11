@@ -12,6 +12,7 @@
     "pwa-validate": "echo 'Validating PWA configuration...' && node -e 'console.log(JSON.parse(require(\"fs\").readFileSync(\"./public/manifest.json\", \"utf8\")))'",
     "update-sw-version": "node scripts/updateServiceWorkerVersion.mjs",
     "force-cache-clear": "echo 'This script helps clear PWA caches. Run: window.forceAppUpdate() in browser console'",
+    "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
   },
