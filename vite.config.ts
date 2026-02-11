@@ -6,7 +6,12 @@ import tailwindcss from '@tailwindcss/vite'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Tauri expects a fixed port, fail if that port is not available
+const isTauri = process.env.TAURI_ENV_PLATFORM !== undefined;
+
 export default defineConfig({
+  // Prevent vite from obscuring Rust errors in tauri dev
+  clearScreen: false,
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
@@ -15,6 +20,13 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
   ],
+  // Tauri env variables start with TAURI_
+  envPrefix: ['VITE_', 'TAURI_'],
+  server: {
+    // Tauri expects a fixed port; fail if not available
+    strictPort: isTauri,
+    port: 5173,
+  },
   build: {
     rollupOptions: {
       output: {
