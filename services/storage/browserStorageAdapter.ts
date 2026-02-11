@@ -1,6 +1,6 @@
 import { PersistedTabState } from '../../types';
 import { EditorSettings } from '../../components/SettingsModal';
-import { StorageService } from './storageService';
+import { StorageService, WorkspaceStateData, WorkspacesMap } from './storageService';
 
 const TABS_KEY = 'markdown-editor-tabs';
 const SETTINGS_KEY = 'markdown-editor-settings';
@@ -141,4 +141,10 @@ export class BrowserStorageAdapter implements StorageService {
       console.warn('Failed to clear update flag:', error);
     }
   }
+
+  // --- Workspace State (no-op in browser) ---
+  saveWorkspaceState(_rootPath: string, _state: WorkspaceStateData): void {}
+  loadWorkspaceState(_rootPath: string): WorkspaceStateData | null { return null; }
+  loadAllWorkspaces(): WorkspacesMap { return {}; }
+  clearWorkspaceState(_rootPath: string): void {}
 }

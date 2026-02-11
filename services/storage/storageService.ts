@@ -1,6 +1,18 @@
 import { PersistedTabState } from '../../types';
 import { EditorSettings } from '../../components/SettingsModal';
 
+/** Persisted state for a single workspace (directory). */
+export interface WorkspaceStateData {
+  openFiles: string[];
+  activeFile: string | null;
+  lastAccessed: number;
+}
+
+/** Map of rootPath → workspace state. */
+export interface WorkspacesMap {
+  [rootPath: string]: WorkspaceStateData;
+}
+
 /**
  * Abstract storage interface for persistence.
  * Browser version uses localStorage, Desktop version uses the filesystem.
@@ -29,4 +41,10 @@ export interface StorageService {
   saveUpdatePending(pending: boolean): void;
   loadUpdatePending(): boolean;
   clearUpdatePending(): void;
+
+  // Workspace state (desktop only — browser adapter returns no-op/null)
+  saveWorkspaceState(rootPath: string, state: WorkspaceStateData): void;
+  loadWorkspaceState(rootPath: string): WorkspaceStateData | null;
+  loadAllWorkspaces(): WorkspacesMap;
+  clearWorkspaceState(rootPath: string): void;
 }

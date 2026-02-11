@@ -43,6 +43,7 @@ import { extractFrontmatter, combineFrontmatterAndContent, FrontmatterData } fro
 import { isDesktopApp } from './utils/environment';
 import { useWorkspace } from './hooks/useWorkspace';
 import { WorkspaceSidebar } from './components/WorkspaceSidebar';
+import { RestoreSessionDialog } from './components/RestoreSessionDialog';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -429,16 +430,32 @@ const App: React.FC = () => {
     setIsUpdateInfoModalOpen,
   });
 
-  // Workspace hook (desktop only — no-op in browser)
-  const { workspace, openFolder, closeWorkspace, toggleSidebar, refreshFiles } = useWorkspace();
-
-  // Handle file selection from workspace sidebar
+  // Handle file selection from workspace sidebar or CLI args
   const handleWorkspaceFileSelect = useCallback(async (filePath: string) => {
     await openFileByPath(filePath, tabManagerRef, createNewTab, switchToTab);
   }, [tabManagerRef, createNewTab, switchToTab]);
 
+  // Workspace hook (desktop only — no-op in browser)
+  const {
+    workspace, openFolder, closeWorkspace, toggleSidebar, refreshFiles,
+    saveCurrentSession, previousSession, acceptRestore, dismissRestore,
+  } = useWorkspace({
+    onOpenFile: handleWorkspaceFileSelect,
+  });
+
   // Get current active file path for sidebar highlighting
   const activeFilePath = tabManagerRef.current.getActiveTab()?.fileSource?.path || null;
+
+  // Auto-save workspace state when tabs change (desktop only)
+  useEffect(() => {
+    if (!isDesktopApp() || !workspace.rootPath) return;
+    const tabs = tabManagerRef.current.getTabs();
+    const openFiles = tabs
+      .map(t => t.fileSource?.path)
+      .filter((p): p is string => !!p);
+    const activeFile = tabManagerRef.current.getActiveTab()?.fileSource?.path || null;
+    saveCurrentSession(openFiles, activeFile);
+  }, [tabManagerState.tabs, tabManagerState.activeTabId, workspace.rootPath, saveCurrentSession]);
 
   // Tab Manager subscription and initialization
   useEffect(() => {
@@ -1074,6 +1091,15 @@ const App: React.FC = () => {
         isConnected={githubState.auth.isConnected}
         canPush={githubState.currentRepository?.permissions?.push ?? false}
       />
+
+      {/* Restore Session Dialog (desktop only) */}
+      {previousSession && (
+        <RestoreSessionDialog
+          session={previousSession}
+          onRestore={acceptRestore}
+          onDismiss={dismissRestore}
+        />
+      )}
 
       {/* Tab Confirmation Modal */}
       <ConfirmationModal

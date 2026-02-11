@@ -107,6 +107,20 @@ export async function desktopOpenFolder(): Promise<string | null> {
 }
 
 /**
+ * Check if a path is a directory by trying readDir.
+ * Returns true for directories, false for files or non-existent paths.
+ */
+export async function desktopIsDirectory(path: string): Promise<boolean> {
+  const { fs } = await ensureModules();
+  try {
+    await fs.readDir(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Scan a directory for markdown files (non-recursive by default).
  * Uses Tauri fs plugin's readDir.
  */

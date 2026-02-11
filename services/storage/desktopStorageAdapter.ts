@@ -1,6 +1,6 @@
 import { PersistedTabState } from '../../types';
 import { EditorSettings } from '../../components/SettingsModal';
-import { StorageService } from './storageService';
+import { StorageService, WorkspaceStateData, WorkspacesMap } from './storageService';
 
 /**
  * Desktop storage adapter — persists data to the Tauri app-data directory.
@@ -147,12 +147,33 @@ export class DesktopStorageAdapter implements StorageService {
     this.removeFile('update-pending.json');
   }
 
-  // --- Cached data (populated by initDesktopStorage) ---
+  // --- Workspace State ---
+  saveWorkspaceState(rootPath: string, state: WorkspaceStateData): void {
+    // Update in-memory cache and persist
+    this._cachedWorkspaces[rootPath] = state;
+    this.writeJson('workspaces.json', this._cachedWorkspaces);
+  }
+
+  loadWorkspaceState(rootPath: string): WorkspaceStateData | null {
+    return this._cachedWorkspaces[rootPath] ?? null;
+  }
+
+  loadAllWorkspaces(): WorkspacesMap {
+    return { ...this._cachedWorkspaces };
+  }
+
+  clearWorkspaceState(rootPath: string): void {
+    delete this._cachedWorkspaces[rootPath];
+    this.writeJson('workspaces.json', this._cachedWorkspaces);
+  }
+
+  // --- Cached data (populated by init) ---
   private _cachedTabs: PersistedTabState | null = null;
   private _cachedSettings: EditorSettings | null = null;
   private _cachedGitHubToken: unknown | null = null;
   private _cachedOAuthState: string | null = null;
   private _cachedUpdatePending = false;
+  private _cachedWorkspaces: WorkspacesMap = {};
 
   /**
    * Must be called once before the app renders. Loads all persisted data
@@ -161,12 +182,13 @@ export class DesktopStorageAdapter implements StorageService {
   async init(): Promise<void> {
     await this.ensureInit();
 
-    const [tabs, settings, token, oauthState, updatePending] = await Promise.all([
+    const [tabs, settings, token, oauthState, updatePending, workspaces] = await Promise.all([
       this.readJson<PersistedTabState>('tabs.json'),
       this.readJson<EditorSettings>('settings.json'),
       this.readJson<unknown>('github-token.json'),
       this.readJson<{ state: string }>('oauth-state.json'),
       this.readJson<{ pending: boolean }>('update-pending.json'),
+      this.readJson<WorkspacesMap>('workspaces.json'),
     ]);
 
     this._cachedTabs = tabs;
@@ -174,5 +196,6 @@ export class DesktopStorageAdapter implements StorageService {
     this._cachedGitHubToken = token;
     this._cachedOAuthState = oauthState?.state ?? null;
     this._cachedUpdatePending = updatePending?.pending ?? false;
+    this._cachedWorkspaces = workspaces ?? {};
   }
 }
