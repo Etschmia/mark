@@ -57,7 +57,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     { category: 'Text Formatting', items: [
       { icon: 'B', name: 'Bold', description: 'Makes selected text bold. Wraps text with **asterisks**.' },
       { icon: 'I', name: 'Italic', description: 'Makes selected text italic. Wraps text with *single asterisks*.' },
-      { icon: 'S̶', name: 'Strikethrough', description: 'Strikes through text. Wraps text with ~~tildes~~.' },
+      { icon: 'S\u0336', name: 'Strikethrough', description: 'Strikes through text. Wraps text with ~~tildes~~.' },
     ]},
     { category: 'Headers', items: [
       { icon: 'H1', name: 'Header 1', description: 'Creates the largest header. Adds # at the beginning of line.' },
@@ -66,20 +66,20 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     ]},
     { category: 'Lists and Structure', items: [
       { icon: '"', name: 'Quote', description: 'Creates blockquote. Adds > at the beginning of line.' },
-      { icon: '•', name: 'Unordered List', description: 'Creates bullet points. Adds * at the beginning of line.' },
+      { icon: '\u2022', name: 'Unordered List', description: 'Creates bullet points. Adds * at the beginning of line.' },
       { icon: '1.', name: 'Ordered List', description: 'Creates numbered list. Adds 1. at the beginning of line.' },
-      { icon: '☑', name: 'Checklist', description: 'Creates checkboxes. Adds - [ ] at the beginning of line.' },
-      { icon: '⊞', name: 'Table', description: 'Inserts table template with headers and sample data.' },
+      { icon: '\u2611', name: 'Checklist', description: 'Creates checkboxes. Adds - [ ] at the beginning of line.' },
+      { icon: '\u229E', name: 'Table', description: 'Inserts table template with headers and sample data.' },
     ]},
     { category: 'Media and Links', items: [
-      { icon: '🖼', name: 'Image', description: 'Inserts image. Creates ![alt text](image-url) format.' },
-      { icon: '🔗', name: 'Link', description: 'Creates hyperlink. Creates [link text](url) format.' },
+      { icon: '\uD83D\uDDBC', name: 'Image', description: 'Inserts image. Creates ![alt text](image-url) format.' },
+      { icon: '\uD83D\uDD17', name: 'Link', description: 'Creates hyperlink. Creates [link text](url) format.' },
     ]},
     { category: 'Code and Tools', items: [
       { icon: '< >', name: 'Code', description: 'Inserts code block or inline code. Supports multiple languages.' },
-      { icon: '🔍', name: 'Search', description: 'Opens search and replace panel with regex support.' },
-      { icon: '↶', name: 'Undo', description: 'Undoes the last change. Works with text and formatting.' },
-      { icon: '📤', name: 'Export', description: 'Exports document as HTML or PDF with formatting preserved.' },
+      { icon: '\uD83D\uDD0D', name: 'Search', description: 'Opens search and replace panel with regex support.' },
+      { icon: '\u21B6', name: 'Undo', description: 'Undoes the last change. Works with text and formatting.' },
+      { icon: '\uD83D\uDCE4', name: 'Export', description: 'Exports document as HTML or PDF with formatting preserved.' },
     ]},
     { category: 'File Operations', items: [
       { icon: 'New', name: 'New File', description: 'Creates a new empty document.' },
@@ -99,9 +99,9 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
       title="Help & Keyboard Shortcuts"
       maxWidth="4xl"
     >
@@ -109,18 +109,18 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Keyboard Shortcuts */}
             <div>
-              <h3 className="text-xl font-semibold text-white mb-4">Keyboard Shortcuts</h3>
+              <h3 className="text-xl font-semibold text-app-main mb-4">Keyboard Shortcuts</h3>
               <div className="space-y-6">
                 {keyboardShortcuts.map((category, idx) => (
                   <div key={idx}>
-                    <h4 className="text-lg font-medium text-cyan-400 mb-3">{category.category}</h4>
+                    <h4 className="text-lg font-medium text-app-accent mb-3">{category.category}</h4>
                     <div className="space-y-2">
                       {category.shortcuts.map((shortcut, shortcutIdx) => (
                         <div key={shortcutIdx} className="flex items-start gap-3">
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-mono bg-slate-700 text-slate-300 whitespace-nowrap min-w-[120px]">
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-mono bg-app-input text-app-secondary whitespace-nowrap min-w-[120px]">
                             {shortcut.keys}
                           </span>
-                          <span className="text-slate-300 text-sm leading-relaxed">
+                          <span className="text-app-secondary text-sm leading-relaxed">
                             {shortcut.description}
                           </span>
                         </div>
@@ -130,23 +130,23 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 ))}
               </div>
             </div>
-            
+
             {/* Toolbar Items */}
             <div>
-              <h3 className="text-xl font-semibold text-white mb-4">Toolbar Reference</h3>
+              <h3 className="text-xl font-semibold text-app-main mb-4">Toolbar Reference</h3>
               <div className="space-y-6">
                 {toolbarItems.map((category, idx) => (
                   <div key={idx}>
-                    <h4 className="text-lg font-medium text-cyan-400 mb-3">{category.category}</h4>
+                    <h4 className="text-lg font-medium text-app-accent mb-3">{category.category}</h4>
                     <div className="space-y-2">
                       {category.items.map((item, itemIdx) => (
                         <div key={itemIdx} className="flex items-start gap-3">
-                          <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-slate-700 text-slate-300 text-sm font-medium flex-shrink-0">
+                          <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-app-input text-app-secondary text-sm font-medium flex-shrink-0">
                             {item.icon}
                           </span>
                           <div className="flex-1">
-                            <div className="font-medium text-slate-200">{item.name}</div>
-                            <div className="text-slate-400 text-sm leading-relaxed">
+                            <div className="font-medium text-app-main">{item.name}</div>
+                            <div className="text-app-muted text-sm leading-relaxed">
                               {item.description}
                             </div>
                           </div>
@@ -158,24 +158,24 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Additional Info */}
-          <div className="mt-8 p-4 bg-slate-700 rounded-lg">
-            <h4 className="text-lg font-medium text-white mb-2">Tips</h4>
-            <ul className="text-slate-300 text-sm space-y-1">
+          <div className="mt-8 p-4 bg-app-hover rounded-lg">
+            <h4 className="text-lg font-medium text-app-main mb-2">Tips</h4>
+            <ul className="text-app-secondary text-sm space-y-1">
               <li>• Most shortcuts work with selected text or at cursor position</li>
-              <li>• Use <code className="px-1 py-0.5 bg-slate-600 rounded">Ctrl</code> on Windows/Linux or <code className="px-1 py-0.5 bg-slate-600 rounded">Cmd</code> on Mac</li>
+              <li>• Use <code className="px-1 py-0.5 bg-app-input rounded">Ctrl</code> on Windows/Linux or <code className="px-1 py-0.5 bg-app-input rounded">Cmd</code> on Mac</li>
               <li>• Code blocks support syntax highlighting for multiple languages</li>
               <li>• Search supports regular expressions when regex mode is enabled</li>
               <li>• Your work is automatically saved to browser storage</li>
             </ul>
           </div>
         </div>
-        
+
         {/* Footer */}
-        <div className="border-t border-slate-700 p-4 text-center">
-          <p className="text-slate-400 text-sm">
-            Press <kbd className="px-1 py-0.5 bg-slate-600 rounded text-xs">Esc</kbd> to close this help
+        <div className="border-t border-app-main p-4 text-center">
+          <p className="text-app-muted text-sm">
+            Press <kbd className="px-1 py-0.5 bg-app-input rounded text-xs">Esc</kbd> to close this help
           </p>
         </div>
     </Modal>

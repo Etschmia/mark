@@ -12,7 +12,7 @@ interface ModalProps {
 
 const maxWidthClasses = {
   sm: 'max-w-sm',
-  md: 'max-w-md', 
+  md: 'max-w-md',
   lg: 'max-w-lg',
   xl: 'max-w-xl',
   '2xl': 'max-w-2xl',
@@ -35,7 +35,7 @@ export const Modal: React.FC<ModalProps> = ({
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    
+
     if (isOpen) {
       document.addEventListener('keydown', handleEsc);
       return () => document.removeEventListener('keydown', handleEsc);
@@ -45,29 +45,29 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-${zIndex} p-4`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className={`bg-slate-800 rounded-lg shadow-xl ${maxWidthClasses[maxWidth]} w-full max-h-[90vh] overflow-hidden flex flex-col`}>
+      <div className={`bg-app-panel rounded-lg shadow-xl ${maxWidthClasses[maxWidth]} w-full max-h-[90vh] overflow-hidden flex flex-col`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+        <div className="flex items-center justify-between p-6 border-b border-app-main">
           {typeof title === 'string' ? (
-            <h2 className="text-2xl font-bold text-white">{title}</h2>
+            <h2 className="text-2xl font-bold text-app-main">{title}</h2>
           ) : (
-            <div className="text-2xl font-bold text-white">{title}</div>
+            <div className="text-2xl font-bold text-app-main">{title}</div>
           )}
           {showCloseButton && (
             <button
               onClick={onClose}
-              className="p-2 rounded-md text-slate-400 hover:bg-slate-700 hover:text-white transition-colors duration-150"
+              className="p-2 rounded-md text-app-muted hover:bg-app-hover hover:text-app-main transition-colors duration-150"
               aria-label={`Close ${title}`}
             >
               <CloseIcon />
             </button>
           )}
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {children}

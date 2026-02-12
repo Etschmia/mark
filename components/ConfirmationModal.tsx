@@ -8,7 +8,6 @@ export interface ConfirmationModalProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  theme: 'light' | 'dark';
   variant?: 'default' | 'danger';
 }
 
@@ -20,7 +19,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   cancelText = 'Cancel',
   onConfirm,
   onCancel,
-  theme,
   variant = 'default'
 }) => {
   if (!isOpen) return null;
@@ -39,38 +37,15 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     }
   };
 
-  // Theme-aware styling
-  const themeClasses = theme === 'dark' 
-    ? {
-        backdrop: 'bg-black bg-opacity-50',
-        modal: 'bg-slate-800 border-slate-700',
-        title: 'text-white',
-        message: 'text-slate-300',
-        cancelButton: 'bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white border-slate-600',
-        confirmButton: variant === 'danger' 
-          ? 'bg-red-600 hover:bg-red-700 text-white border-red-600'
-          : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
-      }
-    : {
-        backdrop: 'bg-black bg-opacity-50',
-        modal: 'bg-white border-gray-200',
-        title: 'text-gray-900',
-        message: 'text-gray-700',
-        cancelButton: 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 border-gray-300',
-        confirmButton: variant === 'danger'
-          ? 'bg-red-600 hover:bg-red-700 text-white border-red-600'
-          : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
-      };
-
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center ${themeClasses.backdrop}`}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       onClick={handleBackdropClick}
       onKeyDown={handleKeyDown}
       tabIndex={-1}
     >
       <div
-        className={`relative w-full max-w-md mx-4 p-6 rounded-lg border shadow-lg ${themeClasses.modal}`}
+        className="relative w-full max-w-md mx-4 p-6 rounded-lg border shadow-lg bg-app-panel border-app-main"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirmation-title"
@@ -79,7 +54,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         {/* Title */}
         <h2
           id="confirmation-title"
-          className={`text-lg font-semibold mb-4 ${themeClasses.title}`}
+          className="text-lg font-semibold mb-4 text-app-main"
         >
           {title}
         </h2>
@@ -87,7 +62,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         {/* Message */}
         <p
           id="confirmation-message"
-          className={`mb-6 ${themeClasses.message}`}
+          className="mb-6 text-app-secondary"
         >
           {message}
         </p>
@@ -95,14 +70,18 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         {/* Buttons */}
         <div className="flex justify-end gap-3">
           <button
-            className={`px-4 py-2 text-sm font-medium rounded-md border transition-colors duration-150 ${themeClasses.cancelButton}`}
+            className="px-4 py-2 text-sm font-medium rounded-md border transition-colors duration-150 border-app-main text-app-muted hover:bg-app-hover hover:text-app-main"
             onClick={onCancel}
             autoFocus
           >
             {cancelText}
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium rounded-md border transition-colors duration-150 ${themeClasses.confirmButton}`}
+            className={`px-4 py-2 text-sm font-medium rounded-md border transition-colors duration-150 ${
+              variant === 'danger'
+                ? 'bg-red-600 hover:bg-red-700 text-white border-red-600'
+                : 'bg-app-accent-main hover:bg-app-accent-hover text-app-accent-text border-app-accent-main'
+            }`}
             onClick={onConfirm}
           >
             {confirmText}

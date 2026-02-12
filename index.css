@@ -20,4 +20,8 @@
   .text-app-accent-text { color: var(--app-accent-text); }
 
   .border-app-accent-main { border-color: var(--app-accent-main); }
+
+  .bg-app-sidebar { background-color: var(--app-bg-sidebar); }
+  .divide-app-main > :not(:first-child) { border-color: var(--app-border-main); }
+  .divide-app-muted > :not(:first-child) { border-color: var(--app-border-muted); }
 }

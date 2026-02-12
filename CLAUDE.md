@@ -4,16 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Markdown Editor Pro is a browser-based Markdown editor built with React 19, TypeScript, Vite 7, and Tailwind CSS v4. It features multi-tab editing, live preview, GitHub integration, and PWA support.
+Markdown Editor Pro is a browser-based Markdown editor built with React 19, TypeScript, Vite 7, and Tailwind CSS v4. It features multi-tab editing, live preview, GitHub integration, and PWA support. A desktop version is built with Tauri v2 (Rust backend) and released via GitHub Actions CI/CD. Deployed at mark.martuni.de and editmd.vercel.app.
 
 ## Commands
 
 ```bash
-# Development
+# Web Development
 npm run dev          # Start Vite dev server
 npm run build        # Production build (includes build-info and SW version update)
 npm run build:dev    # Quick build without version scripts
 npm run preview      # Preview production build
+
+# Desktop App (requires Rust toolchain)
+npm run tauri:dev    # Run desktop app in dev mode
+npm run tauri:build  # Build desktop app for current platform
 
 # Utilities
 npm run pwa-validate          # Validate PWA manifest
@@ -52,6 +56,9 @@ App.tsx
 - `utils/frontmatterUtils.ts` - YAML frontmatter parsing/generation
 - `utils/markdownLinter.ts` - Markdown validation with auto-fix
 - `utils/pwaManager.ts` - Service worker registration and PWA lifecycle
+- `utils/environment.ts` - `isDesktopApp()`, `isBrowserApp()`, `isVercel()` detection
+- `services/desktopFileService.ts` - Tauri native file I/O (lazy-loaded, desktop only)
+- `services/fileService.ts` - `useFileService()` hook with dual-mode (browser/desktop)
 
 ### Build Optimization
 Vite config splits chunks: `codemirror-all`, `markdown-processing`, `syntax-highlighting`, `export-libs`, `github-integration`, `react-vendor`. Heavy dependencies (jsPDF, @octokit) use dynamic imports.
@@ -109,6 +116,32 @@ Toolbar button / Keyboard shortcut → onFormat callback
 → Content update → localStorage sync → Preview re-render
 ```
 
+## Desktop App (Tauri v2)
+
+### Architecture
+- **Backend**: Rust (`src-tauri/`) with Tauri v2.10, plugins for filesystem and native dialogs
+- **Native Menus**: German menu bar (`src-tauri/src/menu.rs`) with File/Edit/View/Help, emits `menu-action` events to frontend
+- **CLI Args**: Files passed via command line are opened on startup via `window.__MARK_ARGS__`
+- **Environment Detection**: `isDesktopApp()` checks `__TAURI_INTERNALS__` in window
+- **Workspace Sidebar**: Desktop-only feature for browsing folders/file trees
+
+### Dual-Mode File Operations
+`useFileService()` hook automatically switches between:
+- **Desktop**: Native dialogs + direct filesystem via Tauri plugins
+- **Browser**: File System Access API (modern) or `<input>` fallback (legacy)
+
+### CI/CD Release Workflow
+- **File**: `.github/workflows/release.yml`
+- **Trigger**: Push `v*` tags (e.g. `v2.1.0`) or manual `workflow_dispatch`
+- **Matrix Build**: Ubuntu 22.04, macOS latest, Windows latest
+- **Steps**: Checkout → Node.js 22 → Rust toolchain (auto-installed) → npm ci → `tauri-apps/tauri-action@v0`
+- **Output**: Draft GitHub Release with .deb/.AppImage/.rpm (Linux), .dmg (macOS), .msi/.exe (Windows)
+- **Note**: Rust is NOT needed locally for web development, only for local desktop builds
+
+### Desktop-Specific Components
+- `components/DesktopDownloadBanner.tsx` - Browser-only banner linking to desktop downloads (hidden on mobile/desktop app)
+- `components/WorkspaceSidebar.tsx` - File tree for opened folders (desktop only)
+
 ## Technology Stack
 
 - **Editor**: CodeMirror 6 with @uiw/codemirror-themes-all
@@ -116,6 +149,7 @@ Toolbar button / Keyboard shortcut → onFormat callback
 - **Export**: jsPDF 4.x, html2canvas, docx 9.x
 - **GitHub**: @octokit/rest 22.x with OAuth PKCE flow
 - **PWA**: Service worker with cache-first strategy, versioned via build scripts
+- **Desktop**: Tauri v2.10 with @tauri-apps/api, @tauri-apps/plugin-fs, @tauri-apps/plugin-dialog
 
 ## Important Patterns
 
@@ -124,3 +158,5 @@ Toolbar button / Keyboard shortcut → onFormat callback
 - Settings persist to `markdown-editor-settings` localStorage key
 - Tabs persist to `markdown-editor-tabs` localStorage key
 - Service worker version in `public/sw.js` is updated by build script from `public/build-info.json`
+- Desktop services are lazy-loaded via dynamic imports to avoid bundling Tauri deps in browser builds
+- `isDesktopApp()` gates all desktop-specific UI and functionality

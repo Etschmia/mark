@@ -68,25 +68,25 @@ export const CheatSheetModal: React.FC<CheatSheetModalProps> = ({ isOpen, onClos
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {markdownSyntax.map((category, idx) => (
               <div key={idx} className="space-y-4">
-                <h3 className="text-xl font-semibold text-cyan-400 border-b border-slate-600 pb-2">
+                <h3 className="text-xl font-semibold text-app-accent border-b border-app-border-muted pb-2">
                   {category.category}
                 </h3>
                 <div className="space-y-3">
                   {category.items.map((item, itemIdx) => (
-                    <div key={itemIdx} className="bg-slate-700 rounded-lg p-4">
+                    <div key={itemIdx} className="bg-app-hover rounded-lg p-4">
                       <div className="flex items-start justify-between gap-3 mb-2">
-                        <span className="text-slate-200 font-medium text-sm">
+                        <span className="text-app-main font-medium text-sm">
                           {item.description}
                         </span>
                       </div>
                       <div className="space-y-2">
-                        <div className="bg-slate-900 rounded p-2 font-mono text-sm">
+                        <div className="bg-app-main rounded p-2 font-mono text-sm">
                           <span className="text-green-400">Syntax:</span>
-                          <pre className="text-slate-300 mt-1 whitespace-pre-wrap">{item.syntax}</pre>
+                          <pre className="text-app-secondary mt-1 whitespace-pre-wrap">{item.syntax}</pre>
                         </div>
-                        <div className="bg-slate-600 rounded p-2 font-mono text-sm">
+                        <div className="bg-app-input rounded p-2 font-mono text-sm">
                           <span className="text-yellow-400">Example:</span>
-                          <pre className="text-slate-300 mt-1 whitespace-pre-wrap">{item.example}</pre>
+                          <pre className="text-app-secondary mt-1 whitespace-pre-wrap">{item.example}</pre>
                         </div>
                       </div>
                     </div>
@@ -95,12 +95,12 @@ export const CheatSheetModal: React.FC<CheatSheetModalProps> = ({ isOpen, onClos
               </div>
             ))}
           </div>
-          
+
           {/* Quick Tips */}
-          <div className="mt-8 p-4 bg-slate-700 rounded-lg">
-            <h4 className="text-lg font-medium text-white mb-3">💡 Quick Tips</h4>
-            <ul className="text-slate-300 text-sm space-y-2">
-              <li>• <strong>Combine formatting:</strong> Use <code className="px-1 py-0.5 bg-slate-600 rounded">***bold and italic***</code> for both effects</li>
+          <div className="mt-8 p-4 bg-app-hover rounded-lg">
+            <h4 className="text-lg font-medium text-app-main mb-3">Quick Tips</h4>
+            <ul className="text-app-secondary text-sm space-y-2">
+              <li>• <strong>Combine formatting:</strong> Use <code className="px-1 py-0.5 bg-app-input rounded">***bold and italic***</code> for both effects</li>
               <li>• <strong>Line breaks:</strong> End a line with two spaces for a soft break</li>
               <li>• <strong>Nested lists:</strong> Use 2-4 spaces to indent sub-items</li>
               <li>• <strong>Code languages:</strong> Specify language after ``` for syntax highlighting</li>
@@ -108,24 +108,24 @@ export const CheatSheetModal: React.FC<CheatSheetModalProps> = ({ isOpen, onClos
               <li>• <strong>Keyboard shortcuts:</strong> Use Ctrl/Cmd + shortcuts for quick formatting</li>
             </ul>
           </div>
-          
+
           {/* Common Languages for Code Blocks */}
-          <div className="mt-6 p-4 bg-slate-700 rounded-lg">
-            <h4 className="text-lg font-medium text-white mb-3">🔧 Supported Code Languages</h4>
+          <div className="mt-6 p-4 bg-app-hover rounded-lg">
+            <h4 className="text-lg font-medium text-app-main mb-3">Supported Code Languages</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
               {['javascript', 'python', 'sql', 'php', 'xml', 'html', 'css', 'json', 'bash', 'markdown', 'yaml', 'typescript'].map((lang) => (
-                <span key={lang} className="px-2 py-1 bg-slate-600 rounded text-slate-300 text-center">
+                <span key={lang} className="px-2 py-1 bg-app-input rounded text-app-secondary text-center">
                   {lang}
                 </span>
               ))}
             </div>
           </div>
         </div>
-        
+
         {/* Footer */}
-        <div className="border-t border-slate-700 p-4 text-center">
-          <p className="text-slate-400 text-sm">
-            Press <kbd className="px-1 py-0.5 bg-slate-600 rounded text-xs">Esc</kbd> to close • Use toolbar buttons or keyboard shortcuts for quick formatting
+        <div className="border-t border-app-main p-4 text-center">
+          <p className="text-app-muted text-sm">
+            Press <kbd className="px-1 py-0.5 bg-app-input rounded text-xs">Esc</kbd> to close • Use toolbar buttons or keyboard shortcuts for quick formatting
           </p>
         </div>
       </Modal>

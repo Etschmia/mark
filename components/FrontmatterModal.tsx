@@ -29,7 +29,7 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       const initialEntries: FrontmatterEntry[] = [];
-      
+
       // Only show keys that actually exist in the frontmatter
       // If frontmatter is empty, show default keys as empty entries
       if (Object.keys(frontmatter).length === 0) {
@@ -46,7 +46,7 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
           initialEntries.push({ key, value: value || '' });
         }
       }
-      
+
       setEntries(initialEntries);
     }
   }, [isOpen, frontmatter]);
@@ -74,7 +74,7 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
 
   const handleSave = () => {
     const frontmatterData: FrontmatterData = {};
-    
+
     for (const entry of entries) {
       const trimmedKey = entry.key.trim();
       const trimmedValue = entry.value.trim();
@@ -83,13 +83,13 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
         frontmatterData[trimmedKey] = trimmedValue;
       }
     }
-    
+
     // Auto-fill date if it was in the entries but is now empty
     const hasDateKey = entries.some(e => e.key.trim() === 'date');
     if (hasDateKey && (!frontmatterData.date || frontmatterData.date === '')) {
       frontmatterData.date = getCurrentDate();
     }
-    
+
     onSave(frontmatterData);
     onClose();
   };
@@ -112,9 +112,9 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
       <div className="p-6">
         <div className="space-y-4">
           {/* Table Header */}
-          <div className="grid grid-cols-[1fr_2fr_auto] gap-4 pb-2 border-b border-slate-700">
-            <div className="text-sm font-semibold text-slate-300">Key</div>
-            <div className="text-sm font-semibold text-slate-300">Value</div>
+          <div className="grid grid-cols-[1fr_2fr_auto] gap-4 pb-2 border-b border-app-main">
+            <div className="text-sm font-semibold text-app-secondary">Key</div>
+            <div className="text-sm font-semibold text-app-secondary">Value</div>
             <div></div>
           </div>
 
@@ -127,18 +127,18 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
                   value={entry.key}
                   onChange={(e) => handleKeyChange(index, e.target.value)}
                   placeholder="Key"
-                  className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="px-3 py-2 bg-app-input border border-app-border-muted rounded-md text-app-main placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-[var(--app-accent-main)]"
                 />
                 <input
                   type="text"
                   value={entry.value}
                   onChange={(e) => handleValueChange(index, e.target.value)}
                   placeholder="Value"
-                  className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="px-3 py-2 bg-app-input border border-app-border-muted rounded-md text-app-main placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-[var(--app-accent-main)]"
                 />
                 <button
                   onClick={() => handleDelete(index)}
-                  className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-md transition-colors duration-150"
+                  className="p-2 text-app-muted hover:text-red-400 hover:bg-app-hover rounded-md transition-colors duration-150"
                   title="Delete entry"
                   aria-label="Delete entry"
                 >
@@ -163,7 +163,7 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
           {/* Add Entry Button */}
           <button
             onClick={handleAddEntry}
-            className="w-full px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="w-full px-4 py-2 bg-app-accent-main hover:bg-app-accent-hover text-app-accent-text rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--app-accent-main)]"
           >
             Add entry
           </button>
@@ -171,16 +171,16 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-700 p-6 flex justify-end gap-2">
+      <div className="border-t border-app-main p-6 flex justify-end gap-2">
         <button
           onClick={handleCancel}
-          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          className="px-4 py-2 border border-app-main text-app-muted hover:bg-app-hover hover:text-app-main rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--app-accent-main)]"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
-          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          className="px-4 py-2 bg-app-accent-main hover:bg-app-accent-hover text-app-accent-text rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--app-accent-main)]"
         >
           Save
         </button>
@@ -188,4 +188,3 @@ export const FrontmatterModal: React.FC<FrontmatterModalProps> = ({
     </Modal>
   );
 };
-

@@ -1051,7 +1051,6 @@ const App: React.FC = () => {
               onToggle={handleLinterToggle}
               onErrorClick={handleLinterErrorClick}
               onAutoFix={handleAutoFix}
-              theme={settings.theme}
             />
             <StatusBar
               items={(() => {
@@ -1199,7 +1198,6 @@ const App: React.FC = () => {
         cancelText="Cancel"
         onConfirm={() => handleTabConfirmationConfirm(tabConfirmationData)}
         onCancel={handleTabConfirmationCancel}
-        theme={settings.theme}
         variant="danger"
       />
 
