@@ -5,7 +5,7 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 [![License](https://img.shields.io/github/license/Etschmia/mark)](https://github.com/Etschmia/mark/blob/main/LICENSE)
 [![Version](https://img.shields.io/github/package-json/v/Etschmia/mark)](https://github.com/Etschmia/mark)
 
-[![Markdown Editor Pro Demo](./demo_preview.png)](https://github.com/Etschmia/mark/raw/main/markdown_editor_demo.mp4)
+[![Markdown Editor Pro Demo](./demo_preview.png)](https://github.com/Etschmia/mark/blob/main/markdown_editor_demo.mp4)
 
 ## 🌟 Features
 
