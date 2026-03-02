@@ -18,6 +18,7 @@ interface ToolbarProps {
   onNew: () => void;
   onOpen: () => void;
   onSave: () => void;
+  onPrint: () => void;
   fileName: string;
   onFileNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onUndo: () => void;
@@ -100,6 +101,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onNew,
   onOpen,
   onSave,
+  onPrint,
   fileName,
   onFileNameChange,
   onUndo,
@@ -361,6 +363,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             }`}
         >
           Save
+        </button>
+
+        <button
+          onClick={onPrint}
+          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-app-accent-main ${buttonClasses} ${focusRingOffset}`}
+        >
+          Print
         </button>
 
         {/* Help Dropdown */}

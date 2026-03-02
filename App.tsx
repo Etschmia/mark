@@ -458,6 +458,75 @@ const App: React.FC = () => {
     saveCurrentSession(openFiles, activeFile);
   }, [tabManagerState.tabs, tabManagerState.activeTabId, workspace.rootPath, saveCurrentSession]);
 
+  const handlePrint = useCallback(() => {
+    const previewElement = previewRef.current;
+    if (!previewElement) {
+      alert('Preview ist noch nicht verfügbar.');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Der Druckdialog konnte nicht geöffnet werden (Popup-Blocker?).');
+      return;
+    }
+
+    // Versuche, nur den gerenderten Inhalts-Container zu nehmen
+    const contentContainer =
+      previewElement.querySelector('div') || previewElement;
+
+    const contentHtml = contentContainer.innerHTML;
+    const classicPaperStyles = themes['Classic Paper'] || '';
+    const safeTitle = fileName || 'Document';
+
+    printWindow.document.open();
+    printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charSet="utf-8" />
+    <title>${safeTitle}</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+      }
+
+      .print-page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        background: #ffffff;
+      }
+
+      ${classicPaperStyles}
+    </style>
+  </head>
+  <body>
+    <div class="print-page">
+      <div class="prose-styles">
+        ${contentHtml}
+      </div>
+    </div>
+  </body>
+</html>
+    `);
+    printWindow.document.close();
+
+    // Sicherstellen, dass das Fenster gerendert ist, bevor gedruckt wird
+    printWindow.focus();
+    // Kleiner Timeout, damit die Styles greifen
+    setTimeout(() => {
+      printWindow.print();
+    }, 50);
+  }, [fileName]);
+
   // Tab Manager subscription and initialization
   useEffect(() => {
     let lastActiveTabId = tabManagerRef.current.getState().activeTabId;
@@ -957,6 +1026,7 @@ const App: React.FC = () => {
           }}
           onOpen={handleOpenFile}
           onSave={handleSaveFile}
+          onPrint={handlePrint}
           fileName={fileName}
           onFileNameChange={handleFileNameChange}
           onUndo={handleUndo}
