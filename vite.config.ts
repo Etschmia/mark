@@ -30,47 +30,32 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
+        // Rolldown (Vite 8) erfordert manualChunks als Funktion
+        manualChunks(id) {
           // All CodeMirror packages in one chunk to avoid multiple instances
-          'codemirror-all': [
-            '@codemirror/view',
-            '@codemirror/state',
-            '@codemirror/commands',
-            '@codemirror/autocomplete',
-            '@codemirror/search',
-            '@codemirror/lang-markdown',
-            '@codemirror/lang-javascript',
-            '@codemirror/lang-sql',
-            '@codemirror/lang-python',
-            '@codemirror/lang-php',
-            '@codemirror/lang-xml',
-            '@codemirror/theme-one-dark',
-            '@uiw/codemirror-themes-all'
-          ],
+          if (id.includes('@codemirror/') || id.includes('@uiw/codemirror')) {
+            return 'codemirror-all';
+          }
           // Markdown processing
-          'markdown-processing': [
-            'marked',
-            'dompurify'
-          ],
+          if (id.includes('/marked/') || id.includes('/dompurify/') || id.includes('DOMPurify')) {
+            return 'markdown-processing';
+          }
           // Syntax highlighting
-          'syntax-highlighting': [
-            'highlight.js'
-          ],
+          if (id.includes('highlight.js')) {
+            return 'syntax-highlighting';
+          }
           // Export functionality (heavy libraries)
-          'export-libs': [
-            'jspdf',
-            'html2canvas'
-          ],
+          if (id.includes('jspdf') || id.includes('html2canvas')) {
+            return 'export-libs';
+          }
           // GitHub integration
-          'github-integration': [
-            '@octokit/rest',
-            'js-base64'
-          ],
+          if (id.includes('@octokit/') || id.includes('js-base64')) {
+            return 'github-integration';
+          }
           // React vendor
-          'react-vendor': [
-            'react',
-            'react-dom'
-          ]
+          if (id.includes('react-dom') || id.includes('react/')) {
+            return 'react-vendor';
+          }
         }
       }
     },
