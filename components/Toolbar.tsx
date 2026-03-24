@@ -10,6 +10,7 @@ import { UpdateInfoModal } from './UpdateInfoModal';
 import { FrontmatterModal } from './FrontmatterModal';
 import { GitHubButton } from './GitHubButton';
 import { pwaManager } from '../utils/pwaManager';
+import { isBrowserApp } from '../utils/environment';
 import { checkAndInstallUpdate } from '../utils/updateManager';
 
 // Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
@@ -456,6 +457,18 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   <InstallIcon />
                   <span>Install App</span>
                 </button>
+              )}
+              {isBrowserApp() && (
+                <a
+                  href="https://github.com/Etschmia/mark/releases/latest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsHelpDropdownOpen(false)}
+                  className={`flex items-center gap-2 w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${dropdownItemClass}`}
+                >
+                  <InstallIcon />
+                  <span>Desktop App (ALPHA)</span>
+                </a>
               )}
               <div className={`border-t my-1 ${dropdownDividerClass}`}></div>
               <button

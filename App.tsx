@@ -44,7 +44,6 @@ import { isDesktopApp } from './utils/environment';
 import { useWorkspace } from './hooks/useWorkspace';
 import { WorkspaceSidebar } from './components/WorkspaceSidebar';
 import { RestoreSessionDialog } from './components/RestoreSessionDialog';
-import { DesktopDownloadBanner } from './components/DesktopDownloadBanner';
 
 // Minimal types for File System Access API to support modern file saving
 // and avoid TypeScript errors.
@@ -986,8 +985,6 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen font-sans bg-app-main text-app-main">
-      {/* Desktop Download Banner (browser only) */}
-      <DesktopDownloadBanner />
 
       {/* Offline Indicator */}
       {isOffline && (
