@@ -139,7 +139,6 @@ Toolbar button / Keyboard shortcut → onFormat callback
 - **Note**: Rust is NOT needed locally for web development, only for local desktop builds
 
 ### Desktop-Specific Components
-- `components/DesktopDownloadBanner.tsx` - Browser-only banner linking to desktop downloads (hidden on mobile/desktop app)
 - `components/WorkspaceSidebar.tsx` - File tree for opened folders (desktop only)
 
 ## Technology Stack
