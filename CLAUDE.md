@@ -24,6 +24,12 @@ npm run pwa-validate          # Validate PWA manifest
 npm run update-sw-version     # Update service worker cache version
 ```
 
+## Documentation
+
+- `CLAUDE.md` is the current source of truth for architecture and workflows
+- `docs/HOWTO_SYSTEMD.md` documents the production systemd deployment used on this host
+- `docs/history/` contains archived implementation notes and planning documents that may no longer match the current codebase
+
 ## Architecture
 
 ### State Management
