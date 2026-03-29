@@ -117,7 +117,6 @@ export type ExportFormat = 'html' | 'pdf' | 'docx';
 export interface ExportOptions {
   filename: string;
   content: string;
-  theme?: string;
 }
 
 // HTML export configuration - similar to Preview component
@@ -175,7 +174,7 @@ async function markdownToHtml(markdown: string): Promise<string> {
 /**
  * Generate a complete HTML document with CSS styles
  */
-function generateCompleteHtml(content: string, theme?: string): string {
+function generateCompleteHtml(content: string): string {
   // Basic CSS styles for exported HTML
   const baseStyles = `
     body {
@@ -314,7 +313,7 @@ function generateCompleteHtml(content: string, theme?: string): string {
 export async function exportAsHtml(options: ExportOptions): Promise<void> {
   try {
     const htmlContent = await markdownToHtml(options.content);
-    const completeHtml = generateCompleteHtml(htmlContent, options.theme);
+    const completeHtml = generateCompleteHtml(htmlContent);
 
     const filename = options.filename.replace(/\.md$/, '.html');
     const blob = new Blob([completeHtml], { type: 'text/html;charset=utf-8' });

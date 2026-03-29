@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { Modal } from './common/Modal';
 import { appThemes } from '../utils/appThemes';
 
 export interface EditorSettings {
-  theme: 'light' | 'dark';
   fontSize: number;
   debounceTime: number;
-  previewTheme: string;
-  autoSave: boolean;
   showLineNumbers: boolean;
-  themeId: string; // Unified theme ID
+  themeId: string;
 }
+
+export const defaultEditorSettings: EditorSettings = {
+  fontSize: 14,
+  debounceTime: 500,
+  showLineNumbers: false,
+  themeId: 'claude-dark',
+};
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -38,16 +41,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleReset = () => {
-    const defaultSettings: EditorSettings = {
-      theme: 'dark',
-      fontSize: 14,
-      debounceTime: 500,
-      previewTheme: 'Default',
-      autoSave: true,
-      showLineNumbers: false,
-      themeId: 'claude-dark'
-    };
-    setLocalSettings(defaultSettings);
+    setLocalSettings(defaultEditorSettings);
   };
 
   const handleCancel = () => {
@@ -196,15 +190,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </label>
 
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={localSettings.autoSave}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, autoSave: e.target.checked }))}
-                  className="mr-2"
-                />
-                <span className="text-sm">Auto-save to localStorage</span>
-              </label>
             </div>
           </div>
 
@@ -215,7 +200,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <li>• Settings are saved automatically</li>
               <li>• Theme changes are applied immediately</li>
               <li>• Debounce time controls how often undo entries are created</li>
-              <li>• Auto-save prevents data loss on reload</li>
+              <li>• Open tabs and editor content are persisted automatically</li>
             </ul>
           </div>
         </div>

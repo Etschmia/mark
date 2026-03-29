@@ -34,7 +34,6 @@ export const TabBar: React.FC<TabBarProps> = ({
   onTabClose,
   onTabCreate,
   onTabContextMenu,
-  theme,
   isCreatingTab = false
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -264,7 +263,6 @@ export const TabBar: React.FC<TabBarProps> = ({
                   }}
                   onClose={() => onTabClose(tab.id)}
                   onContextMenu={(event) => onTabContextMenu(tab.id, event)}
-                  theme={theme}
                 />
               </div>
             ))}

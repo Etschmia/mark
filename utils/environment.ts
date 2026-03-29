@@ -3,13 +3,6 @@
  */
 
 /**
- * Checks if the application is running on Vercel.
- */
-export const isVercel = (): boolean => {
-  return window.location.hostname.includes('vercel.app');
-};
-
-/**
  * Checks if the application is running inside a Tauri desktop shell.
  */
 export const isDesktopApp = (): boolean => {

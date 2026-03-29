@@ -5,7 +5,7 @@ import { Toolbar } from './components/Toolbar';
 import { TabBar } from './components/TabBar';
 import { FormatType, GitHubState, GitHubUser, GitHubRepository, GitHubFile, GitHubCommitOptions, FileSource, TabManagerState, Tab, EditorState } from './types';
 import { themes } from './components/preview-themes';
-import { EditorSettings } from './components/SettingsModal';
+import { EditorSettings, defaultEditorSettings } from './components/SettingsModal';
 import { HelpModal } from './components/HelpModal';
 import { CheatSheetModal } from './components/CheatSheetModal';
 import { SettingsModal } from './components/SettingsModal';
@@ -24,7 +24,6 @@ import { getStorageService } from './services/storage';
 import { StatusBar } from './components/StatusBar';
 import { LinterPanel } from './components/LinterPanel';
 import { lintMarkdown, LintResult, LintError, applyAutoFix } from './utils/markdownLinter';
-import { WebAnalytics } from './components/WebAnalytics';
 
 // Import the new hooks and services
 import { useTabManager } from './hooks/useTabManager';
@@ -74,31 +73,22 @@ const App: React.FC = () => {
 
   // Load persisted state via StorageService (for settings only, tabs are handled by TabManager)
   const getPersistedSettings = () => {
-    const defaultSettings: EditorSettings = {
-      theme: 'dark',
-      fontSize: 14,
-      debounceTime: 500,
-      previewTheme: 'Default',
-      autoSave: true,
-      showLineNumbers: false,
-      themeId: 'claude-dark'
-    };
-
     try {
       const parsed = storage.loadSettings();
 
-      if (parsed) {
-        // Migration: if useUnifiedTheme is not defined, it's a legacy user
-        if (typeof (parsed as any).useUnifiedTheme === 'undefined') {
-          (parsed as any).useUnifiedTheme = false;
-        }
-        return { ...defaultSettings, ...parsed };
+      if (parsed && typeof parsed === 'object') {
+        return {
+          fontSize: typeof parsed.fontSize === 'number' ? parsed.fontSize : defaultEditorSettings.fontSize,
+          debounceTime: typeof parsed.debounceTime === 'number' ? parsed.debounceTime : defaultEditorSettings.debounceTime,
+          showLineNumbers: typeof parsed.showLineNumbers === 'boolean' ? parsed.showLineNumbers : defaultEditorSettings.showLineNumbers,
+          themeId: typeof parsed.themeId === 'string' ? parsed.themeId : defaultEditorSettings.themeId,
+        };
       }
 
-      return defaultSettings;
+      return defaultEditorSettings;
     } catch (error) {
       console.warn('Failed to load persisted settings:', error);
-      return defaultSettings;
+      return defaultEditorSettings;
     }
   };
 
@@ -1028,19 +1018,10 @@ const App: React.FC = () => {
           onFileNameChange={handleFileNameChange}
           onUndo={handleUndo}
           canUndo={historyIndex > 0}
-          themes={[]}
-          selectedTheme={settings.themeId}
-          onThemeChange={() => { }}
           markdown={markdown}
-          settings={settings}
-          onSettingsChange={handleSettingsChange}
-          isHelpModalOpen={isHelpModalOpen}
           setIsHelpModalOpen={setIsHelpModalOpen}
-          isCheatSheetModalOpen={isCheatSheetModalOpen}
           setIsCheatSheetModalOpen={setIsCheatSheetModalOpen}
-          isSettingsModalOpen={isSettingsModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
-          isAboutModalOpen={isAboutModalOpen}
           setIsAboutModalOpen={setIsAboutModalOpen}
           // Update functionality
           onUpdate={handleUpdate}
@@ -1048,16 +1029,12 @@ const App: React.FC = () => {
           githubState={githubState}
           onGitHubConnect={handleGitHubConnect}
           onGitHubDisconnect={handleGitHubDisconnect}
-          onBrowseRepositories={handleBrowseRepositories}
-          fileSource={fileSource}
           // Save state props
           hasUnsavedChanges={hasUnsavedChangesForToolbar()}
           // Linter props
           isLinterActive={isLinterActive}
           // Frontmatter props
-          isFrontmatterModalOpen={isFrontmatterModalOpen}
           setIsFrontmatterModalOpen={setIsFrontmatterModalOpen}
-          onFrontmatterSave={handleFrontmatterSave}
 
         />
       </header>
@@ -1098,7 +1075,6 @@ const App: React.FC = () => {
               editorRef.current?.focus();
             }}
             onTabContextMenu={handleTabContextMenu}
-            theme={settings.theme}
           />
 
           <div className="flex flex-col min-h-0 flex-grow">
@@ -1146,7 +1122,6 @@ const App: React.FC = () => {
             <Preview
               markdown={markdown}
               themeStyles={currentTheme.previewTheme}
-              themeType={currentTheme.type}
               scrollbarColors={getScrollbarColors(currentTheme)}
               onScroll={(event) => handleScroll('preview', event.nativeEvent)}
               ref={previewRef}
@@ -1160,9 +1135,6 @@ const App: React.FC = () => {
         </div>
       </main>
       </div>
-
-      {/* Web Analytics */}
-      <WebAnalytics />
 
       {/* Modals rendered at app level for proper z-index */}
       <HelpModal

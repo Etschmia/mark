@@ -5,13 +5,8 @@ import { EditorState, Compartment, Extension } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
 import { indentWithTab } from '@codemirror/commands';
 import { searchKeymap, openSearchPanel } from '@codemirror/search';
+import { basicDark, basicLight } from '@uiw/codemirror-themes-all';
 import { EditorSettings } from './SettingsModal';
-
-// Import CodeMirror theme creation function
-import { createTheme } from '@uiw/codemirror-themes';
-
-// Import central theme configuration
-import { themeMap, getThemeExtension } from '../utils/themes';
 import { getAppThemeById, getScrollbarColors } from '../utils/appThemes';
 
 // Import basic setup components
@@ -262,8 +257,7 @@ interface EditorProps {
   onScroll?: (event: Event) => void;
   onFormat?: (formatType: string, options?: any) => void;
   settings: EditorSettings;
-  codemirrorTheme?: string; // Legacy string based theme
-  theme?: Extension; // Direct extension theme
+  theme: Extension;
 }
 
 export interface EditorRef {
@@ -276,24 +270,17 @@ export interface EditorRef {
   openSearchPanel: () => void;
 }
 
-export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat, settings, codemirrorTheme = 'basicDark', theme }, ref) => {
+export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onScroll, onFormat, settings, theme }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
-  // Determine if theme is dark using the ID for accuracy
   const activeTheme = getAppThemeById(settings.themeId);
-  const isDark = activeTheme.type === 'dark';
   const sbColors = getScrollbarColors(activeTheme);
+  const fallbackTheme = activeTheme.type === 'dark' ? basicDark : basicLight;
+  const resolvedTheme = theme || fallbackTheme;
 
   // Create theme compartment per editor instance to avoid conflicts
   const themeCompartment = useRef(new Compartment()).current;
-
-  // Debug: Log available themes on first render
-  useEffect(() => {
-    console.log('Available CodeMirror themes:', Object.keys(themeMap));
-    console.log('Current theme:', codemirrorTheme);
-    console.log('Okaidia theme object:', themeMap.okaidia);
-  }, []);
 
   useImperativeHandle(ref, () => ({
     focus: () => viewRef.current?.focus(),
@@ -411,7 +398,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
           outline: 'none'
         },
         // Only style search panel if no CodeMirror theme is applied or for light themes
-        ...(codemirrorTheme === 'basicLight' || codemirrorTheme === 'githubLight' || codemirrorTheme === 'materialLight' || codemirrorTheme === 'solarizedLight' || codemirrorTheme === 'bbedit' ? {
+        ...(activeTheme.type === 'light' ? {
           '.cm-panel': {
             backgroundColor: '#f3f4f6',
             border: '1px solid #d1d5db',
@@ -481,18 +468,27 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
       try {
         const baseExtensions = await createEditorExtensions(settings);
 
-        // Safely get the initial theme with fallback
-        const initialTheme = theme || getThemeExtension(codemirrorTheme);
-
         if (!isMounted) return; // Component was unmounted while loading
 
-        const startState = EditorState.create({
+        const createState = (themeExtension: Extension) => EditorState.create({
           doc: value,
           extensions: [
             ...baseExtensions,
-            themeCompartment.of(initialTheme.flat())
+            themeCompartment.of(themeExtension)
           ]
         });
+
+        let startState: EditorState;
+        try {
+          startState = createState(resolvedTheme);
+        } catch (themeError) {
+          console.error('Failed to initialize editor theme, falling back to basic theme:', themeError);
+          startState = createState(fallbackTheme);
+        }
+
+        if (editorRef.current) {
+          editorRef.current.innerHTML = '';
+        }
 
         view = new EditorView({
           state: startState,
@@ -549,7 +545,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
         view.destroy();
       }
     };
-  }, [settings.theme, settings.themeId, settings.fontSize, settings.showLineNumbers]); // Recreate when basic settings or theme ID change
+  }, [settings.themeId, settings.fontSize, settings.showLineNumbers, theme]);
 
   // Separate effect for updating CodeMirror theme without recreating the editor
   useEffect(() => {
@@ -557,16 +553,16 @@ export const Editor = forwardRef<EditorRef, EditorProps>(({ value, onChange, onS
     if (!view) return;
 
     try {
-      const newTheme = theme || getThemeExtension(codemirrorTheme);
-      console.log('🎨 Updating CodeMirror theme extension');
-
       view.dispatch({
-        effects: themeCompartment.reconfigure(Array.isArray(newTheme) ? newTheme : [newTheme])
+        effects: themeCompartment.reconfigure(resolvedTheme)
       });
     } catch (error) {
-      console.error('Failed to update CodeMirror theme:', error);
+      console.error('Failed to update CodeMirror theme, applying fallback:', error);
+      view.dispatch({
+        effects: themeCompartment.reconfigure(fallbackTheme)
+      });
     }
-  }, [codemirrorTheme, theme]);
+  }, [resolvedTheme, fallbackTheme, themeCompartment]);
 
 
   // DO NOT update editor content from value prop during normal typing!

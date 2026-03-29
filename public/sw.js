@@ -1,25 +1,29 @@
 // Dynamic cache name with timestamp to force updates
-const CACHE_VERSION = 1774341434761; // This will be replaced by build process
+const CACHE_VERSION = 1774801307655; // This will be replaced by build process
 const CACHE_NAME = `markdown-editor-pro-v${CACHE_VERSION}`;
 const urlsToCache = [
   '/',
   '/index.html',
-  '/index.tsx',
-  '/App.tsx',
-  '/types.ts',
-  '/components/Editor.tsx',
-  '/components/Preview.tsx',
-  '/components/Toolbar.tsx',
-  '/components/HelpModal.tsx',
-  '/components/CheatSheetModal.tsx',
-  '/components/SettingsModal.tsx',
-  '/components/preview-themes.ts',
-  '/components/icons/Icons.tsx',
-  '/utils/exportUtils.ts',
   '/manifest.json',
-  // External resources that should be cached
-  'https://cdn.tailwindcss.com/3.4.0',
-  'https://fonts.googleapis.com/css2?family=Fira+Code&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap'
+  '/favicon.svg',
+  '/browserconfig.xml',
+  '/build-info.json',
+  '/fonts/fonts.css',
+  '/fonts/fira-code-400.ttf',
+  '/fonts/fira-code-700.ttf',
+  '/fonts/merriweather-400.ttf',
+  '/fonts/merriweather-400-italic.ttf',
+  '/fonts/merriweather-700.ttf',
+  '/icons/icon-72x72.svg',
+  '/icons/icon-96x96.svg',
+  '/icons/icon-128x128.svg',
+  '/icons/icon-144x144.svg',
+  '/icons/icon-152x152.svg',
+  '/icons/icon-192x192.svg',
+  '/icons/icon-384x384.svg',
+  '/icons/icon-512x512.svg',
+  '/icons/shortcut-new.svg',
+  '/icons/shortcut-help.svg'
 ];
 
 // Install event - cache resources
@@ -27,9 +31,17 @@ self.addEventListener('install', (event) => {
   console.log('[ServiceWorker] Install');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
+      .then(async (cache) => {
         console.log('[ServiceWorker] Caching app shell');
-        return cache.addAll(urlsToCache);
+        await Promise.all(
+          urlsToCache.map(async (url) => {
+            try {
+              await cache.add(url);
+            } catch (error) {
+              console.warn('[ServiceWorker] Skipping failed precache entry:', url, error);
+            }
+          })
+        );
       })
       .catch((error) => {
         console.error('[ServiceWorker] Cache failed:', error);
@@ -144,8 +156,8 @@ self.addEventListener('push', (event) => {
   
   const options = {
     body: 'Markdown Editor Pro notification',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: '/icons/icon-192x192.svg',
+    badge: '/icons/icon-72x72.svg',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),

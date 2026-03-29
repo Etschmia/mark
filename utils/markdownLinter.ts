@@ -58,7 +58,7 @@ const defaultConfig = {
   'MD037': true,  // Spaces inside emphasis markers
   'MD038': true,  // Spaces inside code span elements
   'MD039': true,  // Spaces inside link text
-  'MD040': true,  // Fenced code blocks should have a language specified
+  'MD040': false, // Allow unlabeled fences created by the default code action
   'MD042': true,  // No empty links
   'MD043': false, // Required header structure - too restrictive for general use
   'MD044': true,  // Proper names should have the correct capitalization

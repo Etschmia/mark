@@ -1,19 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FormatType, GitHubState, FileSource } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, HelpIcon, SettingsIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon, FrontmatterIcon, PaletteIcon } from './icons/Icons';
+import { FormatType, GitHubState } from '../types';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon, FrontmatterIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf, exportAsDocx } from '../utils/exportUtils';
-import { HelpModal } from './HelpModal';
-import { CheatSheetModal } from './CheatSheetModal';
-import { SettingsModal, EditorSettings } from './SettingsModal';
-import { AboutModal } from './AboutModal';
-import { UpdateInfoModal } from './UpdateInfoModal';
-import { FrontmatterModal } from './FrontmatterModal';
-import { GitHubButton } from './GitHubButton';
 import { pwaManager } from '../utils/pwaManager';
 import { isBrowserApp } from '../utils/environment';
-import { checkAndInstallUpdate } from '../utils/updateManager';
 
-// Die Props-Schnittstelle wird um die Theme-Eigenschaften erweitert
 interface ToolbarProps {
   onFormat: (formatType: FormatType, options?: { language?: string }) => void;
   onNew: () => void;
@@ -24,22 +15,12 @@ interface ToolbarProps {
   onFileNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onUndo: () => void;
   canUndo: boolean;
-  themes: string[];
-  selectedTheme: string;
-  onThemeChange: (theme: string) => void;
   // Export props
   markdown: string;
-  // Settings props
-  settings: EditorSettings;
-  onSettingsChange: (settings: EditorSettings) => void;
   // Modal control props
-  isHelpModalOpen: boolean;
   setIsHelpModalOpen: (open: boolean) => void;
-  isCheatSheetModalOpen: boolean;
   setIsCheatSheetModalOpen: (open: boolean) => void;
-  isSettingsModalOpen: boolean;
   setIsSettingsModalOpen: (open: boolean) => void;
-  isAboutModalOpen: boolean;
   setIsAboutModalOpen: (open: boolean) => void;
   // Update modal props
   onUpdate: () => void;
@@ -47,16 +28,12 @@ interface ToolbarProps {
   githubState: GitHubState;
   onGitHubConnect: () => void;
   onGitHubDisconnect: () => void;
-  onBrowseRepositories: () => void;
-  fileSource: FileSource;
   // Save state props
   hasUnsavedChanges: boolean;
   // Linter props
   isLinterActive: boolean;
   // Frontmatter props
-  isFrontmatterModalOpen: boolean;
   setIsFrontmatterModalOpen: (open: boolean) => void;
-  onFrontmatterSave: (frontmatter: { [key: string]: string }) => void;
 }
 
 // Theme-aware ToolButton - accepts buttonText and buttonHover classes from preset
@@ -96,7 +73,6 @@ const codeLanguages = [
   { name: 'XML', key: 'xml' },
 ];
 
-// Die Komponente akzeptiert jetzt die neuen Props für die Themes
 export const Toolbar: React.FC<ToolbarProps> = ({
   onFormat,
   onNew,
@@ -107,32 +83,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onFileNameChange,
   onUndo,
   canUndo,
-  themes,
-  selectedTheme,
-  onThemeChange,
   markdown,
-  settings,
-  onSettingsChange,
-  isHelpModalOpen,
   setIsHelpModalOpen,
-  isCheatSheetModalOpen,
   setIsCheatSheetModalOpen,
-  isSettingsModalOpen,
   setIsSettingsModalOpen,
-  isAboutModalOpen,
   setIsAboutModalOpen,
   // Update modal props
   onUpdate,
   // Frontmatter props
-  isFrontmatterModalOpen,
   setIsFrontmatterModalOpen,
-  onFrontmatterSave,
   // GitHub props
   githubState,
   onGitHubConnect,
   onGitHubDisconnect,
-  onBrowseRepositories,
-  fileSource,
   // Save state props
   hasUnsavedChanges,
   // Linter props
@@ -198,8 +161,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     try {
       const options = {
         filename: fileName,
-        content: markdown,
-        theme: selectedTheme
+        content: markdown
       };
 
       if (format === 'html') {
@@ -484,17 +446,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             </div>
           )}
         </div>
-
-        {/* GitHub Button - Removed from toolbar */}
-        {/* <GitHubButton 
-          connectionStatus={githubState.auth.isConnected ? 'connected' : 'disconnected'}
-          user={githubState.auth.user || undefined}
-          onConnect={onGitHubConnect}
-          onDisconnect={onGitHubDisconnect}
-          onBrowseRepos={onBrowseRepositories}
-          isLoading={githubState.isLoadingRepos}
-          error={githubState.error || undefined}
-        /> */}
 
         {/* Install Button - Removed from toolbar */}
         {/* {canInstallPWA && (

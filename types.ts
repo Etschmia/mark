@@ -135,8 +135,6 @@ export interface GitHubState {
   lastSync: number | null;
 }
 
-export type GitHubConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
-
 export interface GitHubModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -163,17 +161,6 @@ export interface SaveOptionsModalProps {
   commitError?: string;
   isConnected: boolean;
   canPush: boolean;
-}
-
-export interface GitHubButtonProps {
-  connectionStatus: GitHubConnectionStatus;
-  user?: GitHubUser;
-  onConnect: () => void;
-  onDisconnect: () => void;
-  onBrowseRepos: () => void;
-  isLoading?: boolean;
-  error?: string;
-  className?: string;
 }
 
 export interface FileSource {
@@ -231,7 +218,6 @@ export interface TabProps {
   onSelect: () => void;
   onClose: () => void;
   onContextMenu: (event: React.MouseEvent<HTMLElement>) => void;
-  theme: 'light' | 'dark';
 }
 
 export interface TabBarProps {
@@ -241,7 +227,6 @@ export interface TabBarProps {
   onTabClose: (tabId: string) => void;
   onTabCreate: () => void;
   onTabContextMenu: (tabId: string, event: React.MouseEvent<HTMLElement>) => void;
-  theme: 'light' | 'dark';
   isCreatingTab?: boolean; // Loading state for tab creation
 }
 

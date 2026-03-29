@@ -47,70 +47,15 @@ import type {
   GitHubUser,
   GitHubRepository,
   GitHubFile,
-  GitHubCommitOptions,
-  GitHubAuthState,
-  GitHubTreeItem
+  GitHubCommitOptions
 } from '../types';
-
-interface GitHubConfig {
-  clientId: string;
-  scopes: string[];
-  redirectUri: string;
-}
 
 class GitHubService {
   private octokit: any | null = null;
-  private config: GitHubConfig;
   private storage: StorageService;
 
   constructor() {
     this.storage = getStorageService();
-    // GitHub OAuth App configuration
-    // Note: This needs to be replaced with an actual GitHub OAuth App client ID
-    // Create a GitHub OAuth App at: https://github.com/settings/developers
-    // For development: Use 'Ov23liqOPAghglDE45gB' (example client ID)
-    this.config = {
-      clientId: 'Ov23liqOPAghglDE45gB', // Replace with your GitHub OAuth App client ID
-      scopes: ['public_repo', 'repo'],
-      redirectUri: window.location.origin + window.location.pathname
-    };
-  }
-
-  /**
-   * Generate random string
-   */
-  private generateRandomString(length: number): string {
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-    let text = '';
-    for (let i = 0; i < length; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
-  }
-
-  /**
-   * Initialize authentication via GitHub OAuth popup
-   */
-  async initializeAuth(): Promise<void> {
-    try {
-      // For client-side apps, we need to use a simpler approach
-      // We'll redirect to GitHub OAuth with a popup or direct redirect
-      const authUrl = new URL('https://github.com/login/oauth/authorize');
-      authUrl.searchParams.set('client_id', this.config.clientId);
-      authUrl.searchParams.set('redirect_uri', this.config.redirectUri);
-      authUrl.searchParams.set('scope', this.config.scopes.join(' '));
-      authUrl.searchParams.set('state', this.generateRandomString(32));
-      
-      // Store state for verification
-      this.storage.saveOAuthState(authUrl.searchParams.get('state')!);
-      
-      // For now, redirect to GitHub OAuth
-      // In production, you would need a backend service to handle the token exchange
-      window.location.href = authUrl.toString();
-    } catch (error) {
-      console.error('GitHub auth initialization failed:', error);
-      throw new Error('Failed to initialize GitHub authentication');
-    }
   }
 
   /**
@@ -433,115 +378,11 @@ Note: This is required because this app runs entirely in your browser for securi
   }
 
   /**
-   * Search for markdown files in a repository
-   */
-  async searchMarkdownFiles(
-    owner: string,
-    repo: string,
-    query: string = ''
-  ): Promise<GitHubFile[]> {
-    if (!this.octokit) {
-      throw new Error('GitHub not authenticated');
-    }
-
-    try {
-      const searchQuery = `repo:${owner}/${repo} extension:md ${query}`.trim();
-      
-      const { data } = await this.octokit.rest.search.code({
-        q: searchQuery,
-        per_page: 100
-      });
-
-      return data.items.map(item => ({
-        name: item.name,
-        path: item.path,
-        sha: item.sha,
-        size: 0, // Search results don't include size
-        url: item.url,
-        html_url: item.html_url,
-        git_url: item.git_url,
-        download_url: null,
-        type: 'file' as const,
-        _links: {
-          self: item.url,
-          git: item.git_url,
-          html: item.html_url
-        }
-      }));
-    } catch (error) {
-      console.error('Failed to search markdown files:', error);
-      throw new Error('Failed to search markdown files');
-    }
-  }
-
-  /**
-   * Get repository tree (for large repositories)
-   */
-  async getRepositoryTree(
-    owner: string,
-    repo: string,
-    treeSha: string = 'HEAD'
-  ): Promise<GitHubTreeItem[]> {
-    if (!this.octokit) {
-      throw new Error('GitHub not authenticated');
-    }
-
-    try {
-      const { data } = await this.octokit.rest.git.getTree({
-        owner,
-        repo,
-        tree_sha: treeSha,
-        recursive: 'true'
-      });
-
-      return data.tree.filter(item => 
-        item.type === 'blob' && 
-        item.path && 
-        item.path.endsWith('.md')
-      ).map(item => ({
-        path: item.path!,
-        mode: item.mode!,
-        type: item.type as 'blob' | 'tree',
-        sha: item.sha!,
-        size: item.size,
-        url: item.url!
-      }));
-    } catch (error) {
-      console.error('Failed to fetch repository tree:', error);
-      throw new Error('Failed to fetch repository tree');
-    }
-  }
-
-  /**
-   * Get rate limit information
-   */
-  async getRateLimit(): Promise<any> {
-    if (!this.octokit) {
-      throw new Error('GitHub not authenticated');
-    }
-
-    try {
-      const { data } = await this.octokit.rest.rateLimit.get();
-      return data;
-    } catch (error) {
-      console.error('Failed to get rate limit:', error);
-      return null;
-    }
-  }
-
-  /**
    * Disconnect from GitHub
    */
   disconnect(): void {
     this.octokit = null;
     this.clearToken();
-  }
-
-  /**
-   * Check if currently authenticated
-   */
-  isAuthenticated(): boolean {
-    return this.octokit !== null;
   }
 
   /**

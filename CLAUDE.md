@@ -67,7 +67,7 @@ Vite config splits chunks: `codemirror-all`, `markdown-processing`, `syntax-high
 
 - **Tab**: id, filename, content, history, historyIndex, editorState, fileSource, fileHandle, hasUnsavedChanges
 - **FileSource**: `{type: 'local'|'github', repository?, path?, sha?}`
-- **EditorSettings**: theme, fontSize, debounceTime, previewTheme, autoSave, showLineNumbers, themeId
+- **EditorSettings**: fontSize, debounceTime, showLineNumbers, themeId
 - **FormatType**: Union of all formatting operations
 
 ## Key APIs

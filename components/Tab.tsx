@@ -6,8 +6,7 @@ export const Tab: React.FC<TabProps> = ({
   isActive,
   onSelect,
   onClose,
-  onContextMenu,
-  theme
+  onContextMenu
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isCloseHovered, setIsCloseHovered] = useState(false);

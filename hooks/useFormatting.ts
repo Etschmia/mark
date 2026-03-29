@@ -119,7 +119,7 @@ export const useFormatting = ({
       case 'h2': applyLineFormatting('## '); break;
       case 'h3': applyLineFormatting('### '); break;
       case 'quote': applyLineFormatting('> '); break;
-      case 'ul': applyLineFormatting('* '); break;
+      case 'ul': applyLineFormatting('- '); break;
       case 'ol': applyLineFormatting('1. '); break;
       case 'checklist': applyLineFormatting('- [ ] '); break;
       case 'table': {

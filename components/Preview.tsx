@@ -1,4 +1,5 @@
 import React, { useState, useEffect, forwardRef } from 'react';
+import 'highlight.js/styles/atom-one-dark.css';
 
 import { removeFrontmatter } from '../utils/frontmatterUtils';
 import type { ScrollbarColors } from '../utils/appThemes';
@@ -26,20 +27,20 @@ const loadMarkdownDependencies = async () => {
   }
 
   try {
-    // Load all dependencies in parallel
-    const [markedModule, purifyModule, hljsModule] = await Promise.all([
+    // Load all dependencies and supported languages in parallel.
+    const [
+      markedModule,
+      purifyModule,
+      hljsModule,
+      jsLang,
+      sqlLang,
+      pythonLang,
+      phpLang,
+      xmlLang
+    ] = await Promise.all([
       import('marked'),
       import('dompurify'),
-      import('highlight.js')
-    ]);
-
-    // Cache the modules
-    moduleCache.marked = markedModule.marked;
-    moduleCache.dompurify = purifyModule.default;
-    moduleCache.hljs = hljsModule.default;
-
-    // Load specific language modules for highlight.js
-    await Promise.all([
+      import('highlight.js'),
       import('highlight.js/lib/languages/javascript'),
       import('highlight.js/lib/languages/sql'),
       import('highlight.js/lib/languages/python'),
@@ -47,27 +48,17 @@ const loadMarkdownDependencies = async () => {
       import('highlight.js/lib/languages/xml')
     ]);
 
-    // Register languages
-    const jsLang = await import('highlight.js/lib/languages/javascript');
-    const sqlLang = await import('highlight.js/lib/languages/sql');
-    const pythonLang = await import('highlight.js/lib/languages/python');
-    const phpLang = await import('highlight.js/lib/languages/php');
-    const xmlLang = await import('highlight.js/lib/languages/xml');
+    // Cache the modules
+    moduleCache.marked = markedModule.marked;
+    moduleCache.dompurify = purifyModule.default;
+    moduleCache.hljs = hljsModule.default;
 
+    // Register languages
     moduleCache.hljs.registerLanguage('javascript', jsLang.default);
     moduleCache.hljs.registerLanguage('sql', sqlLang.default);
     moduleCache.hljs.registerLanguage('python', pythonLang.default);
     moduleCache.hljs.registerLanguage('php', phpLang.default);
     moduleCache.hljs.registerLanguage('xml', xmlLang.default);
-
-    // Load CSS for syntax highlighting
-    if (!document.querySelector('#hljs-css')) {
-      const link = document.createElement('link');
-      link.id = 'hljs-css';
-      link.rel = 'stylesheet';
-      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css';
-      document.head.appendChild(link);
-    }
 
     return {
       marked: moduleCache.marked,
@@ -83,7 +74,6 @@ const loadMarkdownDependencies = async () => {
 interface PreviewProps {
   markdown: string;
   themeStyles: string;
-  themeType: 'light' | 'dark';
   scrollbarColors: ScrollbarColors;
   onScroll: (event: React.UIEvent<HTMLDivElement>) => void;
 }
@@ -145,7 +135,7 @@ const ALLOWED_ATTR = [
 ];
 
 
-export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, themeStyles, themeType, scrollbarColors, onScroll }, ref) => {
+export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, themeStyles, scrollbarColors, onScroll }, ref) => {
   const [sanitizedHtml, setSanitizedHtml] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [dependencies, setDependencies] = useState<{

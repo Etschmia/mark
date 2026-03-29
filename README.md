@@ -29,13 +29,12 @@ A powerful, lightweight, browser-based Markdown editor designed for simplicity, 
 - **YAML Frontmatter Support** - Edit document metadata (title, date, description, tags, author) with visual editor
 
 ### 🎨 **User Experience**
-- **Complete Theme System** - Full light/dark mode for entire interface with persistent settings
+- **Complete Theme System** - Curated app themes style editor, preview and chrome consistently
 - **Progressive Web App** - Install as native app, works offline, with app shortcuts and notifications
-- **Comprehensive Settings Modal** - Font size, debounce time, line numbers, auto-save preferences
+- **Comprehensive Settings Modal** - Font size, debounce time and line number preferences
 - **No Registration Required** - Complete privacy, no cloud dependencies
 - **Responsive Design** - Works perfectly on desktop and mobile
 - **Intuitive Toolbar** - Visual buttons for all formatting options
-- **Multiple Preview Themes** - Customizable preview styling with persistent selection
 - **Offline Indicator** - Clear status when working without internet connection
 - **CodeMirror Themes** - 30+ editor themes for personalized coding experience
 
@@ -90,7 +89,7 @@ npm run build
 ## 📤 Export Capabilities
 - **Markdown** - Native .md file saving
 - **HTML** - Complete standalone HTML documents with styling
-- **PDF** - Professional PDF output with proper formatting
+- **PDF** - Browser-generated PDF export for quick sharing; formatting is currently limited
 - **DOCX** - Microsoft Word documents with full Markdown support (headings, paragraphs, lists, blockquotes, code blocks, tables, images via base64 embedding), matching HTML styling (fonts, margins, borders) – browser-only generation using 'docx' library
 
 ## 🎯 Core Components
@@ -111,7 +110,7 @@ npm run build
 ### `Toolbar.tsx`
 - Complete formatting controls
 - File operations (New, Open, Save, Export)
-- GitHub integration button
+- GitHub integration via help menu
 - Help system dropdown
 
 ## 🛠️ Technical Stack

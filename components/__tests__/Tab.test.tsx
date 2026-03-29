@@ -17,8 +17,7 @@ describe('Tab Component', () => {
     isActive: false,
     onSelect: jest.fn(),
     onClose: jest.fn(),
-    onContextMenu: jest.fn(),
-    theme: 'dark' as const
+    onContextMenu: jest.fn()
   };
 
   beforeEach(() => {
@@ -84,29 +83,6 @@ describe('Tab Component', () => {
       // But full filename should be in title attribute
       const tab = screen.getByRole('tab');
       expect(tab).toHaveAttribute('title', longFilenameTab.filename);
-    });
-  });
-
-  describe('theme support', () => {
-    test('applies dark theme classes', () => {
-      render(<Tab {...defaultProps} theme="dark" />);
-      
-      const tab = screen.getByRole('tab');
-      expect(tab).toHaveClass('bg-slate-700', 'text-slate-300');
-    });
-
-    test('applies light theme classes', () => {
-      render(<Tab {...defaultProps} theme="light" />);
-      
-      const tab = screen.getByRole('tab');
-      expect(tab).toHaveClass('bg-gray-100', 'text-gray-700');
-    });
-
-    test('applies active theme classes correctly', () => {
-      render(<Tab {...defaultProps} theme="dark" isActive={true} />);
-      
-      const tab = screen.getByRole('tab');
-      expect(tab).toHaveClass('bg-slate-800', 'text-white', 'border-cyan-500');
     });
   });
 
@@ -229,12 +205,12 @@ describe('Tab Component', () => {
 
   describe('visual states', () => {
     test('applies hover styles correctly', () => {
-      render(<Tab {...defaultProps} theme="dark" />);
+      render(<Tab {...defaultProps} />);
       
       const tab = screen.getByRole('tab');
       
       // Initial state
-      expect(tab).toHaveClass('bg-slate-700');
+      expect(tab).toHaveClass('bg-app-activity-bar');
       
       // Hover state is handled by CSS, but we can test the hover event handlers
       fireEvent.mouseEnter(tab);
@@ -245,19 +221,19 @@ describe('Tab Component', () => {
     });
 
     test('shows active indicator line for active tab', () => {
-      render(<Tab {...defaultProps} isActive={true} theme="dark" />);
+      render(<Tab {...defaultProps} isActive={true} />);
       
       // Active indicator should be present (as a div with specific classes)
       const tab = screen.getByRole('tab');
-      const indicator = tab.querySelector('.bg-cyan-500');
+      const indicator = tab.querySelector('.bg-app-accent-main');
       expect(indicator).toBeInTheDocument();
     });
 
     test('does not show active indicator line for inactive tab', () => {
-      render(<Tab {...defaultProps} isActive={false} theme="dark" />);
+      render(<Tab {...defaultProps} isActive={false} />);
       
       const tab = screen.getByRole('tab');
-      const indicator = tab.querySelector('.bg-cyan-500');
+      const indicator = tab.querySelector('.bg-app-accent-main');
       expect(indicator).not.toBeInTheDocument();
     });
   });

@@ -21,7 +21,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
       { keys: 'Ctrl/Cmd + 3', description: 'Header 3 - Creates small header (### text)' },
     ]},
     { category: 'Lists and Structure', shortcuts: [
-      { keys: 'Ctrl/Cmd + U', description: 'Unordered List - Creates bullet points (* item)' },
+      { keys: 'Ctrl/Cmd + U', description: 'Unordered List - Creates bullet points (- item)' },
       { keys: 'Ctrl/Cmd + O', description: 'Ordered List - Creates numbered list (1. item)' },
       { keys: 'Ctrl/Cmd + Shift + C', description: 'Checklist - Creates checkboxes (- [ ] item)' },
       { keys: 'Ctrl/Cmd + Q', description: 'Quote - Creates blockquote (> text)' },
@@ -66,7 +66,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     ]},
     { category: 'Lists and Structure', items: [
       { icon: '"', name: 'Quote', description: 'Creates blockquote. Adds > at the beginning of line.' },
-      { icon: '\u2022', name: 'Unordered List', description: 'Creates bullet points. Adds * at the beginning of line.' },
+      { icon: '\u2022', name: 'Unordered List', description: 'Creates bullet points. Adds - at the beginning of line.' },
       { icon: '1.', name: 'Ordered List', description: 'Creates numbered list. Adds 1. at the beginning of line.' },
       { icon: '\u2611', name: 'Checklist', description: 'Creates checkboxes. Adds - [ ] at the beginning of line.' },
       { icon: '\u229E', name: 'Table', description: 'Inserts table template with headers and sample data.' },
@@ -79,7 +79,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
       { icon: '< >', name: 'Code', description: 'Inserts code block or inline code. Supports multiple languages.' },
       { icon: '\uD83D\uDD0D', name: 'Search', description: 'Opens search and replace panel with regex support.' },
       { icon: '\u21B6', name: 'Undo', description: 'Undoes the last change. Works with text and formatting.' },
-      { icon: '\uD83D\uDCE4', name: 'Export', description: 'Exports document as HTML or PDF with formatting preserved.' },
+      { icon: '\uD83D\uDCE4', name: 'Export', description: 'Exports document as HTML, PDF or DOCX. PDF output is currently basic.' },
     ]},
     { category: 'File Operations', items: [
       { icon: 'New', name: 'New File', description: 'Creates a new empty document.' },
