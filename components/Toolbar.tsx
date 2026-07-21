@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormatType, GitHubState } from '../types';
-import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon, FrontmatterIcon } from './icons/Icons';
+import { BoldIcon, ItalicIcon, H1Icon, H2Icon, H3Icon, ListUlIcon, ListOlIcon, QuoteIcon, CodeIcon, FormulaIcon, StrikethroughIcon, UndoIcon, TableIcon, ImageIcon, ChecklistIcon, LinkIcon, ExportIcon, SearchIcon, InstallIcon, UpdateIcon, MarkdownIcon, InfoIcon, LinterIcon, FrontmatterIcon } from './icons/Icons';
 import { ExportFormat, exportAsHtml, exportAsPdf, exportAsDocx } from '../utils/exportUtils';
 import { pwaManager } from '../utils/pwaManager';
 import { isBrowserApp } from '../utils/environment';
@@ -255,6 +255,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </div>
 
+        <ToolButton onClick={() => onFormat('formula')} title="Formula (KaTeX), e.g. $E = mc^2$" buttonText={toolButtonText} buttonHover={toolButtonHover}><FormulaIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('table')} title="Insert table" buttonText={toolButtonText} buttonHover={toolButtonHover}><TableIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('image')} title="Insert image" buttonText={toolButtonText} buttonHover={toolButtonHover}><ImageIcon /></ToolButton>
         <ToolButton onClick={() => onFormat('link')} title="Insert link" buttonText={toolButtonText} buttonHover={toolButtonHover}><LinkIcon /></ToolButton>

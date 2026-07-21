@@ -40,6 +40,7 @@ export const H2Icon: React.FC = () => <TextIcon fontWeight="bold" fontSize={12}>
 export const H3Icon: React.FC = () => <TextIcon fontWeight="bold" fontSize={12}>H3</TextIcon>;
 export const QuoteIcon: React.FC = () => <TextIcon fontSize={24}>"</TextIcon>;
 export const CodeIcon: React.FC = () => <TextIcon fontSize={18} fontFamily="'Fira Code', monospace">{'< >'}</TextIcon>;
+export const FormulaIcon: React.FC = () => <TextIcon fontStyle="italic" fontSize={15} fontFamily="'Times New Roman', serif">√x</TextIcon>;
 
 
 // Strikethrough Icon with crossed-out S

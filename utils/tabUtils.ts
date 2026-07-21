@@ -70,10 +70,24 @@ export const generateUniqueFilename = (baseFilename: string, existingTabs: Tab[]
 };
 
 /**
+ * Default welcome content for new tabs
+ */
+export const DEFAULT_TAB_CONTENT = `# Hello, Markdown!
+
+Start typing here...
+
+**Tip:** Formulas are supported, e.g. $E = mc^2$ — or as a block:
+
+$$
+E = mc^2
+$$
+`;
+
+/**
  * Create a new tab with default values
  */
 export const createDefaultTab = (
-  content: string = '# Hello, Markdown!\n\nStart typing here...',
+  content: string = DEFAULT_TAB_CONTENT,
   filename: string = 'untitled.md'
 ): Tab => {
   const now = Date.now();

@@ -12,6 +12,7 @@ export type FormatType =
   | 'checklist'
   | 'quote'
   | 'code'
+  | 'formula'
   | 'strikethrough'
   | 'table'
   | 'image'

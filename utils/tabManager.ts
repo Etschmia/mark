@@ -9,7 +9,8 @@ import {
   updateTabEditorState,
   markTabAsSaved,
   hasUnsavedChanges,
-  generateUniqueFilename
+  generateUniqueFilename,
+  DEFAULT_TAB_CONTENT
 } from './tabUtils';
 import { StorageService, getStorageService } from '../services/storage';
 
@@ -119,15 +120,15 @@ export class TabManager {
       finalFilename = generateUniqueFilename('untitled.md', this.state.tabs);
     }
     
-    const newTab = content || filename || fileHandle || fileSource 
+    const newTab = content || filename || fileHandle || fileSource
       ? createTabFromData(
-          content || '# Hello, Markdown!\n\nStart typing here...',
+          content || DEFAULT_TAB_CONTENT,
           finalFilename,
           fileHandle || null,
           fileSource || { type: 'local' }
         )
       : createDefaultTab(
-          '# Hello, Markdown!\n\nStart typing here...',
+          DEFAULT_TAB_CONTENT,
           finalFilename
         );
 

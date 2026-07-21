@@ -1,5 +1,6 @@
 import React, { useState, useEffect, forwardRef } from 'react';
 import 'highlight.js/styles/atom-one-dark.css';
+import 'katex/dist/katex.min.css';
 
 import { removeFrontmatter } from '../utils/frontmatterUtils';
 import type { ScrollbarColors } from '../utils/appThemes';
@@ -13,16 +14,18 @@ let hljs: any = null;
 const moduleCache = {
   marked: null as any,
   dompurify: null as any,
-  hljs: null as any
+  hljs: null as any,
+  markedKatex: null as any
 };
 
 // Dynamic loader for markdown processing dependencies
 const loadMarkdownDependencies = async () => {
-  if (moduleCache.marked && moduleCache.dompurify && moduleCache.hljs) {
+  if (moduleCache.marked && moduleCache.dompurify && moduleCache.hljs && moduleCache.markedKatex) {
     return {
       marked: moduleCache.marked,
       DOMPurify: moduleCache.dompurify,
-      hljs: moduleCache.hljs
+      hljs: moduleCache.hljs,
+      markedKatex: moduleCache.markedKatex
     };
   }
 
@@ -36,7 +39,8 @@ const loadMarkdownDependencies = async () => {
       sqlLang,
       pythonLang,
       phpLang,
-      xmlLang
+      xmlLang,
+      markedKatexModule
     ] = await Promise.all([
       import('marked'),
       import('dompurify'),
@@ -45,13 +49,18 @@ const loadMarkdownDependencies = async () => {
       import('highlight.js/lib/languages/sql'),
       import('highlight.js/lib/languages/python'),
       import('highlight.js/lib/languages/php'),
-      import('highlight.js/lib/languages/xml')
+      import('highlight.js/lib/languages/xml'),
+      import('marked-katex-extension')
     ]);
 
     // Cache the modules
-    moduleCache.marked = markedModule.marked;
+    // Use an isolated Marked instance: the KaTeX extension and custom renderer
+    // must not leak into the shared marked singleton used by exportUtils
+    // (the DOCX lexer does not understand KaTeX tokens).
+    moduleCache.marked = new markedModule.Marked();
     moduleCache.dompurify = purifyModule.default;
     moduleCache.hljs = hljsModule.default;
+    moduleCache.markedKatex = markedKatexModule.default;
 
     // Register languages
     moduleCache.hljs.registerLanguage('javascript', jsLang.default);
@@ -63,7 +72,8 @@ const loadMarkdownDependencies = async () => {
     return {
       marked: moduleCache.marked,
       DOMPurify: moduleCache.dompurify,
-      hljs: moduleCache.hljs
+      hljs: moduleCache.hljs,
+      markedKatex: moduleCache.markedKatex
     };
   } catch (error) {
     console.error('Failed to load markdown dependencies:', error);
@@ -127,11 +137,15 @@ const getScrollbarStyles = (colors: ScrollbarColors) => {
 const ALLOWED_TAGS = [
   'p', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'blockquote', 'pre', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-  'hr', 'br', 'span', 'img', 'del', 's', 'strike', 'input'
+  'hr', 'br', 'span', 'img', 'del', 's', 'strike', 'input',
+  // KaTeX HTML output (formulas): spans plus inline SVG for radicals/stretchy symbols
+  'svg', 'path'
 ];
 const ALLOWED_ATTR = [
   'style', 'class', 'href', 'src', 'alt', 'title', 'width', 'height',
-  'start', 'type', 'align', 'colspan', 'rowspan', 'checked', 'disabled'
+  'start', 'type', 'align', 'colspan', 'rowspan', 'checked', 'disabled',
+  // KaTeX
+  'aria-hidden', 'xmlns', 'viewBox', 'preserveAspectRatio', 'd'
 ];
 
 
@@ -142,6 +156,7 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
     marked: any;
     DOMPurify: any;
     hljs: any;
+    markedKatex: any;
   } | null>(null);
 
   // Load dependencies on first mount
@@ -154,20 +169,23 @@ export const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ markdown, the
 
         if (!isMounted) return;
 
-        // Configure marked with custom renderer
-        const renderer = new deps.marked.Renderer();
+        // Configure marked with a custom code renderer to manually control highlighting
+        const renderer = {
+          code: ({ text, lang }: { text: string; lang?: string }) => {
+            const language = deps.hljs.getLanguage(lang || '') ? lang || 'plaintext' : 'plaintext';
+            const highlightedCode = deps.hljs.highlight(text, { language }).value;
 
-        // Override the 'code' function to manually control highlighting
-        renderer.code = ({ text, lang }: { text: string; lang?: string }) => {
-          const language = deps.hljs.getLanguage(lang || '') ? lang || 'plaintext' : 'plaintext';
-          const highlightedCode = deps.hljs.highlight(text, { language }).value;
-
-          // Manually construct the final HTML with the correct classes needed by highlight.js themes.
-          return `<pre><code class="hljs language-${language}">${highlightedCode}</code></pre>`;
+            // Manually construct the final HTML with the correct classes needed by highlight.js themes.
+            return `<pre><code class="hljs language-${language}">${highlightedCode}</code></pre>`;
+          }
         };
 
         // Use the custom renderer
         deps.marked.use({ renderer, gfm: true, breaks: true });
+
+        // Enable math formulas: $inline$ and $$block$$ rendered via KaTeX.
+        // output: 'html' keeps the sanitizer allowlist small (no MathML tags).
+        deps.marked.use(deps.markedKatex({ throwOnError: false, output: 'html', nonStandard: true }));
 
         setDependencies(deps);
         setIsLoading(false);

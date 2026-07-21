@@ -45,6 +45,10 @@ export const CheatSheetModal: React.FC<CheatSheetModalProps> = ({ isOpen, onClos
       { syntax: '| Col1 | Col2 |\n|------|------|\n| Cell | Cell |', description: 'Basic table', example: '| Name | Age |\n|------|-----|\n| John | 25  |\n| Jane | 30  |' },
       { syntax: '| Left | Center | Right |\n|:-----|:------:|------:|\n| L    | C      | R     |', description: 'Table with alignment', example: '| Left | Center | Right |\n|:-----|:------:|------:|\n| Text | Text   | Text  |' },
     ]},
+    { category: 'Formulas (KaTeX)', items: [
+      { syntax: '$formula$', description: 'Inline formula', example: '$E = mc^2$' },
+      { syntax: '$$\nformula\n$$', description: 'Formula block (display mode)', example: '$$\n\\frac{a}{b} = \\sqrt{x^2 + y^2}\n$$' },
+    ]},
     { category: 'Special Characters', items: [
       { syntax: '\\*', description: 'Escape special chars', example: '\\* Not a list item' },
       { syntax: '&nbsp;', description: 'Non-breaking space', example: 'Word&nbsp;together' },

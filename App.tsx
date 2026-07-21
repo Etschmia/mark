@@ -18,6 +18,7 @@ import { GitHubModal } from './components/GitHubModal';
 import { SaveOptionsModal } from './components/SaveOptionsModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { TabManager } from './utils/tabManager';
+import { DEFAULT_TAB_CONTENT } from './utils/tabUtils';
 import { TabContextMenu } from './components/TabContextMenu';
 import { checkAndInstallUpdate, checkUpdateCompletion } from './utils/updateManager';
 import { getStorageService } from './services/storage';
@@ -730,11 +731,8 @@ const App: React.FC = () => {
     const activeTab = tabManagerRef.current.getActiveTab();
     if (!activeTab) return false;
 
-    // Default placeholder content should not be considered as unsaved changes
-    const defaultContent = '# Hello, Markdown!\n\nStart typing here...';
-
     // If content is still the default placeholder, no unsaved changes
-    if (activeTab.content === defaultContent) {
+    if (activeTab.content === DEFAULT_TAB_CONTENT) {
       return false;
     }
 

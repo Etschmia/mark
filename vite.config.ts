@@ -40,6 +40,10 @@ export default defineConfig({
           if (id.includes('/marked/') || id.includes('/dompurify/') || id.includes('DOMPurify')) {
             return 'markdown-processing';
           }
+          // Math rendering (KaTeX is heavy, keep it in its own chunk)
+          if (id.includes('/katex/') || id.includes('marked-katex-extension')) {
+            return 'math-rendering';
+          }
           // Syntax highlighting
           if (id.includes('highlight.js')) {
             return 'syntax-highlighting';

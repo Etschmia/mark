@@ -111,6 +111,30 @@ export const useFormatting = ({
       return;
     }
 
+    if (formatType === 'formula') {
+      const selection = editor.getSelection();
+      const selectedText = editor.getValue().substring(selection.start, selection.end);
+
+      if (selectedText.includes('\n')) {
+        // Multiline selection: display math block
+        applyFormatting('$$\n', '\n$$');
+      } else if (selectedText) {
+        // Wrap selection as inline formula
+        applyFormatting('$');
+      } else {
+        // No selection: insert an example formula and select it for easy replacement
+        const placeholder = 'E = mc^2';
+        const formulaMarkdown = `$${placeholder}$`;
+
+        editor.insertText(formulaMarkdown, selection.start, selection.end);
+        addHistoryEntry(editor.getValue());
+
+        const placeholderStart = selection.start + 1; // `$`
+        editor.setSelection(placeholderStart, placeholderStart + placeholder.length);
+      }
+      return;
+    }
+
     switch (formatType) {
       case 'bold': applyFormatting('**'); break;
       case 'italic': applyFormatting('*'); break;
