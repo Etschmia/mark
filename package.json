@@ -40,7 +40,7 @@
     "highlight.js": "^11.11.1",
     "html2canvas": "^1.4.1",
     "js-base64": "^3.7.8",
-    "katex": "^0.17.0",
+    "katex": "^0.18.10",
     "marked-katex-extension": "^5.1.10",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
@@ -57,13 +57,21 @@
     "docx": "^9.6.1",
     "dompurify": "^3.3.3",
     "jspdf": "^4.2.1",
-    "markdownlint": "^0.40.0",
+    "markdownlint": "^0.42.0",
     "marked": "^17.0.4",
     "path": "^0.12.7",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
     "url": "^0.11.4",
     "vite": "^8.0.1"
+  },
+  "overrides": {
+    "markdownlint": {
+      "re2js": "2.9.1"
+    },
+    "micromark-extension-math": {
+      "katex": "^0.18.10"
+    }
   }
 }
