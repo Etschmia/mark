@@ -62,7 +62,7 @@
     "path": "^0.12.7",
     "sharp": "^0.35.5",
     "tailwindcss": "^4.2.2",
-    "typescript": "~5.9.3",
+    "typescript": "^7.0.2",
     "url": "^0.11.4",
     "vite": "^8.0.1"
   },
